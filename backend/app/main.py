@@ -1,6 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.routers import parades
+
 # FastAPI instance with API metadata for auto-generated Swagger docs
 app = FastAPI(
     title="Veus de Dona API",
@@ -16,6 +18,11 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# register routers
+app.include_router(parades.router)
+
+
 # health check endpoint
 @app.get("/")
 def root():

@@ -1,0 +1,17 @@
+from pydantic import BaseModel
+from uuid import UUID
+from app.schemas.autora import AutoraResponse
+
+class TextBase(BaseModel):
+    titol: str
+    obra_origen: str | None = None
+    contingut: str
+    parada_id: UUID
+    autora_id: UUID
+
+class TextResponse(TextBase):
+    id: UUID
+    autora: AutoraResponse
+
+    class Config:
+        from_attributes = True
