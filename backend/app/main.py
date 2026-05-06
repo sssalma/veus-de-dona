@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.routers import parades
+from app.routers import parades, autores, textos
 
 # FastAPI instance with API metadata for auto-generated Swagger docs
 app = FastAPI(
@@ -21,6 +21,9 @@ app.add_middleware(
 
 # register routers
 app.include_router(parades.router)
+app.include_router(parades.router)
+app.include_router(autores.router)
+app.include_router(textos.router)
 
 
 # health check endpoint
