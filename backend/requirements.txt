@@ -26,6 +26,7 @@ pydantic_core==2.46.3
 python-dateutil==2.9.0.post0
 python-dotenv==1.2.2
 python-jose==3.5.0
+python-multipart==0.0.27
 rsa==4.9.1
 s3transfer==0.17.0
 six==1.17.0
