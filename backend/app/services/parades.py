@@ -13,3 +13,13 @@ def get_parada_by_id(db: Session, parada_id: str):
     return db.query(Parada)\
         .filter(Parada.id == parada_id)\
         .first()
+
+def toggle_parada_activa(db: Session, parada_id: str, activa: bool) -> Parada | None:
+    """Enables or disables a stop, returns None if not found"""
+    parada = get_parada_by_id(db, parada_id)
+    if not parada:
+        return None
+    setattr(parada, 'activa', activa)
+    db.commit()
+    db.refresh(parada)
+    return parada

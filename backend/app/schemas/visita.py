@@ -5,7 +5,8 @@ from app.models.visita import Mode
 
 class VisitaCreate(BaseModel):
     parada_id: UUID
-    mode: Mode
+    lat: float | None = None
+    lng: float | None = None
 
 class VisitaResponse(BaseModel):
     id: UUID

@@ -5,6 +5,9 @@ from datetime import datetime, timedelta
 from app.models.usuari import Usuari, RolUsuari, Idioma
 from app.schemas.usuari import UsuariCreate
 from app.config import settings
+from fastapi import Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer
+from app.database import get_db
 
 # bcrypt for password hashing - industry standard, irreversible
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -58,3 +61,39 @@ def login_usuari(db: Session, email: str, password: str) -> str | None:
     if not str(usuari.actiu):
         return None
     return create_access_token({"sub": str(usuari.id), "rol": usuari.rol.value})
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
+
+def get_current_user(
+    token: str = Depends(oauth2_scheme),
+    db: Session = Depends(get_db)
+) -> Usuari:
+    """Validates JWT token and returns current user"""
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Token invàlid o expirat",
+        headers={"WWW-Authenticate": "Bearer"}
+    )
+    try:
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[ALGORITHM])
+        user_id = payload.get("sub")
+        if user_id is None:
+            raise credentials_exception
+    except JWTError:
+        raise credentials_exception
+
+    usuari = db.query(Usuari).filter(Usuari.id == user_id).first()
+    if not usuari or not str(usuari.actiu):
+        raise credentials_exception
+    return usuari
+
+def require_rol(*rols: RolUsuari):
+    """Factory that returns a dependency checking user role"""
+    def check_rol(current_user: Usuari = Depends(get_current_user)) -> Usuari:
+        if current_user.rol not in rols:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="No tens permisos per fer aquesta acció"
+            )
+        return current_user
+    return check_rol
