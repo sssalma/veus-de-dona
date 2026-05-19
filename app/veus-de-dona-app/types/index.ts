@@ -31,3 +31,10 @@ export interface Usuari {
   nom: string;
   rol: string;
 }
+
+export interface Recurs {
+  id: string;
+  tipus: "AUDIO" | "VIDEO";
+  minio_key: string;
+  text_id: string;
+}
