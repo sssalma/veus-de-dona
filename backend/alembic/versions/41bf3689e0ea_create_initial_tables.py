@@ -25,7 +25,7 @@ def upgrade() -> None:
     sa.Column('id', sa.UUID(), nullable=False),
     sa.Column('nom', sa.String(), nullable=False),
     sa.Column('cognom', sa.String(), nullable=False),
-    sa.Column('bio', sa.String(), nullable=True),
+    sa.Column('bio', sa.Text(), nullable=True),
     sa.Column('anys_vida', sa.String(), nullable=True),
     sa.Column('foto_minio_key', sa.String(), nullable=True),
     sa.PrimaryKeyConstraint('id')
