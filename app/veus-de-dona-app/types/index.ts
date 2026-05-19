@@ -16,13 +16,14 @@ export interface Autora {
   foto_minio_key: string | null;
 }
 
-export interface Text {
+export interface TextDto {
   id: string;
   titol: string;
   obra_origen: string | null;
   contingut: string;
   parada_id: string;
   autora_id: string;
+  autora?: Autora;
 }
 
 export interface Usuari {

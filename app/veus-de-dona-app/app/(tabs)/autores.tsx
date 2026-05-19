@@ -1,10 +1,19 @@
+import { useEffect, useState } from "react";
 import { View, Text, FlatList, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 import { COLORS, FONTS } from "../../constants";
-import { AUTORES } from "../../data/autores";
+import { getAutores } from "../../services/autores";
+import { Autora } from "../../types";
 
 export default function AutoresScreen() {
   const router = useRouter();
+  const [autores, setAutores] = useState<Autora[]>([]);
+
+  useEffect(() => {
+    getAutores()
+      .then(setAutores)
+      .catch(() => setAutores([]));
+  }, []);
 
   return (
     <View style={{ flex: 1, backgroundColor: COLORS.bg }}>
@@ -28,7 +37,7 @@ export default function AutoresScreen() {
         </Text>
       </View>
       <FlatList
-        data={AUTORES}
+        data={autores}
         contentContainerStyle={{ padding: 14 }}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (

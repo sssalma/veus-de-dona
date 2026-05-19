@@ -1,16 +1,24 @@
+import { useEffect, useState } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { View, Text, ScrollView, TouchableOpacity } from "react-native";
 import { COLORS, FONTS } from "../../constants";
-import { PARADES } from "../../data/parades";
-import { TEXTOS } from "../../data/textos";
-import { AUTORES } from "../../data/autores";
+import { getParada, getParades } from "../../services/parades";
+import { getTextosByParada } from "../../services/textos";
+import { Parada, TextDto } from "../../types";
 
 export default function ParadaScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
+  const [parada, setParada] = useState<Parada | null>(null);
+  const [textos, setTextos] = useState<TextDto[]>([]);
+  const [totes, setTotes] = useState<Parada[]>([]);
 
-  const parada = PARADES.find((p) => p.id === id);
-  const textos = TEXTOS.filter((t) => t.parada_id === id);
+  useEffect(() => {
+    const pid = id as string;
+    getParada(pid).then(setParada).catch(() => setParada(null));
+    getTextosByParada(pid).then(setTextos).catch(() => setTextos([]));
+    getParades().then(setTotes).catch(() => setTotes([]));
+  }, [id]);
 
   if (!parada) {
     return (
@@ -22,9 +30,9 @@ export default function ParadaScreen() {
     );
   }
 
-  const idx = PARADES.findIndex((p) => p.id === id);
-  const prevParada = idx > 0 ? PARADES[idx - 1] : null;
-  const nextParada = idx < PARADES.length - 1 ? PARADES[idx + 1] : null;
+  const idx = totes.findIndex((p) => p.id === id);
+  const prevParada = idx > 0 ? totes[idx - 1] : null;
+  const nextParada = idx < totes.length - 1 ? totes[idx + 1] : null;
 
   return (
     <ScrollView style={{ flex: 1, backgroundColor: COLORS.bg }}>
@@ -141,7 +149,7 @@ export default function ParadaScreen() {
           contentContainerStyle={{ gap: 6, paddingRight: 14 }}
         >
           {textos.map((texto, i) => {
-            const autora = AUTORES.find((a) => a.id === texto.autora_id);
+            const autora = texto.autora;
             const initials = autora
               ? `${autora.nom[0]}${autora.cognom[0]}`
               : "??";
@@ -314,7 +322,7 @@ export default function ParadaScreen() {
           </Text>
         </View>
         {textos.length > 0 && (() => {
-          const autora = AUTORES.find((a) => a.id === textos[0].autora_id);
+          const autora = textos[0].autora;
           return autora ? (
             <TouchableOpacity onPress={() => router.push(`/autora/${autora.id}`)}>
               <Text

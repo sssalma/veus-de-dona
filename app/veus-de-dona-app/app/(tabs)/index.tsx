@@ -1,11 +1,23 @@
+import { useEffect, useState } from "react";
 import MapView, { Marker } from "react-native-maps";
 import { View, Text } from "react-native";
 import { useRouter } from "expo-router";
-import { PARADES, GPS_COORDS } from "../../data/parades";
+import { GPS_COORDS } from "../../data/parades";
+import { getParades } from "../../services/parades";
 import { COLORS, FONTS } from "../../constants";
+import { Parada } from "../../types";
 
 export default function MapaScreen() {
   const router = useRouter();
+  const [parades, setParades] = useState<Parada[]>([]);
+
+  useEffect(() => {
+    getParades()
+      .then(setParades)
+      .catch(() => setParades([]));
+  }, []);
+
+  const actives = parades.filter((p) => p.activa);
 
   return (
     <View style={{ flex: 1, backgroundColor: COLORS.bg }}>
@@ -60,7 +72,7 @@ export default function MapaScreen() {
           longitudeDelta: 0.015,
         }}
       >
-        {PARADES.filter((p) => p.activa).map((parada) => {
+        {actives.map((parada) => {
           const coords = GPS_COORDS[parada.coordenades];
           if (!coords) return null;
 

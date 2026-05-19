@@ -1,7 +1,6 @@
 import { View, Text, ScrollView, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 import { COLORS, FONTS } from "../../constants";
-import { AUTORES } from "../../data/autores";
 
 export default function PerfilScreen() {
   const router = useRouter();

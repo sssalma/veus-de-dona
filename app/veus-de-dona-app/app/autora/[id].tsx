@@ -1,16 +1,25 @@
+import { useEffect, useState } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { View, Text, ScrollView, TouchableOpacity } from "react-native";
 import { COLORS, FONTS } from "../../constants";
-import { AUTORES } from "../../data/autores";
-import { TEXTOS } from "../../data/textos";
-import { PARADES } from "../../data/parades";
+import { getAutora } from "../../services/autores";
+import { getTextosByAutora } from "../../services/textos";
+import { getParades } from "../../services/parades";
+import { Autora, Parada, TextDto } from "../../types";
 
 export default function AutoraScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
+  const [autora, setAutora] = useState<Autora | null>(null);
+  const [textos, setTextos] = useState<TextDto[]>([]);
+  const [totesParades, setTotesParades] = useState<Parada[]>([]);
 
-  const autora = AUTORES.find((a) => a.id === id);
-  const textos = TEXTOS.filter((t) => t.autora_id === id);
+  useEffect(() => {
+    const aid = id as string;
+    getAutora(aid).then(setAutora).catch(() => setAutora(null));
+    getTextosByAutora(aid).then(setTextos).catch(() => setTextos([]));
+    getParades().then(setTotesParades).catch(() => setTotesParades([]));
+  }, [id]);
 
   if (!autora) {
     return (
@@ -168,7 +177,6 @@ export default function AutoraScreen() {
             color: "#3d3d3a",
             lineHeight: 17,
           }}
-          numberOfLines={6}
         >
           {autora.bio}
         </Text>
@@ -188,7 +196,7 @@ export default function AutoraScreen() {
           Textos a la ruta
         </Text>
         {textos.map((texto) => {
-          const parada = PARADES.find((p) => p.id === texto.parada_id);
+          const parada = totesParades.find((p) => p.id === texto.parada_id);
           return (
             <TouchableOpacity
               key={texto.id}
