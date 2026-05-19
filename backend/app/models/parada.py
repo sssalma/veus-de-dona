@@ -7,29 +7,29 @@ import enum
 
 # Python enum for GPS coordinates of the 10 fixed route stops
 class CoordenadesParada(str, enum.Enum):
-    BALCO_MEDITERRANI = "BALCO_MEDITERRANI"
-    AMFITEATRE_ROMA = "AMFITEATRE_ROMA"
-    PL_FONT = "PL_FONT"
-    PL_SEDASSOS = "PL_SEDASSOS"
-    ESCALES_CATEDRAL = "ESCALES_CATEDRAL"
-    C_CAVALLERS = "C_CAVALLERS"
-    PORTAL_ROSER = "PORTAL_ROSER"
-    C_DAMES = "C_DAMES"
-    PL_PALLOL = "PL_PALLOL"
-    C_SANT_LLORENC = "C_SANT_LLORENC"
+    BALCO_MEDITERRANI  = "BALCO_MEDITERRANI"
+    AMFITEATRE         = "AMFITEATRE"
+    BAIXADA_PEIXATERIA = "BAIXADA_PEIXATERIA"
+    PLACA_REI          = "PLACA_REI"
+    PLACA_ANGELS       = "PLACA_ANGELS"
+    PLACA_FORUM        = "PLACA_FORUM"
+    CARRER_CALDERERS   = "CARRER_CALDERERS"
+    PLA_SEU            = "PLA_SEU"
+    CARRER_MAJOR       = "CARRER_MAJOR"
+    PLACA_FONT         = "PLACA_FONT"
 
 # GPS coordinates for each stop - immutable at application level
 COORDENADES_GPS = {
-    CoordenadesParada.BALCO_MEDITERRANI: (41.1165, 1.2428),
-    CoordenadesParada.AMFITEATRE_ROMA: (41.1171, 1.2454),
-    CoordenadesParada.PL_FONT: (41.1189, 1.2441),
-    CoordenadesParada.PL_SEDASSOS: (41.1182, 1.2436),
-    CoordenadesParada.ESCALES_CATEDRAL: (41.1196, 1.2448),
-    CoordenadesParada.C_CAVALLERS: (41.1201, 1.2443),
-    CoordenadesParada.PORTAL_ROSER: (41.1178, 1.2431),
-    CoordenadesParada.C_DAMES: (41.1209, 1.2438),
-    CoordenadesParada.PL_PALLOL: (41.1215, 1.2445),
-    CoordenadesParada.C_SANT_LLORENC: (41.1221, 1.2452),
+    CoordenadesParada.BALCO_MEDITERRANI:  (41.11657, 1.24282),
+    CoordenadesParada.AMFITEATRE:         (41.11712, 1.24538),
+    CoordenadesParada.BAIXADA_PEIXATERIA: (41.11868, 1.24492),
+    CoordenadesParada.PLACA_REI:          (41.11939, 1.24434),
+    CoordenadesParada.PLACA_ANGELS:       (41.11997, 1.24447),
+    CoordenadesParada.PLACA_FORUM:        (41.12048, 1.24478),
+    CoordenadesParada.CARRER_CALDERERS:   (41.12078, 1.24422),
+    CoordenadesParada.PLA_SEU:            (41.11963, 1.24523),
+    CoordenadesParada.CARRER_MAJOR:       (41.11901, 1.24468),
+    CoordenadesParada.PLACA_FONT:         (41.11832, 1.24381),
 }
 
 class Parada(Base):
