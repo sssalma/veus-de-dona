@@ -18,6 +18,8 @@ export default function ParadaScreen() {
   const [parada, setParada] = useState<Parada | null>(null);
   const [textos, setTextos] = useState<TextDto[]>([]);
   const [totes, setTotes] = useState<Parada[]>([]);
+  const [textSeleccionat, setTextSeleccionat] = useState(0);
+  const [textExpandit, setTextExpandit] = useState(false);
   const [liked, setLiked] = useState(false);
   const [likesCount, setLikesCount] = useState(0);
   const [visitant, setVisitant] = useState(false);
@@ -25,7 +27,6 @@ export default function ParadaScreen() {
   const [nouComentari, setNouComentari] = useState("");
   const [enviantComentari, setEnviantComentari] = useState(false);
   const [visitLoading, setVisitLoading] = useState(false);
-
   useEffect(() => {
     const pid = id as string;
     getParada(pid).then(setParada).catch(() => setParada(null));
@@ -44,12 +45,12 @@ export default function ParadaScreen() {
 
   useEffect(() => {
     if (textos.length > 0 && isAuthenticated) {
-      checkLike(textos[0].id).then((res) => {
+      checkLike(textos[textSeleccionat].id).then((res) => {
         setLiked(res.liked);
         setLikesCount(res.count);
       }).catch(() => {});
     }
-  }, [textos, isAuthenticated]);
+  }, [textos, textSeleccionat, isAuthenticated]);
 
   const handleLike = async () => {
     if (!isAuthenticated) {
@@ -57,7 +58,7 @@ export default function ParadaScreen() {
       return;
     }
     if (textos.length === 0) return;
-    const textId = textos[0].id;
+    const textId = textos[textSeleccionat].id;
     try {
       if (liked) {
         await removeLike(textId);
@@ -239,11 +240,12 @@ export default function ParadaScreen() {
             return (
               <TouchableOpacity
                 key={texto.id}
+                onPress={() => { setTextSeleccionat(i); setTextExpandit(false); }}
                 style={{
                   alignItems: "center",
                   gap: 3,
                   paddingBottom: 6,
-                  borderBottomWidth: i === 0 ? 2 : 0,
+                  borderBottomWidth: i === textSeleccionat ? 2 : 0,
                   borderBottomColor: COLORS.text,
                   minWidth: 58,
                 }}
@@ -253,7 +255,7 @@ export default function ParadaScreen() {
                     width: 30,
                     height: 30,
                     borderRadius: 15,
-                    backgroundColor: i === 0 ? COLORS.darkBg : COLORS.textSecondary,
+                    backgroundColor: i === textSeleccionat ? COLORS.accent : COLORS.textSecondary,
                     justifyContent: "center",
                     alignItems: "center",
                   }}
@@ -273,7 +275,7 @@ export default function ParadaScreen() {
                   style={{
                     fontFamily: FONTS.sans,
                     fontSize: 8,
-                    color: i === 0 ? COLORS.text : COLORS.textSecondary,
+                    color: i === textSeleccionat ? COLORS.text : COLORS.textSecondary,
                   }}
                 >
                   {autora?.nom.split(" ")[0] ?? "??"}. {autora?.cognom ?? "??"}
@@ -296,8 +298,8 @@ export default function ParadaScreen() {
                 marginBottom: 4,
               }}
             >
-              {textos[0].titol}
-              {textos[0].obra_origen ? ` · ${textos[0].obra_origen}` : ""}
+              {textos[textSeleccionat].titol}
+              {textos[textSeleccionat].obra_origen ? ` · ${textos[textSeleccionat].obra_origen}` : ""}
             </Text>
             <View
               style={{
@@ -313,16 +315,19 @@ export default function ParadaScreen() {
                   fontSize: 11,
                   color: COLORS.text,
                   lineHeight: 18,
-                  maxHeight: 52,
-                  overflow: "hidden",
+                  maxHeight: textExpandit ? undefined : 52,
+                  overflow: textExpandit ? "visible" : "hidden",
                 }}
-                numberOfLines={3}
+                numberOfLines={textExpandit ? undefined : 3}
               >
-                {textos[0].contingut}
+                {textos[textSeleccionat].contingut}
               </Text>
             </View>
           </View>
-          <TouchableOpacity style={{ paddingHorizontal: 14, paddingVertical: 3 }}>
+          <TouchableOpacity
+            onPress={() => setTextExpandit(!textExpandit)}
+            style={{ paddingHorizontal: 14, paddingVertical: 3 }}
+          >
             <Text
               style={{
                 fontFamily: FONTS.sans,
@@ -330,7 +335,7 @@ export default function ParadaScreen() {
                 color: COLORS.textSecondary,
               }}
             >
-              llegir tot el text ↓
+              {textExpandit ? "mostrar menys ↑" : "llegir tot el text ↓"}
             </Text>
           </TouchableOpacity>
         </>
@@ -410,7 +415,7 @@ export default function ParadaScreen() {
           </Text>
         </View>
         {textos.length > 0 && (() => {
-          const autora = textos[0].autora;
+          const autora = textos[textSeleccionat].autora;
           return autora ? (
             <TouchableOpacity onPress={() => router.push(`/autora/${autora.id}`)}>
               <Text
