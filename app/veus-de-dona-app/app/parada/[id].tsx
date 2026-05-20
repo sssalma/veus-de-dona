@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { View, Text, ScrollView, TouchableOpacity, TextInput, Alert, ActivityIndicator } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, TextInput, Alert, ActivityIndicator, Image, Dimensions } from "react-native";
 import * as Location from "expo-location";
 import { COLORS, FONTS } from "../../constants";
-import { getParada, getParades } from "../../services/parades";
+import { getParada, getParades, getParadaFoto } from "../../services/parades";
 import { getTextosByParada } from "../../services/textos";
 import { checkLike, addLike, removeLike } from "../../services/likes";
 import { getMevesVisites, registrarVisita } from "../../services/visites";
@@ -27,12 +27,22 @@ export default function ParadaScreen() {
   const [nouComentari, setNouComentari] = useState("");
   const [enviantComentari, setEnviantComentari] = useState(false);
   const [visitLoading, setVisitLoading] = useState(false);
+  const [fotoUrl, setFotoUrl] = useState<string | null>(null);
+  const [fotoHeight, setFotoHeight] = useState(200);
+
   useEffect(() => {
     const pid = id as string;
     getParada(pid).then(setParada).catch(() => setParada(null));
     getTextosByParada(pid).then(setTextos).catch(() => setTextos([]));
     getParades().then(setTotes).catch(() => setTotes([]));
     getComentaris(pid).then(setComentaris).catch(() => setComentaris([]));
+    getParadaFoto(pid).then((url) => {
+      setFotoUrl(url);
+      Image.getSize(url, (w, h) => {
+        const screenW = Dimensions.get("window").width;
+        setFotoHeight(screenW * (h / w));
+      }, () => setFotoHeight(200));
+    }).catch(() => setFotoUrl(null));
   }, [id]);
 
   useEffect(() => {
@@ -190,26 +200,28 @@ export default function ParadaScreen() {
         </View>
       </View>
 
-      <View
-        style={{
-          height: 110,
-          backgroundColor: COLORS.darkBg,
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
-        <Text
-          style={{
-            fontFamily: FONTS.sans,
-            fontSize: 8,
-            color: "rgba(255,255,255,0.5)",
-            letterSpacing: 0.6,
-            textTransform: "uppercase",
-            marginTop: 4,
-          }}
-        >
-          {parada.nom_espai}
-        </Text>
+      <View style={{ height: fotoHeight, backgroundColor: COLORS.darkBg }}>
+        {fotoUrl ? (
+          <Image
+            source={{ uri: fotoUrl }}
+            style={{ width: "100%", height: "100%" }}
+            resizeMode="cover"
+          />
+        ) : (
+          <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+            <Text
+              style={{
+                fontFamily: FONTS.sans,
+                fontSize: 8,
+                color: "rgba(255,255,255,0.5)",
+                letterSpacing: 0.6,
+                textTransform: "uppercase",
+              }}
+            >
+              {parada.nom_espai}
+            </Text>
+          </View>
+        )}
       </View>
 
       <View style={{ paddingHorizontal: 14, paddingTop: 8 }}>

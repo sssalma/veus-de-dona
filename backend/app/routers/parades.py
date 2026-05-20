@@ -4,6 +4,7 @@ from app.database import get_db
 from app.schemas.parada import ParadaResponse
 from app.services import parades as parades_service
 from app.services.auth import get_current_user, require_rol
+from app.services.storage import get_file_url
 from app.models.usuari import Usuari, RolUsuari
 from typing import List
 
@@ -27,6 +28,19 @@ def get_parada(parada_id: str, db: Session = Depends(get_db)):
     return parada
 
 # editor/admin only endpoint
+
+@router.get("/{parada_id}/foto")
+def get_parada_foto(parada_id: str, db: Session = Depends(get_db)):
+    """Returns a presigned URL for the parada photo"""
+    parada = parades_service.get_parada_by_id(db, parada_id)
+    if not parada:
+        raise HTTPException(status_code=404, detail="Parada no trobada")
+    if not parada.foto_minio_key:
+        raise HTTPException(status_code=404, detail="Aquesta parada no té foto")
+    url = get_file_url(parada.foto_minio_key)
+    if not url:
+        raise HTTPException(status_code=500, detail="Error en generar la URL de la foto")
+    return {"url": url}
 
 @router.patch("/{parada_id}/activa")
 def toggle_parada(
