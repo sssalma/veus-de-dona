@@ -3,7 +3,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import {
   View, Text, ScrollView, TouchableOpacity,
   TextInput, Alert, ActivityIndicator, Image, Dimensions,
-  Platform,
+  Platform, Linking,
 } from "react-native";
 import * as Location from "expo-location";
 import { COLORS, FONTS } from "../../constants";
@@ -435,6 +435,11 @@ export default function ParadaScreen() {
               <TouchableOpacity
                 accessibilityRole="button"
                 accessibilityLabel="Escoltar àudio"
+                onPress={() => {
+                  const url = textos[textSeleccionat]?.youtube_url;
+                  if (url) Linking.openURL(url);
+                  else Alert.alert("No disponible", "Aquest text no té àudio");
+                }}
                 style={{
                   flex: 1,
                   backgroundColor: COLORS.darkBg,
@@ -442,6 +447,7 @@ export default function ParadaScreen() {
                   borderRadius: 6,
                   minHeight: 44,
                   justifyContent: "center",
+                  opacity: textos[textSeleccionat]?.youtube_url ? 1 : 0.4,
                 }}
               >
                 <Text
@@ -460,6 +466,11 @@ export default function ParadaScreen() {
               <TouchableOpacity
                 accessibilityRole="button"
                 accessibilityLabel="Veure vídeo"
+                onPress={() => {
+                  const url = textos[textSeleccionat]?.youtube_url;
+                  if (url) Linking.openURL(url);
+                  else Alert.alert("No disponible", "Aquest text no té vídeo");
+                }}
                 style={{
                   flex: 1,
                   borderWidth: 1,
@@ -468,6 +479,7 @@ export default function ParadaScreen() {
                   borderRadius: 6,
                   minHeight: 44,
                   justifyContent: "center",
+                  opacity: textos[textSeleccionat]?.youtube_url ? 1 : 0.4,
                 }}
               >
                 <Text

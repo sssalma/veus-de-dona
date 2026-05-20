@@ -6,6 +6,7 @@ class TextBase(BaseModel):
     titol: str
     obra_origen: str | None = None
     contingut: str
+    youtube_url: str | None = None
     parada_id: UUID
     autora_id: UUID
 

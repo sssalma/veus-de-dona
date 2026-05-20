@@ -11,6 +11,7 @@ class Text(Base):
     titol = Column(String, nullable=False)
     obra_origen = Column(String, nullable=True)
     contingut = Column(String, nullable=False)
+    youtube_url = Column(String, nullable=True)
 
     # foreign keys - text belongs to one parada and one autora
     parada_id = Column(UUID(as_uuid=True), ForeignKey("parada.id"), nullable=False)

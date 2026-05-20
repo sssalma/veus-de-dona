@@ -21,6 +21,7 @@ export interface TextDto {
   titol: string;
   obra_origen: string | null;
   contingut: string;
+  youtube_url: string | null;
   parada_id: string;
   autora_id: string;
   autora?: Autora;
