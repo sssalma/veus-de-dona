@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { View, Text, ScrollView, TouchableOpacity, TextInput, Alert, ActivityIndicator, Image, Dimensions } from "react-native";
+import {
+  View, Text, ScrollView, TouchableOpacity,
+  TextInput, Alert, ActivityIndicator, Image, Dimensions,
+  Platform,
+} from "react-native";
 import * as Location from "expo-location";
 import { COLORS, FONTS } from "../../constants";
 import { getParada, getParades, getParadaFoto } from "../../services/parades";
@@ -10,6 +14,8 @@ import { getMevesVisites, registrarVisita } from "../../services/visites";
 import { getComentaris, afegirComentari } from "../../services/comentaris";
 import { useAuth } from "../../contexts/AuthContext";
 import { Parada, TextDto, Comentari } from "../../types";
+
+const ACCESSIBLE_FONT = Platform.select({ ios: "DMSans", android: "DMSans" }) ?? "DMSans";
 
 export default function ParadaScreen() {
   const { id } = useLocalSearchParams();
@@ -136,8 +142,16 @@ export default function ParadaScreen() {
 
   if (!parada) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: COLORS.bg }}>
-        <Text style={{ fontFamily: FONTS.sans, color: COLORS.textSecondary }}>
+      <View
+        accessible
+        accessibilityRole="text"
+        accessibilityLabel="Parada no trobada"
+        style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: COLORS.bg }}
+      >
+        <Text
+          style={{ fontFamily: FONTS.sans, color: COLORS.textSecondary, fontSize: 14 }}
+          maxFontSizeMultiplier={1.5}
+        >
           Parada no trobada
         </Text>
       </View>
@@ -151,6 +165,7 @@ export default function ParadaScreen() {
   return (
     <ScrollView style={{ flex: 1, backgroundColor: COLORS.bg }}>
       <View
+        accessibilityRole="header"
         style={{
           flexDirection: "row",
           alignItems: "center",
@@ -159,14 +174,22 @@ export default function ParadaScreen() {
           paddingVertical: 10,
           borderBottomWidth: 1,
           borderBottomColor: COLORS.border,
+          minHeight: 44,
         }}
       >
-        <TouchableOpacity onPress={() => router.back()}>
-          <Text style={{ fontFamily: FONTS.sans, fontSize: 10, color: COLORS.textSecondary }}>
+        <TouchableOpacity
+          accessibilityRole="button"
+          accessibilityLabel="Tornar al mapa"
+          onPress={() => router.back()}
+          style={{ minWidth: 44, minHeight: 44, justifyContent: "center" }}
+        >
+          <Text style={{ fontFamily: FONTS.sans, fontSize: 10, color: COLORS.textSecondary }} maxFontSizeMultiplier={1.4}>
             ← Mapa
           </Text>
         </TouchableOpacity>
         <View
+          accessibilityRole="text"
+          accessibilityLabel={`Parada ${parada.ordre} de 10`}
           style={{
             paddingHorizontal: 10,
             paddingVertical: 3,
@@ -181,11 +204,14 @@ export default function ParadaScreen() {
               fontWeight: "500",
               color: COLORS.bg,
             }}
+            maxFontSizeMultiplier={1.4}
           >
             PARADA {parada.ordre} / 10
           </Text>
         </View>
         <View
+          accessibilityRole="text"
+          accessibilityLabel="Mode guiat"
           style={{
             paddingHorizontal: 8,
             paddingVertical: 3,
@@ -194,29 +220,38 @@ export default function ParadaScreen() {
             borderColor: COLORS.border,
           }}
         >
-          <Text style={{ fontFamily: FONTS.sans, fontSize: 9, color: COLORS.textSecondary }}>
+          <Text
+            style={{ fontFamily: FONTS.sans, fontSize: 9, color: COLORS.textSecondary }}
+            maxFontSizeMultiplier={1.4}
+          >
             Guiat
           </Text>
         </View>
       </View>
 
-      <View style={{ height: fotoHeight, backgroundColor: COLORS.darkBg }}>
+      <View
+        accessibilityRole="image"
+        accessibilityLabel={`Fotografia de ${parada.nom_espai}`}
+        style={{ height: fotoHeight, backgroundColor: COLORS.darkBg }}
+      >
         {fotoUrl ? (
           <Image
             source={{ uri: fotoUrl }}
             style={{ width: "100%", height: "100%" }}
             resizeMode="cover"
+            accessibilityIgnoresInvertColors
           />
         ) : (
           <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
             <Text
               style={{
                 fontFamily: FONTS.sans,
-                fontSize: 8,
-                color: "rgba(255,255,255,0.5)",
+                fontSize: 10,
+                color: "#FFFFFF",
                 letterSpacing: 0.6,
                 textTransform: "uppercase",
               }}
+              maxFontSizeMultiplier={1.4}
             >
               {parada.nom_espai}
             </Text>
@@ -226,82 +261,101 @@ export default function ParadaScreen() {
 
       <View style={{ paddingHorizontal: 14, paddingTop: 8 }}>
         <Text
+          accessibilityRole="header"
           style={{
             fontFamily: FONTS.serif,
-            fontSize: 13,
+            fontSize: 18,
             fontWeight: "600",
             color: COLORS.text,
           }}
+          maxFontSizeMultiplier={1.5}
         >
           {parada.nom_espai}
         </Text>
       </View>
 
       {textos.length > 0 && (
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={{ paddingLeft: 14, marginTop: 8 }}
-          contentContainerStyle={{ gap: 6, paddingRight: 14 }}
-        >
-          {textos.map((texto, i) => {
-            const autora = texto.autora;
-            const initials = autora
-              ? `${autora.nom[0]}${autora.cognom[0]}`
-              : "??";
-            return (
-              <TouchableOpacity
-                key={texto.id}
-                onPress={() => { setTextSeleccionat(i); setTextExpandit(false); }}
-                style={{
-                  alignItems: "center",
-                  gap: 3,
-                  paddingBottom: 6,
-                  borderBottomWidth: i === textSeleccionat ? 2 : 0,
-                  borderBottomColor: COLORS.text,
-                  minWidth: 58,
-                }}
-              >
-                <View
+        <>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={{ paddingLeft: 14, marginTop: 8 }}
+            contentContainerStyle={{ gap: 6, paddingRight: 14 }}
+            accessibilityRole="radiogroup"
+            accessibilityLabel="Selecció d'autora"
+          >
+            {textos.map((texto, i) => {
+              const autora = texto.autora;
+              const initials = autora
+                ? `${autora.nom[0]}${autora.cognom[0]}`
+                : "??";
+              const selected = i === textSeleccionat;
+              return (
+                <TouchableOpacity
+                  key={texto.id}
+                  accessibilityRole="radio"
+                  accessibilityState={{ selected }}
+                  accessibilityLabel={`Autora: ${autora?.nom ?? "Desconeguda"} ${autora?.cognom ?? ""}`}
+                  onPress={() => {
+                    if (selected) {
+                      router.push(`/autora/${autora?.id}`);
+                    } else {
+                      setTextSeleccionat(i);
+                      setTextExpandit(false);
+                    }
+                  }}
                   style={{
-                    width: 30,
-                    height: 30,
-                    borderRadius: 15,
-                    backgroundColor: i === textSeleccionat ? COLORS.accent : COLORS.textSecondary,
-                    justifyContent: "center",
                     alignItems: "center",
+                    gap: 3,
+                    paddingBottom: 6,
+                    paddingHorizontal: 4,
+                    borderBottomWidth: selected ? 2 : 0,
+                    borderBottomColor: COLORS.text,
+                    minWidth: 64,
+                    minHeight: 64,
+                    justifyContent: "center",
                   }}
                 >
+                  <View
+                    style={{
+                      width: 40,
+                      height: 40,
+                      borderRadius: 20,
+                      backgroundColor: selected ? COLORS.accent : COLORS.textSecondary,
+                      justifyContent: "center",
+                      alignItems: "center",
+                    }}
+                  >
+                    <Text
+                      style={{
+                        fontFamily: FONTS.sans,
+                        fontSize: 12,
+                        fontWeight: "600",
+                        color: COLORS.bg,
+                      }}
+                      maxFontSizeMultiplier={1.3}
+                    >
+                      {initials}
+                    </Text>
+                  </View>
                   <Text
                     style={{
                       fontFamily: FONTS.sans,
-                      fontSize: 8,
-                      fontWeight: "500",
-                      color: COLORS.bg,
+                      fontSize: 9,
+                      color: selected ? COLORS.text : COLORS.textSecondary,
                     }}
+                    maxFontSizeMultiplier={1.3}
+                    numberOfLines={1}
                   >
-                    {initials}
+                    {autora?.nom.split(" ")[0] ?? "??"}. {autora?.cognom ?? "??"}
                   </Text>
-                </View>
-                <Text
-                  style={{
-                    fontFamily: FONTS.sans,
-                    fontSize: 8,
-                    color: i === textSeleccionat ? COLORS.text : COLORS.textSecondary,
-                  }}
-                >
-                  {autora?.nom.split(" ")[0] ?? "??"}. {autora?.cognom ?? "??"}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </ScrollView>
-      )}
-
-      {textos.length > 0 && (
-        <>
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
           <View style={{ paddingHorizontal: 14, paddingTop: 8 }}>
             <Text
+              accessibilityRole="header"
               style={{
                 fontFamily: FONTS.sans,
                 fontSize: 10,
@@ -309,11 +363,13 @@ export default function ParadaScreen() {
                 color: COLORS.textSecondary,
                 marginBottom: 4,
               }}
+              maxFontSizeMultiplier={1.4}
             >
               {textos[textSeleccionat].titol}
               {textos[textSeleccionat].obra_origen ? ` · ${textos[textSeleccionat].obra_origen}` : ""}
             </Text>
             <View
+              accessibilityRole="text"
               style={{
                 borderLeftWidth: 2,
                 borderLeftColor: COLORS.text,
@@ -324,28 +380,125 @@ export default function ParadaScreen() {
                 style={{
                   fontFamily: FONTS.serif,
                   fontStyle: "italic",
-                  fontSize: 11,
+                  fontSize: 12,
                   color: COLORS.text,
-                  lineHeight: 18,
+                  lineHeight: 20,
                   maxHeight: textExpandit ? undefined : 52,
                   overflow: textExpandit ? "visible" : "hidden",
                 }}
                 numberOfLines={textExpandit ? undefined : 3}
+                maxFontSizeMultiplier={1.5}
               >
                 {textos[textSeleccionat].contingut}
               </Text>
             </View>
           </View>
+          {textExpandit && (
+            <View
+              accessibilityRole="toolbar"
+              style={{
+                flexDirection: "row",
+                alignItems: "stretch",
+                paddingHorizontal: 14,
+                paddingTop: 8,
+                gap: 6,
+              }}
+            >
+              <TouchableOpacity
+                accessibilityRole="button"
+                accessibilityLabel={liked ? "Treure like" : "Donar like"}
+                accessibilityState={{ selected: liked }}
+                onPress={handleLike}
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 5,
+                  minHeight: 44,
+                  paddingHorizontal: 10,
+                  paddingVertical: 6,
+                  borderRadius: 8,
+                  backgroundColor: liked ? "#F5EDEA" : "transparent",
+                  borderWidth: 1,
+                  borderColor: liked ? COLORS.love : COLORS.border,
+                }}
+              >
+                <Text style={{ color: liked ? COLORS.love : COLORS.textSecondary, fontSize: 14 }}>
+                  {liked ? "♥" : "♡"}
+                </Text>
+                <Text
+                  style={{ fontFamily: FONTS.sans, fontSize: 11, color: liked ? COLORS.love : COLORS.text }}
+                  maxFontSizeMultiplier={1.4}
+                >
+                  {likesCount > 0 ? likesCount : "M'agrada"}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                accessibilityRole="button"
+                accessibilityLabel="Escoltar àudio"
+                style={{
+                  flex: 1,
+                  backgroundColor: COLORS.darkBg,
+                  paddingVertical: 12,
+                  borderRadius: 6,
+                  minHeight: 44,
+                  justifyContent: "center",
+                }}
+              >
+                <Text
+                  style={{
+                    fontFamily: FONTS.sans,
+                    fontSize: 10,
+                    fontWeight: "500",
+                    color: COLORS.bg,
+                    textAlign: "center",
+                  }}
+                  maxFontSizeMultiplier={1.4}
+                >
+                  ▶ Àudio
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                accessibilityRole="button"
+                accessibilityLabel="Veure vídeo"
+                style={{
+                  flex: 1,
+                  borderWidth: 1,
+                  borderColor: COLORS.text,
+                  paddingVertical: 12,
+                  borderRadius: 6,
+                  minHeight: 44,
+                  justifyContent: "center",
+                }}
+              >
+                <Text
+                  style={{
+                    fontFamily: FONTS.sans,
+                    fontSize: 10,
+                    fontWeight: "500",
+                    color: COLORS.text,
+                    textAlign: "center",
+                  }}
+                  maxFontSizeMultiplier={1.4}
+                >
+                  🎬 Vídeo
+                </Text>
+              </TouchableOpacity>
+            </View>
+          )}
           <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel={textExpandit ? "Mostrar menys text" : "Llegir tot el text"}
+            accessibilityState={{ expanded: textExpandit }}
             onPress={() => setTextExpandit(!textExpandit)}
-            style={{ paddingHorizontal: 14, paddingVertical: 3 }}
+            style={{ paddingHorizontal: 14, paddingVertical: 6, minHeight: 44, justifyContent: "center" }}
           >
             <Text
               style={{
                 fontFamily: FONTS.sans,
-                fontSize: 9,
-                color: COLORS.textSecondary,
+                fontSize: 10,
+                color: COLORS.accent,
               }}
+              maxFontSizeMultiplier={1.4}
             >
               {textExpandit ? "mostrar menys ↑" : "llegir tot el text ↓"}
             </Text>
@@ -353,193 +506,138 @@ export default function ParadaScreen() {
         </>
       )}
 
-      <View style={{ flexDirection: "row", gap: 6, paddingHorizontal: 14, paddingVertical: 6 }}>
-        <TouchableOpacity
-          style={{
-            flex: 1,
-            backgroundColor: COLORS.darkBg,
-            paddingVertical: 7,
-            borderRadius: 6,
-          }}
-        >
-          <Text
-            style={{
-              fontFamily: FONTS.sans,
-              fontSize: 9,
-              fontWeight: "500",
-              color: COLORS.bg,
-              textAlign: "center",
-            }}
-          >
-            ▶ Escoltar àudio
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={{
-            flex: 1,
-            borderWidth: 1,
-            borderColor: COLORS.text,
-            paddingVertical: 7,
-            borderRadius: 6,
-          }}
-        >
-          <Text
-            style={{
-              fontFamily: FONTS.sans,
-              fontSize: 9,
-              fontWeight: "500",
-              color: COLORS.text,
-              textAlign: "center",
-            }}
-          >
-            🎬 Veure vídeo
-          </Text>
-        </TouchableOpacity>
-      </View>
-
-      <View
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "space-between",
-          paddingHorizontal: 14,
-          paddingVertical: 5,
-          borderTopWidth: 1,
-          borderBottomWidth: 1,
-          borderColor: COLORS.border,
-        }}
-      >
-        <TouchableOpacity
-          onPress={handleLike}
-          style={{ flexDirection: "row", alignItems: "center", gap: 4 }}
-        >
-          <Text style={{ color: liked ? COLORS.love : COLORS.textSecondary, fontSize: 12 }}>
-            {liked ? "♥" : "♡"}
-          </Text>
-          <Text style={{ fontFamily: FONTS.sans, fontSize: 10, color: COLORS.text }}>
-            {likesCount}
-          </Text>
-        </TouchableOpacity>
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
-          <Text style={{ color: COLORS.textSecondary, fontSize: 10 }}>◎</Text>
-          <Text style={{ fontFamily: FONTS.sans, fontSize: 10, color: COLORS.text }}>
-            {comentaris.length}
-          </Text>
-        </View>
-        {textos.length > 0 && (() => {
-          const autora = textos[textSeleccionat].autora;
-          return autora ? (
-            <TouchableOpacity onPress={() => router.push(`/autora/${autora.id}`)}>
-              <Text
-                style={{
-                  fontFamily: FONTS.sans,
-                  fontSize: 10,
-                  color: COLORS.textSecondary,
-                  textDecorationLine: "underline",
-                }}
-              >
-                → fitxa autora
-              </Text>
-            </TouchableOpacity>
-          ) : null;
-        })()}
-      </View>
-
       <TouchableOpacity
+        accessibilityRole="button"
+        accessibilityLabel={visitant ? "Parada ja visitada" : "Marcar com a visitada"}
+        accessibilityState={{ disabled: visitLoading || visitant }}
         onPress={handleVisitar}
         disabled={visitLoading || visitant}
         style={{
           marginHorizontal: 14,
           marginVertical: 6,
-          borderWidth: 1,
-          borderColor: visitant ? COLORS.accent : "#b09070",
+          borderWidth: 1.5,
+          borderColor: visitant ? COLORS.accent : "#7a6654",
           borderStyle: visitant ? "solid" : "dashed",
           borderRadius: 6,
-          paddingVertical: 7,
+          paddingVertical: 12,
+          paddingHorizontal: 14,
           flexDirection: "row",
           alignItems: "center",
           justifyContent: "center",
-          gap: 5,
-          backgroundColor: visitant ? "#E1F5EE" : "transparent",
+          gap: 6,
+          backgroundColor: visitant ? "#EDEAF5" : "transparent",
+          minHeight: 48,
         }}
       >
         {visitLoading ? (
-          <ActivityIndicator size="small" color={COLORS.darkBg} />
+          <ActivityIndicator size="small" color={COLORS.accent} />
         ) : (
           <>
-            <View
-              style={{
-                width: 5,
-                height: 5,
-                borderRadius: 2.5,
-                backgroundColor: visitant ? COLORS.accent : COLORS.love,
-              }}
-            />
+            {visitant ? (
+              <Text
+                style={{
+                  fontFamily: FONTS.sans,
+                  fontSize: 14,
+                  fontWeight: "600",
+                  color: COLORS.accent,
+                }}
+                maxFontSizeMultiplier={1.3}
+              >
+                ✓
+              </Text>
+            ) : (
+              <View
+                style={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: 4,
+                  backgroundColor: COLORS.love,
+                }}
+              />
+            )}
             <Text
               style={{
                 fontFamily: FONTS.sans,
-                fontSize: 9,
-                color: visitant ? COLORS.accent : "#7a6654",
+                fontSize: 10,
+                fontWeight: "500",
+                color: visitant ? COLORS.accent : "#3a3028",
               }}
+              maxFontSizeMultiplier={1.4}
             >
-              {visitant ? "✓ Visitada" : "Marcar com a visitada"}
+              {visitant ? "Visitada" : "Marcar com a visitada"}
             </Text>
           </>
         )}
       </TouchableOpacity>
 
       {prevParada && (
-        <View style={{ flexDirection: "row", gap: 6, paddingHorizontal: 14, paddingVertical: 6 }}>
+        <View
+          accessibilityRole="toolbar"
+          style={{ flexDirection: "row", gap: 6, paddingHorizontal: 14, paddingVertical: 6 }}
+        >
           <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel={`Parada anterior: ${prevParada.nom_espai}`}
             onPress={() => router.push(`/parada/${prevParada.id}`)}
             style={{
               flex: 1,
               borderWidth: 1,
               borderColor: COLORS.border,
               borderRadius: 6,
-              paddingVertical: 5,
-              paddingHorizontal: 8,
+              paddingVertical: 10,
+              paddingHorizontal: 10,
+              minHeight: 44,
+              justifyContent: "center",
             }}
           >
             <Text
               style={{
                 fontFamily: FONTS.sans,
-                fontSize: 9,
-                color: "#5a5040",
+                fontSize: 10,
+                color: COLORS.textSecondary,
               }}
+              maxFontSizeMultiplier={1.4}
+              numberOfLines={1}
             >
               ← {prevParada.nom_espai}
             </Text>
           </TouchableOpacity>
           {nextParada && (
             <TouchableOpacity
+              accessibilityRole="button"
+              accessibilityLabel={`Següent parada: ${nextParada.nom_espai}`}
               onPress={() => router.push(`/parada/${nextParada.id}`)}
               style={{
                 flex: 1,
                 borderWidth: 1,
                 borderColor: COLORS.text,
                 borderRadius: 6,
-                paddingVertical: 5,
-                paddingHorizontal: 8,
+                paddingVertical: 10,
+                paddingHorizontal: 10,
+                minHeight: 44,
+                justifyContent: "center",
               }}
             >
               <Text
                 style={{
                   fontFamily: FONTS.sans,
-                  fontSize: 9,
+                  fontSize: 10,
                   color: COLORS.text,
                   textAlign: "right",
                 }}
+                maxFontSizeMultiplier={1.4}
+                numberOfLines={1}
               >
                 {nextParada.nom_espai} →
               </Text>
               <Text
                 style={{
                   fontFamily: FONTS.sans,
-                  fontSize: 8,
+                  fontSize: 9,
                   color: COLORS.textSecondary,
                   textAlign: "right",
                 }}
+                maxFontSizeMultiplier={1.3}
               >
                 Parada {nextParada.ordre}
               </Text>
@@ -557,51 +655,96 @@ export default function ParadaScreen() {
           marginTop: 6,
         }}
       >
-        <Text
+        <View
           style={{
-            fontFamily: FONTS.sans,
-            fontSize: 10,
-            fontWeight: "500",
-            color: COLORS.text,
-            marginBottom: 6,
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 8,
+            marginBottom: 8,
+            minHeight: 44,
           }}
         >
-          Comentaris
-        </Text>
+          <Text
+            accessibilityRole="header"
+            style={{
+              fontFamily: FONTS.sans,
+              fontSize: 12,
+              fontWeight: "500",
+              color: COLORS.text,
+            }}
+            maxFontSizeMultiplier={1.5}
+          >
+            Comentaris
+          </Text>
+          <View
+            accessibilityRole="text"
+            accessibilityLabel={`${comentaris.length} comentaris`}
+            style={{
+              backgroundColor: "#E8E2F0",
+              borderRadius: 10,
+              paddingHorizontal: 8,
+              paddingVertical: 2,
+            }}
+          >
+            <Text
+              style={{
+                fontFamily: FONTS.sans,
+                fontSize: 10,
+                color: "#6B5B8A",
+                fontWeight: "600",
+              }}
+              maxFontSizeMultiplier={1.3}
+            >
+              {comentaris.length}
+            </Text>
+          </View>
+        </View>
 
         <View style={{ flexDirection: "row", gap: 4, marginBottom: 8 }}>
           <TextInput
+            accessibilityRole="text"
+            accessibilityLabel="Escriu un comentari"
             placeholder="Afegeix un comentari..."
             placeholderTextColor={COLORS.textSecondary}
             value={nouComentari}
             onChangeText={setNouComentari}
             multiline
+            blurOnSubmit
             style={{
               flex: 1,
-              borderWidth: 1,
+              borderWidth: 1.5,
               borderColor: COLORS.border,
               borderRadius: 6,
-              paddingHorizontal: 8,
-              paddingVertical: 6,
+              paddingHorizontal: 10,
+              paddingVertical: 10,
               fontFamily: FONTS.sans,
-              fontSize: 10,
+              fontSize: 11,
               color: COLORS.text,
               backgroundColor: "#f5f2ec",
-              maxHeight: 60,
+              maxHeight: 80,
+              minHeight: 44,
             }}
           />
           <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel="Enviar comentari"
+            accessibilityState={{ disabled: enviantComentari || !nouComentari.trim() }}
             onPress={handleAfegirComentari}
             disabled={enviantComentari || !nouComentari.trim()}
             style={{
               backgroundColor: COLORS.darkBg,
               borderRadius: 6,
-              paddingHorizontal: 10,
+              paddingHorizontal: 14,
               justifyContent: "center",
               opacity: enviantComentari || !nouComentari.trim() ? 0.5 : 1,
+              minWidth: 44,
+              minHeight: 44,
             }}
           >
-            <Text style={{ fontFamily: FONTS.sans, fontSize: 10, color: COLORS.bg }}>
+            <Text
+              style={{ fontFamily: FONTS.sans, fontSize: 11, color: COLORS.bg }}
+              maxFontSizeMultiplier={1.3}
+            >
               Enviar
             </Text>
           </TouchableOpacity>
@@ -609,12 +752,14 @@ export default function ParadaScreen() {
 
         {comentaris.length === 0 ? (
           <Text
+            accessibilityRole="text"
             style={{
               fontFamily: FONTS.sans,
-              fontSize: 9,
+              fontSize: 10,
               color: COLORS.textSecondary,
               fontStyle: "italic",
             }}
+            maxFontSizeMultiplier={1.4}
           >
             No hi ha comentaris. Sigues el primer!
           </Text>
@@ -622,10 +767,12 @@ export default function ParadaScreen() {
           comentaris.map((c) => (
             <View
               key={c.id}
+              accessibilityRole="text"
               style={{
-                paddingVertical: 6,
+                paddingVertical: 8,
                 borderBottomWidth: 1,
-                borderBottomColor: "#f0ece4",
+                borderBottomColor: "#e0dcd0",
+                minHeight: 44,
               }}
             >
               <Text
@@ -635,6 +782,7 @@ export default function ParadaScreen() {
                   color: COLORS.textSecondary,
                   marginBottom: 2,
                 }}
+                maxFontSizeMultiplier={1.3}
               >
                 {new Date(c.data_creacio).toLocaleDateString("ca-ES", {
                   day: "numeric",
@@ -646,10 +794,11 @@ export default function ParadaScreen() {
               <Text
                 style={{
                   fontFamily: FONTS.sans,
-                  fontSize: 10,
+                  fontSize: 11,
                   color: COLORS.text,
-                  lineHeight: 16,
+                  lineHeight: 17,
                 }}
+                maxFontSizeMultiplier={1.5}
               >
                 {c.contingut}
               </Text>
