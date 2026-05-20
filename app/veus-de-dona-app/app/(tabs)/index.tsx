@@ -1,23 +1,35 @@
-import { useEffect, useState } from "react";
+import { useState, useCallback } from "react";
 import MapView, { Marker } from "react-native-maps";
 import { View, Text } from "react-native";
-import { useRouter } from "expo-router";
+import { useRouter, useFocusEffect } from "expo-router";
 import { GPS_COORDS } from "../../data/parades";
 import { getParades } from "../../services/parades";
+import { getMevesVisites } from "../../services/visites";
+import { useAuth } from "../../contexts/AuthContext";
 import { COLORS, FONTS } from "../../constants";
 import { Parada } from "../../types";
 
 export default function MapaScreen() {
   const router = useRouter();
+  const { isAuthenticated } = useAuth();
   const [parades, setParades] = useState<Parada[]>([]);
+  const [visitedIds, setVisitedIds] = useState<Set<string>>(new Set());
 
-  useEffect(() => {
-    getParades()
-      .then(setParades)
-      .catch(() => setParades([]));
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      getParades()
+        .then(setParades)
+        .catch(() => setParades([]));
+      if (isAuthenticated) {
+        getMevesVisites()
+          .then((visites) => setVisitedIds(new Set(visites.map((v) => v.parada_id))))
+          .catch(() => {});
+      }
+    }, [isAuthenticated])
+  );
 
   const actives = parades.filter((p) => p.activa);
+  const visitedCount = parades.filter((p) => visitedIds.has(p.id)).length;
 
   return (
     <View style={{ flex: 1, backgroundColor: COLORS.bg }}>
@@ -75,6 +87,7 @@ export default function MapaScreen() {
         {actives.map((parada) => {
           const coords = GPS_COORDS[parada.coordenades];
           if (!coords) return null;
+          const visited = visitedIds.has(parada.id);
 
           return (
             <Marker
@@ -88,7 +101,7 @@ export default function MapaScreen() {
                   width: 22,
                   height: 22,
                   borderRadius: 11,
-                  backgroundColor: COLORS.darkBg,
+                  backgroundColor: visited ? COLORS.accent : COLORS.darkBg,
                   justifyContent: "center",
                   alignItems: "center",
                   borderWidth: 2,
@@ -143,7 +156,7 @@ export default function MapaScreen() {
               color: COLORS.text,
             }}
           >
-            0 / 10
+            {visitedCount} / 10
           </Text>
         </View>
         <View
@@ -157,9 +170,9 @@ export default function MapaScreen() {
           <View
             style={{
               height: "100%",
-              backgroundColor: COLORS.text,
+              backgroundColor: COLORS.accent,
               borderRadius: 2,
-              width: "0%",
+              width: `${(visitedCount / 10) * 100}%`,
             }}
           />
         </View>

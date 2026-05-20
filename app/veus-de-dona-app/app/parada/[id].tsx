@@ -1,24 +1,127 @@
 import { useEffect, useState } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { View, Text, ScrollView, TouchableOpacity } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, TextInput, Alert, ActivityIndicator } from "react-native";
+import * as Location from "expo-location";
 import { COLORS, FONTS } from "../../constants";
 import { getParada, getParades } from "../../services/parades";
 import { getTextosByParada } from "../../services/textos";
-import { Parada, TextDto } from "../../types";
+import { checkLike, addLike, removeLike } from "../../services/likes";
+import { getMevesVisites, registrarVisita } from "../../services/visites";
+import { getComentaris, afegirComentari } from "../../services/comentaris";
+import { useAuth } from "../../contexts/AuthContext";
+import { Parada, TextDto, Comentari } from "../../types";
 
 export default function ParadaScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
+  const { isAuthenticated } = useAuth();
   const [parada, setParada] = useState<Parada | null>(null);
   const [textos, setTextos] = useState<TextDto[]>([]);
   const [totes, setTotes] = useState<Parada[]>([]);
+  const [liked, setLiked] = useState(false);
+  const [likesCount, setLikesCount] = useState(0);
+  const [visitant, setVisitant] = useState(false);
+  const [comentaris, setComentaris] = useState<Comentari[]>([]);
+  const [nouComentari, setNouComentari] = useState("");
+  const [enviantComentari, setEnviantComentari] = useState(false);
+  const [visitLoading, setVisitLoading] = useState(false);
 
   useEffect(() => {
     const pid = id as string;
     getParada(pid).then(setParada).catch(() => setParada(null));
     getTextosByParada(pid).then(setTextos).catch(() => setTextos([]));
     getParades().then(setTotes).catch(() => setTotes([]));
+    getComentaris(pid).then(setComentaris).catch(() => setComentaris([]));
   }, [id]);
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    const pid = id as string;
+    getMevesVisites().then((visites) => {
+      if (visites.some((v) => v.parada_id === pid)) setVisitant(true);
+    }).catch(() => {});
+  }, [id, isAuthenticated]);
+
+  useEffect(() => {
+    if (textos.length > 0 && isAuthenticated) {
+      checkLike(textos[0].id).then((res) => {
+        setLiked(res.liked);
+        setLikesCount(res.count);
+      }).catch(() => {});
+    }
+  }, [textos, isAuthenticated]);
+
+  const handleLike = async () => {
+    if (!isAuthenticated) {
+      Alert.alert("Inicia sessió", "Has d'iniciar sessió per donar likes");
+      return;
+    }
+    if (textos.length === 0) return;
+    const textId = textos[0].id;
+    try {
+      if (liked) {
+        await removeLike(textId);
+        setLiked(false);
+        setLikesCount((c) => Math.max(0, c - 1));
+      } else {
+        await addLike(textId);
+        setLiked(true);
+        setLikesCount((c) => c + 1);
+      }
+    } catch {
+      Alert.alert("Error", "No s'ha pogut processar el like");
+    }
+  };
+
+  const handleVisitar = async () => {
+    if (!isAuthenticated) {
+      Alert.alert("Inicia sessió", "Has d'iniciar sessió per marcar visitada");
+      return;
+    }
+    setVisitLoading(true);
+    try {
+      let lat: number | undefined;
+      let lng: number | undefined;
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status === "granted") {
+        const last = await Location.getLastKnownPositionAsync();
+        if (last) {
+          lat = last.coords.latitude;
+          lng = last.coords.longitude;
+        } else {
+          const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+          lat = loc.coords.latitude;
+          lng = loc.coords.longitude;
+        }
+      }
+      await registrarVisita(id as string, lat, lng);
+      setVisitant(true);
+      Alert.alert("Fet!", "Parada marcada com a visitada");
+    } catch (err: any) {
+      const msg = err?.response?.data?.detail || "Error en registrar la visita";
+      Alert.alert("Error", msg);
+    } finally {
+      setVisitLoading(false);
+    }
+  };
+
+  const handleAfegirComentari = async () => {
+    if (!nouComentari.trim()) return;
+    if (!isAuthenticated) {
+      Alert.alert("Inicia sessió", "Has d'iniciar sessió per comentar");
+      return;
+    }
+    setEnviantComentari(true);
+    try {
+      const comentari = await afegirComentari(id as string, nouComentari.trim());
+      setComentaris((prev) => [comentari, ...prev]);
+      setNouComentari("");
+    } catch {
+      Alert.alert("Error", "No s'ha pogut afegir el comentari");
+    } finally {
+      setEnviantComentari(false);
+    }
+  };
 
   if (!parada) {
     return (
@@ -119,26 +222,6 @@ export default function ParadaScreen() {
         >
           {parada.nom_espai}
         </Text>
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            gap: 3,
-            marginTop: 2,
-          }}
-        >
-          <View
-            style={{
-              width: 5,
-              height: 5,
-              borderRadius: 2.5,
-              backgroundColor: COLORS.love,
-            }}
-          />
-          <Text style={{ fontFamily: FONTS.sans, fontSize: 10, color: COLORS.textSecondary }}>
-            GPS actiu · 38m
-          </Text>
-        </View>
       </View>
 
       {textos.length > 0 && (
@@ -309,16 +392,21 @@ export default function ParadaScreen() {
           borderColor: COLORS.border,
         }}
       >
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
-          <Text style={{ color: COLORS.love, fontSize: 10 }}>♥</Text>
-          <Text style={{ fontFamily: FONTS.sans, fontSize: 10, color: COLORS.text }}>
-            0
+        <TouchableOpacity
+          onPress={handleLike}
+          style={{ flexDirection: "row", alignItems: "center", gap: 4 }}
+        >
+          <Text style={{ color: liked ? COLORS.love : COLORS.textSecondary, fontSize: 12 }}>
+            {liked ? "♥" : "♡"}
           </Text>
-        </View>
+          <Text style={{ fontFamily: FONTS.sans, fontSize: 10, color: COLORS.text }}>
+            {likesCount}
+          </Text>
+        </TouchableOpacity>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
           <Text style={{ color: COLORS.textSecondary, fontSize: 10 }}>◎</Text>
           <Text style={{ fontFamily: FONTS.sans, fontSize: 10, color: COLORS.text }}>
-            0
+            {comentaris.length}
           </Text>
         </View>
         {textos.length > 0 && (() => {
@@ -341,48 +429,50 @@ export default function ParadaScreen() {
       </View>
 
       <TouchableOpacity
+        onPress={handleVisitar}
+        disabled={visitLoading || visitant}
         style={{
           marginHorizontal: 14,
           marginVertical: 6,
           borderWidth: 1,
-          borderColor: "#b09070",
-          borderStyle: "dashed",
+          borderColor: visitant ? COLORS.accent : "#b09070",
+          borderStyle: visitant ? "solid" : "dashed",
           borderRadius: 6,
           paddingVertical: 7,
           flexDirection: "row",
           alignItems: "center",
           justifyContent: "center",
           gap: 5,
+          backgroundColor: visitant ? "#E1F5EE" : "transparent",
         }}
       >
-        <View
-          style={{
-            width: 5,
-            height: 5,
-            borderRadius: 2.5,
-            backgroundColor: COLORS.love,
-          }}
-        />
-        <Text
-          style={{
-            fontFamily: FONTS.sans,
-            fontSize: 9,
-            color: "#7a6654",
-          }}
-        >
-          Marcar com a visitada
-        </Text>
+        {visitLoading ? (
+          <ActivityIndicator size="small" color={COLORS.darkBg} />
+        ) : (
+          <>
+            <View
+              style={{
+                width: 5,
+                height: 5,
+                borderRadius: 2.5,
+                backgroundColor: visitant ? COLORS.accent : COLORS.love,
+              }}
+            />
+            <Text
+              style={{
+                fontFamily: FONTS.sans,
+                fontSize: 9,
+                color: visitant ? COLORS.accent : "#7a6654",
+              }}
+            >
+              {visitant ? "✓ Visitada" : "Marcar com a visitada"}
+            </Text>
+          </>
+        )}
       </TouchableOpacity>
 
-      <View
-        style={{
-          flexDirection: "row",
-          gap: 6,
-          paddingHorizontal: 14,
-          paddingVertical: 6,
-        }}
-      >
-        {prevParada && (
+      {prevParada && (
+        <View style={{ flexDirection: "row", gap: 6, paddingHorizontal: 14, paddingVertical: 6 }}>
           <TouchableOpacity
             onPress={() => router.push(`/parada/${prevParada.id}`)}
             style={{
@@ -404,40 +494,150 @@ export default function ParadaScreen() {
               ← {prevParada.nom_espai}
             </Text>
           </TouchableOpacity>
-        )}
-        {nextParada && (
-          <TouchableOpacity
-            onPress={() => router.push(`/parada/${nextParada.id}`)}
+          {nextParada && (
+            <TouchableOpacity
+              onPress={() => router.push(`/parada/${nextParada.id}`)}
+              style={{
+                flex: 1,
+                borderWidth: 1,
+                borderColor: COLORS.text,
+                borderRadius: 6,
+                paddingVertical: 5,
+                paddingHorizontal: 8,
+              }}
+            >
+              <Text
+                style={{
+                  fontFamily: FONTS.sans,
+                  fontSize: 9,
+                  color: COLORS.text,
+                  textAlign: "right",
+                }}
+              >
+                {nextParada.nom_espai} →
+              </Text>
+              <Text
+                style={{
+                  fontFamily: FONTS.sans,
+                  fontSize: 8,
+                  color: COLORS.textSecondary,
+                  textAlign: "right",
+                }}
+              >
+                Parada {nextParada.ordre}
+              </Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      )}
+
+      <View
+        style={{
+          paddingHorizontal: 14,
+          paddingVertical: 8,
+          borderTopWidth: 1,
+          borderTopColor: COLORS.border,
+          marginTop: 6,
+        }}
+      >
+        <Text
+          style={{
+            fontFamily: FONTS.sans,
+            fontSize: 10,
+            fontWeight: "500",
+            color: COLORS.text,
+            marginBottom: 6,
+          }}
+        >
+          Comentaris
+        </Text>
+
+        <View style={{ flexDirection: "row", gap: 4, marginBottom: 8 }}>
+          <TextInput
+            placeholder="Afegeix un comentari..."
+            placeholderTextColor={COLORS.textSecondary}
+            value={nouComentari}
+            onChangeText={setNouComentari}
+            multiline
             style={{
               flex: 1,
               borderWidth: 1,
-              borderColor: COLORS.text,
+              borderColor: COLORS.border,
               borderRadius: 6,
-              paddingVertical: 5,
               paddingHorizontal: 8,
+              paddingVertical: 6,
+              fontFamily: FONTS.sans,
+              fontSize: 10,
+              color: COLORS.text,
+              backgroundColor: "#f5f2ec",
+              maxHeight: 60,
+            }}
+          />
+          <TouchableOpacity
+            onPress={handleAfegirComentari}
+            disabled={enviantComentari || !nouComentari.trim()}
+            style={{
+              backgroundColor: COLORS.darkBg,
+              borderRadius: 6,
+              paddingHorizontal: 10,
+              justifyContent: "center",
+              opacity: enviantComentari || !nouComentari.trim() ? 0.5 : 1,
             }}
           >
-            <Text
-              style={{
-                fontFamily: FONTS.sans,
-                fontSize: 9,
-                color: COLORS.text,
-                textAlign: "right",
-              }}
-            >
-              {nextParada.nom_espai} →
-            </Text>
-            <Text
-              style={{
-                fontFamily: FONTS.sans,
-                fontSize: 8,
-                color: COLORS.textSecondary,
-                textAlign: "right",
-              }}
-            >
-              Parada {nextParada.ordre}
+            <Text style={{ fontFamily: FONTS.sans, fontSize: 10, color: COLORS.bg }}>
+              Enviar
             </Text>
           </TouchableOpacity>
+        </View>
+
+        {comentaris.length === 0 ? (
+          <Text
+            style={{
+              fontFamily: FONTS.sans,
+              fontSize: 9,
+              color: COLORS.textSecondary,
+              fontStyle: "italic",
+            }}
+          >
+            No hi ha comentaris. Sigues el primer!
+          </Text>
+        ) : (
+          comentaris.map((c) => (
+            <View
+              key={c.id}
+              style={{
+                paddingVertical: 6,
+                borderBottomWidth: 1,
+                borderBottomColor: "#f0ece4",
+              }}
+            >
+              <Text
+                style={{
+                  fontFamily: FONTS.sans,
+                  fontSize: 9,
+                  color: COLORS.textSecondary,
+                  marginBottom: 2,
+                }}
+              >
+                {new Date(c.data_creacio).toLocaleDateString("ca-ES", {
+                  day: "numeric",
+                  month: "short",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </Text>
+              <Text
+                style={{
+                  fontFamily: FONTS.sans,
+                  fontSize: 10,
+                  color: COLORS.text,
+                  lineHeight: 16,
+                }}
+              >
+                {c.contingut}
+              </Text>
+            </View>
+          ))
         )}
       </View>
     </ScrollView>

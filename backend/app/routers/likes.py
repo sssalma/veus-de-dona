@@ -38,3 +38,14 @@ def treure_like(
 def get_likes_count(text_id: str, db: Session = Depends(get_db)):
     """Returns the number of likes for a text"""
     return {"text_id": text_id, "likes": likes_service.get_likes_by_text(db, text_id)}
+
+@router.get("/{text_id}/check")
+def check_like(
+    text_id: str,
+    db: Session = Depends(get_db),
+    current_user: Usuari = Depends(get_current_user)
+):
+    """Returns whether the current user has liked a text"""
+    liked = likes_service.has_liked(db, current_user, text_id)
+    count = likes_service.get_likes_by_text(db, text_id)
+    return {"liked": liked, "count": count}

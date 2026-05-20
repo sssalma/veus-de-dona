@@ -30,7 +30,33 @@ export interface Usuari {
   id: string;
   email: string;
   nom: string;
+  cognom: string;
   rol: string;
+  idioma: string;
+  data_registre: string;
+  actiu: boolean;
+  procedencia: string | null;
+  es_alumne: boolean | null;
+}
+
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+export interface RegisterRequest {
+  email: string;
+  nom: string;
+  cognom: string;
+  password: string;
+  idioma?: string;
+  procedencia?: string;
+  es_alumne?: boolean;
+}
+
+export interface AuthResponse {
+  access_token: string;
+  token_type: string;
 }
 
 export interface Recurs {
@@ -38,4 +64,21 @@ export interface Recurs {
   tipus: "AUDIO" | "VIDEO";
   minio_key: string;
   text_id: string;
+}
+
+export interface Visita {
+  id: string;
+  timestamp: string;
+  mode: "REMOT" | "GUIAT" | "LLIURE";
+  parada_id: string;
+  usuari_id: string;
+}
+
+export interface Comentari {
+  id: string;
+  contingut: string;
+  data_creacio: string;
+  parada_id: string;
+  usuari_id: string;
+  usuari_nom?: string;
 }

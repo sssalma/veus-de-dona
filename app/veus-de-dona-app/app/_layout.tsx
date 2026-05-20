@@ -1,12 +1,13 @@
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { COLORS } from "../constants";
+import { AuthProvider } from "../contexts/AuthContext";
 
 export default function RootLayout() {
   return (
-    <>
+    <AuthProvider>
       <StatusBar style="dark" />
       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: COLORS.bg } }} />
-    </>
+    </AuthProvider>
   );
 }

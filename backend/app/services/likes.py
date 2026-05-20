@@ -42,3 +42,10 @@ def treure_like(db: Session, usuari: Usuari, text_id: str) -> bool:
 def get_likes_by_text(db: Session, text_id: str) -> int:
     """Returns the number of likes for a text"""
     return db.query(Like).filter(Like.text_id == text_id).count()
+
+def has_liked(db: Session, usuari: Usuari, text_id: str) -> bool:
+    """Returns True if the user has already liked the text"""
+    return db.query(Like).filter(
+        Like.usuari_id == usuari.id,
+        Like.text_id == text_id
+    ).first() is not None

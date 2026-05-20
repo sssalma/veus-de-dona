@@ -1,9 +1,38 @@
-import { View, Text, ScrollView, TouchableOpacity } from "react-native";
-import { useRouter } from "expo-router";
+import { useState, useCallback } from "react";
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator } from "react-native";
+import { useRouter, useFocusEffect } from "expo-router";
 import { COLORS, FONTS } from "../../constants";
+import { useAuth } from "../../contexts/AuthContext";
+import { getMevesVisites } from "../../services/visites";
+import { getParades } from "../../services/parades";
 
 export default function PerfilScreen() {
   const router = useRouter();
+  const { user, isAuthenticated, isLoading, logout } = useAuth();
+  const [visitedOrdres, setVisitedOrdres] = useState<Set<number>>(new Set());
+  const [visitesCount, setVisitesCount] = useState(0);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (!isAuthenticated) return;
+      Promise.all([getMevesVisites(), getParades()]).then(([visites, parades]) => {
+        const paradaMap = new Map(parades.map((p) => [p.id, p.ordre]));
+        const ordres = new Set(visites.map((v) => paradaMap.get(v.parada_id)).filter(Boolean) as number[]);
+        setVisitedOrdres(ordres);
+        setVisitesCount(ordres.size);
+      }).catch(() => {});
+    }, [isAuthenticated])
+  );
+
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: COLORS.bg }}>
+        <ActivityIndicator size="small" color={COLORS.darkBg} />
+      </View>
+    );
+  }
+
+  const initials = user ? `${user.nom[0]}${user.cognom[0]}`.toUpperCase() : "?";
 
   return (
     <View style={{ flex: 1, backgroundColor: COLORS.bg }}>
@@ -56,14 +85,14 @@ export default function PerfilScreen() {
                 color: COLORS.bg,
               }}
             >
-              A
+              {initials}
             </Text>
           </View>
           <View>
             <Text
               style={{ fontFamily: FONTS.sans, fontSize: 11, fontWeight: "500", color: COLORS.text }}
             >
-              Anna Garcia
+              {user ? `${user.nom} ${user.cognom}` : "Convidat"}
             </Text>
             <Text
               style={{
@@ -73,28 +102,31 @@ export default function PerfilScreen() {
                 marginTop: 2,
               }}
             >
-              anna@exemple.cat
+              {user?.email ?? "Sense sessió"}
             </Text>
-            <View
-              style={{
-                marginTop: 4,
-                paddingHorizontal: 7,
-                paddingVertical: 2,
-                backgroundColor: "#E1F5EE",
-                borderRadius: 10,
-                alignSelf: "flex-start",
-              }}
-            >
-              <Text
-                style={{
-                  fontFamily: FONTS.sans,
-                  fontSize: 9,
-                  color: "#085041",
-                }}
-              >
-                Visitant · Barcelona
-              </Text>
-            </View>
+            {user && (
+                <View
+                  style={{
+                    marginTop: 4,
+                    paddingHorizontal: 7,
+                    paddingVertical: 2,
+                    backgroundColor: "#E8E2F0",
+                    borderRadius: 10,
+                    alignSelf: "flex-start",
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontFamily: FONTS.sans,
+                      fontSize: 9,
+                      color: "#6B5B8A",
+                    }}
+                  >
+                  {user.rol === "VISITANT" ? "Visitant" : user.rol}
+                  {user.procedencia ? ` · ${user.procedencia}` : ""}
+                </Text>
+              </View>
+            )}
           </View>
         </View>
 
@@ -130,43 +162,45 @@ export default function PerfilScreen() {
                 color: COLORS.text,
               }}
             >
-              0 / 10 parades
+              {visitesCount} / 10 parades
             </Text>
           </View>
           <View style={{ flexDirection: "row", gap: 4, marginTop: 6 }}>
-            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
-              <View
-                key={n}
-                style={{
-                  width: 22,
-                  height: 22,
-                  borderRadius: 11,
-                  backgroundColor: COLORS.border,
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
-              >
-                <Text
+            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => {
+              const visited = visitedOrdres.has(n);
+              return (
+                <View
+                  key={n}
                   style={{
-                    fontFamily: FONTS.sans,
-                    fontSize: 8,
-                    fontWeight: "500",
-                    color: COLORS.textSecondary,
+                    width: 22,
+                    height: 22,
+                    borderRadius: 11,
+                    backgroundColor: visited ? COLORS.accent : COLORS.border,
+                    justifyContent: "center",
+                    alignItems: "center",
                   }}
                 >
-                  {n}
-                </Text>
-              </View>
-            ))}
+                  <Text
+                    style={{
+                      fontFamily: FONTS.sans,
+                      fontSize: 8,
+                      fontWeight: "500",
+                      color: visited ? COLORS.bg : COLORS.textSecondary,
+                    }}
+                  >
+                    {n}
+                  </Text>
+                </View>
+              );
+            })}
           </View>
         </View>
 
         <View style={{ paddingHorizontal: 14 }}>
           {[
-            { label: "Idioma", value: "CA" },
-            { label: "Procedència", value: "Barcelona" },
-            { label: "Grup escolar", value: "No" },
-            { label: "Canviar contrasenya", chevron: true },
+            { label: "Idioma", value: (user?.idioma ?? "CA").toUpperCase() },
+            { label: "Procedència", value: user?.procedencia ?? "—" },
+            { label: "Grup escolar", value: user?.es_alumne ? "Sí" : "No" },
           ].map((item, i) => (
             <View
               key={i}
@@ -200,26 +234,40 @@ export default function PerfilScreen() {
                     {item.value}
                   </Text>
                 )}
-                {item.chevron && (
-                  <Text style={{ fontSize: 10, color: COLORS.textSecondary }}>›</Text>
-                )}
               </View>
             </View>
           ))}
-          <TouchableOpacity
-            onPress={() => router.push("/login")}
-            style={{ paddingVertical: 8 }}
-          >
-            <Text
-              style={{
-                fontFamily: FONTS.sans,
-                fontSize: 11,
-                color: COLORS.love,
-              }}
+          {isAuthenticated ? (
+            <TouchableOpacity
+              onPress={async () => { await logout(); router.replace("/login"); }}
+              style={{ paddingVertical: 8 }}
             >
-              Tancar sessió
-            </Text>
-          </TouchableOpacity>
+              <Text
+                style={{
+                  fontFamily: FONTS.sans,
+                  fontSize: 11,
+                  color: COLORS.love,
+                }}
+              >
+                Tancar sessió
+              </Text>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity
+              onPress={() => router.push("/login")}
+              style={{ paddingVertical: 8 }}
+            >
+              <Text
+                style={{
+                  fontFamily: FONTS.sans,
+                  fontSize: 11,
+                  color: COLORS.accent,
+                }}
+              >
+                Iniciar sessió →
+              </Text>
+            </TouchableOpacity>
+          )}
         </View>
       </ScrollView>
     </View>

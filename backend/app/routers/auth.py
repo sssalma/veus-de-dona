@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.schemas.usuari import UsuariCreate, UsuariResponse, UsuariLogin, Token
+from app.models.usuari import Usuari
 from app.services import auth as auth_service
 
 router = APIRouter(
@@ -31,3 +32,8 @@ def login(credentials: UsuariLogin, db: Session = Depends(get_db)):
             headers={"WWW-Authenticate": "Bearer"}
         )
     return {"access_token": token, "token_type": "bearer"}
+
+@router.get("/me", response_model=UsuariResponse)
+def get_me(current_user: Usuari = Depends(auth_service.get_current_user)):
+    """Returns the authenticated user's data"""
+    return current_user

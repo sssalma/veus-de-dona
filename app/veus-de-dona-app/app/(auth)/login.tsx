@@ -1,9 +1,32 @@
-import { View, Text, TextInput, TouchableOpacity } from "react-native";
+import { useState } from "react";
+import { View, Text, TextInput, TouchableOpacity, Alert } from "react-native";
 import { useRouter } from "expo-router";
 import { COLORS, FONTS } from "../../constants";
+import { useAuth } from "../../contexts/AuthContext";
 
 export default function LoginScreen() {
   const router = useRouter();
+  const { login } = useAuth();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleLogin = async () => {
+    if (!email || !password) {
+      Alert.alert("Error", "Omple tots els camps");
+      return;
+    }
+    setLoading(true);
+    try {
+      await login({ email, password });
+      router.replace("/(tabs)");
+    } catch (err: any) {
+      const msg = err?.response?.data?.detail || "Error en iniciar sessió";
+      Alert.alert("Error", msg);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <View
@@ -42,6 +65,10 @@ export default function LoginScreen() {
         <TextInput
           placeholder="nom@exemple.cat"
           placeholderTextColor={COLORS.textSecondary}
+          value={email}
+          onChangeText={setEmail}
+          autoCapitalize="none"
+          keyboardType="email-address"
           style={{
             borderWidth: 1,
             borderColor: COLORS.border,
@@ -72,6 +99,8 @@ export default function LoginScreen() {
           secureTextEntry
           placeholder="••••••••"
           placeholderTextColor={COLORS.textSecondary}
+          value={password}
+          onChangeText={setPassword}
           style={{
             borderWidth: 1,
             borderColor: COLORS.border,
@@ -87,11 +116,14 @@ export default function LoginScreen() {
       </View>
 
       <TouchableOpacity
+        onPress={handleLogin}
+        disabled={loading}
         style={{
           backgroundColor: COLORS.darkBg,
           paddingVertical: 11,
           borderRadius: 8,
           marginBottom: 14,
+          opacity: loading ? 0.6 : 1,
         }}
       >
         <Text
@@ -103,7 +135,7 @@ export default function LoginScreen() {
             textAlign: "center",
           }}
         >
-          Iniciar sessió
+          {loading ? "Entrant..." : "Iniciar sessió"}
         </Text>
       </TouchableOpacity>
 
