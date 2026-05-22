@@ -6,6 +6,7 @@ import {
   Platform, Linking,
 } from "react-native";
 import * as Location from "expo-location";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { COLORS, FONTS } from "../../constants";
 import { getParada, getParades, getParadaFoto } from "../../services/parades";
 import { getTextosByParada } from "../../services/textos";
@@ -20,6 +21,7 @@ const ACCESSIBLE_FONT = Platform.select({ ios: "DMSans", android: "DMSans" }) ??
 export default function ParadaScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { isAuthenticated } = useAuth();
   const [parada, setParada] = useState<Parada | null>(null);
   const [textos, setTextos] = useState<TextDto[]>([]);
@@ -171,7 +173,8 @@ export default function ParadaScreen() {
           alignItems: "center",
           justifyContent: "space-between",
           paddingHorizontal: 14,
-          paddingVertical: 10,
+          paddingTop: insets.top + 6,
+          paddingBottom: 10,
           borderBottomWidth: 1,
           borderBottomColor: COLORS.border,
           minHeight: 44,

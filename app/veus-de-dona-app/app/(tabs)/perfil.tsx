@@ -1,6 +1,7 @@
 import { useState, useCallback } from "react";
 import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator } from "react-native";
 import { useRouter, useFocusEffect } from "expo-router";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { COLORS, FONTS } from "../../constants";
 import { useAuth } from "../../contexts/AuthContext";
 import { getMevesVisites } from "../../services/visites";
@@ -32,6 +33,7 @@ export default function PerfilScreen() {
     );
   }
 
+  const insets = useSafeAreaInsets();
   const initials = user ? `${user.nom[0]}${user.cognom[0]}`.toUpperCase() : "?";
 
   return (
@@ -39,7 +41,8 @@ export default function PerfilScreen() {
       <View
         style={{
           paddingHorizontal: 14,
-          paddingVertical: 10,
+          paddingTop: insets.top + 6,
+          paddingBottom: 10,
           borderBottomWidth: 1,
           borderBottomColor: COLORS.border,
         }}
