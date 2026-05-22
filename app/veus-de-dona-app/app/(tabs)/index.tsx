@@ -1,7 +1,8 @@
 import { useState, useCallback } from "react";
-import MapView, { Marker } from "react-native-maps";
-import { View, Text } from "react-native";
+import MapView, { Marker, Polyline, Callout } from "react-native-maps";
+import { View, Text, TouchableOpacity, Platform } from "react-native";
 import { useRouter, useFocusEffect } from "expo-router";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { GPS_COORDS } from "../../data/parades";
 import { getParades } from "../../services/parades";
 import { getMevesVisites } from "../../services/visites";
@@ -11,9 +12,11 @@ import { Parada } from "../../types";
 
 export default function MapaScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { isAuthenticated } = useAuth();
   const [parades, setParades] = useState<Parada[]>([]);
   const [visitedIds, setVisitedIds] = useState<Set<string>>(new Set());
+  const [is3D, setIs3D] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -31,6 +34,10 @@ export default function MapaScreen() {
   const actives = parades.filter((p) => p.activa);
   const visitedCount = parades.filter((p) => visitedIds.has(p.id)).length;
 
+  const routeCoords = actives
+    .map((p) => GPS_COORDS[p.coordenades])
+    .filter(Boolean);
+
   return (
     <View style={{ flex: 1, backgroundColor: COLORS.bg }}>
       <View
@@ -39,7 +46,8 @@ export default function MapaScreen() {
           alignItems: "center",
           justifyContent: "space-between",
           paddingHorizontal: 14,
-          paddingVertical: 10,
+          paddingTop: insets.top + 6,
+          paddingBottom: 10,
           borderBottomWidth: 1,
           borderBottomColor: COLORS.border,
         }}
@@ -47,43 +55,82 @@ export default function MapaScreen() {
         <Text
           style={{
             fontFamily: FONTS.serif,
-            fontSize: 13,
+            fontSize: 15,
             fontWeight: "600",
             color: COLORS.text,
           }}
         >
           La ruta
         </Text>
-        <View
-          style={{
-            paddingHorizontal: 8,
-            paddingVertical: 3,
-            borderRadius: 12,
-            borderWidth: 1,
-            borderColor: COLORS.border,
-          }}
-        >
-          <Text
+        <View style={{ flexDirection: "row", gap: 6 }}>
+          <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel={is3D ? "Desactivar mode 3D" : "Activar mode 3D"}
+            accessibilityState={{ selected: is3D }}
+            onPress={() => setIs3D((v) => !v)}
             style={{
-              fontFamily: FONTS.sans,
-              fontSize: 9,
-              color: COLORS.textSecondary,
+              paddingHorizontal: 8,
+              paddingVertical: 3,
+              borderRadius: 12,
+              borderWidth: 1,
+              borderColor: is3D ? COLORS.accent : COLORS.border,
+              backgroundColor: is3D ? COLORS.accent : "transparent",
             }}
           >
-            GPS ●
-          </Text>
+            <Text
+              style={{
+                fontFamily: FONTS.sans,
+                fontSize: 9,
+                color: is3D ? COLORS.bg : COLORS.textSecondary,
+              }}
+            >
+              3D
+            </Text>
+          </TouchableOpacity>
+          <View
+            style={{
+              paddingHorizontal: 8,
+              paddingVertical: 3,
+              borderRadius: 12,
+              borderWidth: 1,
+              borderColor: COLORS.border,
+            }}
+          >
+            <Text
+              style={{
+                fontFamily: FONTS.sans,
+                fontSize: 9,
+                color: COLORS.textSecondary,
+              }}
+            >
+              GPS ●
+            </Text>
+          </View>
         </View>
       </View>
 
       <MapView
         style={{ flex: 1 }}
         initialRegion={{
-          latitude: 41.119,
-          longitude: 1.244,
-          latitudeDelta: 0.015,
-          longitudeDelta: 0.015,
+          latitude: 41.1163,
+          longitude: 1.2567,
+          latitudeDelta: 0.008,
+          longitudeDelta: 0.008,
         }}
+        showsUserLocation
+        showsMyLocationButton
+        mapType={is3D ? "satellite" : "standard"}
+        pitchEnabled={is3D}
+        rotateEnabled={is3D}
+        showsBuildings={is3D}
+        showsIndoors={is3D}
       >
+        <Polyline
+          coordinates={routeCoords}
+          strokeColor={COLORS.accent}
+          strokeWidth={2}
+          lineDashPattern={[6, 4]}
+        />
         {actives.map((parada) => {
           const coords = GPS_COORDS[parada.coordenades];
           if (!coords) return null;
@@ -93,14 +140,13 @@ export default function MapaScreen() {
             <Marker
               key={parada.id}
               coordinate={coords}
-              title={parada.nom_espai}
               onPress={() => router.push(`/parada/${parada.id}`)}
             >
               <View
                 style={{
-                  width: 22,
-                  height: 22,
-                  borderRadius: 11,
+                  width: 26,
+                  height: 26,
+                  borderRadius: 13,
                   backgroundColor: visited ? COLORS.accent : COLORS.darkBg,
                   justifyContent: "center",
                   alignItems: "center",
@@ -111,7 +157,7 @@ export default function MapaScreen() {
                 <Text
                   style={{
                     fontFamily: FONTS.sans,
-                    fontSize: 8,
+                    fontSize: 9,
                     fontWeight: "600",
                     color: COLORS.bg,
                   }}
@@ -119,6 +165,40 @@ export default function MapaScreen() {
                   {parada.ordre}
                 </Text>
               </View>
+              <Callout tooltip onPress={() => router.push(`/parada/${parada.id}`)}>
+                <View
+                  style={{
+                    backgroundColor: COLORS.bg,
+                    borderRadius: 6,
+                    paddingHorizontal: 10,
+                    paddingVertical: 6,
+                    borderWidth: 1,
+                    borderColor: COLORS.border,
+                    minWidth: 100,
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontFamily: FONTS.sans,
+                      fontSize: 10,
+                      fontWeight: "600",
+                      color: COLORS.text,
+                    }}
+                  >
+                    {parada.nom_espai}
+                  </Text>
+                  <Text
+                    style={{
+                      fontFamily: FONTS.sans,
+                      fontSize: 8,
+                      color: COLORS.textSecondary,
+                      marginTop: 2,
+                    }}
+                  >
+                    Parada {parada.ordre} · {visited ? "✓ Visitada" : "Pendent"}
+                  </Text>
+                </View>
+              </Callout>
             </Marker>
           );
         })}
@@ -177,14 +257,14 @@ export default function MapaScreen() {
           />
         </View>
         <View style={{ flexDirection: "row", gap: 3, marginTop: 5 }}>
-          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
+          {actives.map((parada) => (
             <View
-              key={n}
+              key={parada.id}
               style={{
                 width: 6,
                 height: 6,
                 borderRadius: 3,
-                backgroundColor: COLORS.border,
+                backgroundColor: visitedIds.has(parada.id) ? COLORS.accent : COLORS.border,
               }}
             />
           ))}
