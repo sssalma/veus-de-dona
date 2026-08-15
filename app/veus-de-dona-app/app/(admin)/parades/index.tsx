@@ -3,7 +3,7 @@ import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator } from "rea
 import { useRouter, useFocusEffect } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { COLORS, FONTS } from "../../../constants";
-import { getParades } from "../../../services/parades";
+import { getTotesLesParades } from "../../../services/parades";
 import { Parada } from "../../../types";
 
 export default function AdminParades() {
@@ -15,7 +15,7 @@ export default function AdminParades() {
   useFocusEffect(
     useCallback(() => {
       setLoading(true);
-      getParades()
+      getTotesLesParades()
         .then(setParades)
         .catch(() => setParades([]))
         .finally(() => setLoading(false));

@@ -19,6 +19,14 @@ def get_parades(db: Session = Depends(get_db)):
     """Returns all active stops ordered by route order"""
     return parades_service.get_all_parades(db)
 
+@router.get("/totes", response_model=List[ParadaResponse])
+def get_totes_les_parades(
+    db: Session = Depends(get_db),
+    current_user: Usuari = Depends(require_rol(RolUsuari.EDITOR, RolUsuari.ADMINISTRADOR))
+):
+    """Returns every stop, including inactive ones - editor/admin only"""
+    return parades_service.get_totes_les_parades(db)
+
 @router.get("/{parada_id}", response_model=ParadaResponse)
 def get_parada(parada_id: str, db: Session = Depends(get_db)):
     """Returns a single stop by ID"""

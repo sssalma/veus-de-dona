@@ -6,6 +6,11 @@ export async function getParades(): Promise<Parada[]> {
   return data;
 }
 
+export async function getTotesLesParades(): Promise<Parada[]> {
+  const { data } = await api.get("/parades/totes");
+  return data;
+}
+
 export async function getParada(id: string): Promise<Parada> {
   const { data } = await api.get(`/parades/${id}`);
   return data;

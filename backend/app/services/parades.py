@@ -8,6 +8,12 @@ def get_all_parades(db: Session):
         .order_by(Parada.ordre)\
         .all()
 
+def get_totes_les_parades(db: Session):
+    """Returns every stop, active or not, ordered by route order - editor/admin only"""
+    return db.query(Parada)\
+        .order_by(Parada.ordre)\
+        .all()
+
 def get_parada_by_id(db: Session, parada_id: str):
     """Returns a single stop by ID or None if not found"""
     return db.query(Parada)\
