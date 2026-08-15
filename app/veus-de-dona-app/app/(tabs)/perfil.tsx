@@ -240,6 +240,22 @@ export default function PerfilScreen() {
               </View>
             </View>
           ))}
+          {user && user.rol !== "VISITANT" && (
+            <TouchableOpacity
+              onPress={() => router.push("/(admin)")}
+              style={{ paddingVertical: 8 }}
+            >
+              <Text
+                style={{
+                  fontFamily: FONTS.sans,
+                  fontSize: 11,
+                  color: COLORS.accent,
+                }}
+              >
+                Panell d'administració →
+              </Text>
+            </TouchableOpacity>
+          )}
           {isAuthenticated ? (
             <TouchableOpacity
               onPress={async () => { await logout(); router.replace("/login"); }}

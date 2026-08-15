@@ -5,6 +5,8 @@ export interface Parada {
   coordenades: string;
   foto_minio_key: string | null;
   activa: boolean;
+  lat: number | null;
+  lng: number | null;
 }
 
 export interface Autora {
@@ -82,4 +84,21 @@ export interface Comentari {
   parada_id: string;
   usuari_id: string;
   usuari_nom?: string;
+  resposta_editor?: string | null;
+  resposta_data?: string | null;
+}
+
+export interface MetriquesGlobal {
+  usuaris_per_rol: Record<string, number>;
+  visites_per_mode: Record<string, number>;
+  textos_mes_agradats: { text_id: string; titol: string; likes: number }[];
+}
+
+export interface MetriquesParada {
+  parada_id: string;
+  nom_espai: string;
+  ordre: number;
+  visites_per_mode: Record<string, number>;
+  likes: number;
+  comentaris: number;
 }

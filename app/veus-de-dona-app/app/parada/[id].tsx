@@ -15,8 +15,15 @@ import { getMevesVisites, registrarVisita } from "../../services/visites";
 import { getComentaris, afegirComentari } from "../../services/comentaris";
 import { useAuth } from "../../contexts/AuthContext";
 import { Parada, TextDto, Comentari } from "../../types";
+import AudioPlayer from "../../components/AudioPlayer";
 
 const ACCESSIBLE_FONT = Platform.select({ ios: "DMSans", android: "DMSans" }) ?? "DMSans";
+
+const MODE_LABELS: Record<"REMOT" | "GUIAT" | "LLIURE", string> = {
+  REMOT: "Remot",
+  GUIAT: "Guiat",
+  LLIURE: "Lliure",
+};
 
 export default function ParadaScreen() {
   const { id } = useLocalSearchParams();
@@ -31,6 +38,7 @@ export default function ParadaScreen() {
   const [liked, setLiked] = useState(false);
   const [likesCount, setLikesCount] = useState(0);
   const [visitant, setVisitant] = useState(false);
+  const [mode, setMode] = useState<"REMOT" | "GUIAT" | "LLIURE" | null>(null);
   const [comentaris, setComentaris] = useState<Comentari[]>([]);
   const [nouComentari, setNouComentari] = useState("");
   const [enviantComentari, setEnviantComentari] = useState(false);
@@ -57,7 +65,11 @@ export default function ParadaScreen() {
     if (!isAuthenticated) return;
     const pid = id as string;
     getMevesVisites().then((visites) => {
-      if (visites.some((v) => v.parada_id === pid)) setVisitant(true);
+      const visita = visites.find((v) => v.parada_id === pid);
+      if (visita) {
+        setVisitant(true);
+        setMode(visita.mode);
+      }
     }).catch(() => {});
   }, [id, isAuthenticated]);
 
@@ -113,8 +125,9 @@ export default function ParadaScreen() {
           lng = loc.coords.longitude;
         }
       }
-      await registrarVisita(id as string, lat, lng);
+      const visita = await registrarVisita(id as string, lat, lng);
       setVisitant(true);
+      setMode(visita.mode);
       Alert.alert("Fet!", "Parada marcada com a visitada");
     } catch (err: any) {
       const msg = err?.response?.data?.detail || "Error en registrar la visita";
@@ -212,24 +225,26 @@ export default function ParadaScreen() {
             PARADA {parada.ordre} / 10
           </Text>
         </View>
-        <View
-          accessibilityRole="text"
-          accessibilityLabel="Mode guiat"
-          style={{
-            paddingHorizontal: 8,
-            paddingVertical: 3,
-            borderRadius: 12,
-            borderWidth: 1,
-            borderColor: COLORS.border,
-          }}
-        >
-          <Text
-            style={{ fontFamily: FONTS.sans, fontSize: 9, color: COLORS.textSecondary }}
-            maxFontSizeMultiplier={1.4}
+        {mode && (
+          <View
+            accessibilityRole="text"
+            accessibilityLabel={`Mode ${MODE_LABELS[mode].toLowerCase()}`}
+            style={{
+              paddingHorizontal: 8,
+              paddingVertical: 3,
+              borderRadius: 12,
+              borderWidth: 1,
+              borderColor: COLORS.border,
+            }}
           >
-            Guiat
-          </Text>
-        </View>
+            <Text
+              style={{ fontFamily: FONTS.sans, fontSize: 9, color: COLORS.textSecondary }}
+              maxFontSizeMultiplier={1.4}
+            >
+              {MODE_LABELS[mode]}
+            </Text>
+          </View>
+        )}
       </View>
 
       <View
@@ -397,108 +412,82 @@ export default function ParadaScreen() {
             </View>
           </View>
           {textExpandit && (
-            <View
-              accessibilityRole="toolbar"
-              style={{
-                flexDirection: "row",
-                alignItems: "stretch",
-                paddingHorizontal: 14,
-                paddingTop: 8,
-                gap: 6,
-              }}
-            >
-              <TouchableOpacity
-                accessibilityRole="button"
-                accessibilityLabel={liked ? "Treure like" : "Donar like"}
-                accessibilityState={{ selected: liked }}
-                onPress={handleLike}
+            <>
+              <View
+                accessibilityRole="toolbar"
                 style={{
                   flexDirection: "row",
-                  alignItems: "center",
-                  gap: 5,
-                  minHeight: 44,
-                  paddingHorizontal: 10,
-                  paddingVertical: 6,
-                  borderRadius: 8,
-                  backgroundColor: liked ? "#F5EDEA" : "transparent",
-                  borderWidth: 1,
-                  borderColor: liked ? COLORS.love : COLORS.border,
+                  alignItems: "stretch",
+                  paddingHorizontal: 14,
+                  paddingTop: 8,
+                  gap: 6,
                 }}
               >
-                <Text style={{ color: liked ? COLORS.love : COLORS.textSecondary, fontSize: 14 }}>
-                  {liked ? "♥" : "♡"}
-                </Text>
-                <Text
-                  style={{ fontFamily: FONTS.sans, fontSize: 11, color: liked ? COLORS.love : COLORS.text }}
-                  maxFontSizeMultiplier={1.4}
-                >
-                  {likesCount > 0 ? likesCount : "M'agrada"}
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                accessibilityRole="button"
-                accessibilityLabel="Escoltar àudio"
-                onPress={() => {
-                  const url = textos[textSeleccionat]?.youtube_url;
-                  if (url) Linking.openURL(url);
-                  else Alert.alert("No disponible", "Aquest text no té àudio");
-                }}
-                style={{
-                  flex: 1,
-                  backgroundColor: COLORS.darkBg,
-                  paddingVertical: 12,
-                  borderRadius: 6,
-                  minHeight: 44,
-                  justifyContent: "center",
-                  opacity: textos[textSeleccionat]?.youtube_url ? 1 : 0.4,
-                }}
-              >
-                <Text
+                <TouchableOpacity
+                  accessibilityRole="button"
+                  accessibilityLabel={liked ? "Treure like" : "Donar like"}
+                  accessibilityState={{ selected: liked }}
+                  onPress={handleLike}
                   style={{
-                    fontFamily: FONTS.sans,
-                    fontSize: 10,
-                    fontWeight: "500",
-                    color: COLORS.bg,
-                    textAlign: "center",
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 5,
+                    minHeight: 44,
+                    paddingHorizontal: 10,
+                    paddingVertical: 6,
+                    borderRadius: 8,
+                    backgroundColor: liked ? "#F5EDEA" : "transparent",
+                    borderWidth: 1,
+                    borderColor: liked ? COLORS.love : COLORS.border,
                   }}
-                  maxFontSizeMultiplier={1.4}
                 >
-                  ▶ Àudio
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                accessibilityRole="button"
-                accessibilityLabel="Veure vídeo"
-                onPress={() => {
-                  const url = textos[textSeleccionat]?.youtube_url;
-                  if (url) Linking.openURL(url);
-                  else Alert.alert("No disponible", "Aquest text no té vídeo");
-                }}
-                style={{
-                  flex: 1,
-                  borderWidth: 1,
-                  borderColor: COLORS.text,
-                  paddingVertical: 12,
-                  borderRadius: 6,
-                  minHeight: 44,
-                  justifyContent: "center",
-                  opacity: textos[textSeleccionat]?.youtube_url ? 1 : 0.4,
-                }}
-              >
-                <Text
+                  <Text style={{ color: liked ? COLORS.love : COLORS.textSecondary, fontSize: 14 }}>
+                    {liked ? "♥" : "♡"}
+                  </Text>
+                  <Text
+                    style={{ fontFamily: FONTS.sans, fontSize: 11, color: liked ? COLORS.love : COLORS.text }}
+                    maxFontSizeMultiplier={1.4}
+                  >
+                    {likesCount > 0 ? likesCount : "M'agrada"}
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  accessibilityRole="button"
+                  accessibilityLabel="Veure vídeo"
+                  onPress={() => {
+                    const url = textos[textSeleccionat]?.youtube_url;
+                    if (url) Linking.openURL(url);
+                    else Alert.alert("No disponible", "Aquest text no té vídeo");
+                  }}
                   style={{
-                    fontFamily: FONTS.sans,
-                    fontSize: 10,
-                    fontWeight: "500",
-                    color: COLORS.text,
-                    textAlign: "center",
+                    flex: 1,
+                    borderWidth: 1,
+                    borderColor: COLORS.text,
+                    paddingVertical: 12,
+                    borderRadius: 6,
+                    minHeight: 44,
+                    justifyContent: "center",
+                    opacity: textos[textSeleccionat]?.youtube_url ? 1 : 0.4,
                   }}
-                  maxFontSizeMultiplier={1.4}
                 >
-                  🎬 Vídeo
-                </Text>
-              </TouchableOpacity>
-            </View>
+                  <Text
+                    style={{
+                      fontFamily: FONTS.sans,
+                      fontSize: 10,
+                      fontWeight: "500",
+                      color: COLORS.text,
+                      textAlign: "center",
+                    }}
+                    maxFontSizeMultiplier={1.4}
+                  >
+                    🎬 Vídeo
+                  </Text>
+                </TouchableOpacity>
+              </View>
+              <View style={{ paddingHorizontal: 14, paddingTop: 6 }}>
+                <AudioPlayer textId={textos[textSeleccionat].id} />
+              </View>
+            </>
           )}
           <TouchableOpacity
             accessibilityRole="button"

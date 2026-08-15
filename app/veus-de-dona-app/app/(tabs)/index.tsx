@@ -3,7 +3,6 @@ import MapView, { Marker, Polyline, Callout } from "react-native-maps";
 import { View, Text, TouchableOpacity, Platform } from "react-native";
 import { useRouter, useFocusEffect } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { GPS_COORDS } from "../../data/parades";
 import { getParades } from "../../services/parades";
 import { getMevesVisites } from "../../services/visites";
 import { useAuth } from "../../contexts/AuthContext";
@@ -35,8 +34,8 @@ export default function MapaScreen() {
   const visitedCount = parades.filter((p) => visitedIds.has(p.id)).length;
 
   const routeCoords = actives
-    .map((p) => GPS_COORDS[p.coordenades])
-    .filter(Boolean);
+    .filter((p) => p.lat != null && p.lng != null)
+    .map((p) => ({ latitude: p.lat as number, longitude: p.lng as number }));
 
   return (
     <View style={{ flex: 1, backgroundColor: COLORS.bg }}>
@@ -132,8 +131,8 @@ export default function MapaScreen() {
           lineDashPattern={[6, 4]}
         />
         {actives.map((parada) => {
-          const coords = GPS_COORDS[parada.coordenades];
-          if (!coords) return null;
+          if (parada.lat == null || parada.lng == null) return null;
+          const coords = { latitude: parada.lat, longitude: parada.lng };
           const visited = visitedIds.has(parada.id);
 
           return (
