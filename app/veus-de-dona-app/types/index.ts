@@ -83,7 +83,8 @@ export interface Comentari {
   data_creacio: string;
   parada_id: string;
   usuari_id: string;
-  usuari_nom?: string;
+  usuari_nom?: string | null;
+  usuari_cognom?: string | null;
   resposta_editor?: string | null;
   resposta_data?: string | null;
 }

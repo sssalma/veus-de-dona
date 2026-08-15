@@ -23,3 +23,11 @@ class Comentari(Base):
     # relationships
     usuari = relationship("Usuari", back_populates="comentaris")
     parada = relationship("Parada", back_populates="comentaris")
+
+    @property
+    def usuari_nom(self):
+        return self.usuari.nom if self.usuari else None
+
+    @property
+    def usuari_cognom(self):
+        return self.usuari.cognom if self.usuari else None

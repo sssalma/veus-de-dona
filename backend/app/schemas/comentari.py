@@ -12,6 +12,8 @@ class ComentariResponse(BaseModel):
     data_creacio: datetime
     parada_id: UUID
     usuari_id: UUID
+    usuari_nom: str | None = None
+    usuari_cognom: str | None = None
     resposta_editor: str | None = None
     resposta_data: datetime | None = None
 
