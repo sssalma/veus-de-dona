@@ -1,4 +1,19 @@
 services:
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql://admin:admin1234@db:5432/veusdedona
+      MINIO_URL: http://minio:9000
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin1234
+      MINIO_BUCKET: veus-de-dona
+      SECRET_KEY: ${SECRET_KEY:-canvia-aquest-secret-en-produccio}
+    depends_on:
+      - db
+      - minio
+
   db:
     image: postgres:16
     environment:
