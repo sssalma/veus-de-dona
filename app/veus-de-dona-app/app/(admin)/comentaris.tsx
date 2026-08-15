@@ -3,12 +3,14 @@ import { View, Text, ScrollView, TouchableOpacity, TextInput, ActivityIndicator,
 import { useRouter, useFocusEffect } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { COLORS, FONTS } from "../../constants";
+import { useAuth } from "../../contexts/AuthContext";
 import { getTotsElsComentaris, eliminarComentari, respondreComentari } from "../../services/comentaris";
 import { Comentari } from "../../types";
 
 export default function ModeracioComentaris() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { user } = useAuth();
   const [comentaris, setComentaris] = useState<Comentari[]>([]);
   const [loading, setLoading] = useState(true);
   const [respostes, setRespostes] = useState<Record<string, string>>({});
@@ -113,9 +115,46 @@ export default function ModeracioComentaris() {
                 gap: 6,
               }}
             >
-              <Text style={{ fontFamily: FONTS.sans, fontSize: 9, color: COLORS.textSecondary }} maxFontSizeMultiplier={1.3}>
-                {new Date(c.data_creacio).toLocaleString("ca-ES")}
-              </Text>
+              <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
+                <View style={{ flex: 1 }}>
+                  {user?.rol === "ADMINISTRADOR" ? (
+                    <TouchableOpacity
+                      accessibilityRole="link"
+                      accessibilityLabel={`Veure ${c.usuari_nom ?? "usuari"} ${c.usuari_cognom ?? ""} a Gestionar usuaris`}
+                      onPress={() => router.push(`/(admin)/usuaris?resaltar=${c.usuari_id}`)}
+                      style={{ minHeight: 20, justifyContent: "center" }}
+                    >
+                      <Text
+                        style={{ fontFamily: FONTS.sans, fontSize: 10, fontWeight: "600", color: COLORS.accent }}
+                        maxFontSizeMultiplier={1.4}
+                      >
+                        {c.usuari_nom ?? "Usuari"} {c.usuari_cognom ?? ""}
+                      </Text>
+                    </TouchableOpacity>
+                  ) : (
+                    c.usuari_nom && (
+                      <Text
+                        style={{ fontFamily: FONTS.sans, fontSize: 10, fontWeight: "600", color: COLORS.text }}
+                        maxFontSizeMultiplier={1.4}
+                      >
+                        {c.usuari_nom} {c.usuari_cognom ?? ""}
+                      </Text>
+                    )
+                  )}
+                  <Text style={{ fontFamily: FONTS.sans, fontSize: 9, color: COLORS.textSecondary }} maxFontSizeMultiplier={1.3}>
+                    {new Date(c.data_creacio).toLocaleString("ca-ES")}
+                  </Text>
+                </View>
+                <TouchableOpacity
+                  accessibilityRole="button"
+                  accessibilityLabel="Eliminar comentari"
+                  onPress={() => handleEliminar(c.id)}
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                  style={{ minHeight: 32, minWidth: 32, alignItems: "center", justifyContent: "center" }}
+                >
+                  <Text style={{ fontSize: 13 }}>🗑</Text>
+                </TouchableOpacity>
+              </View>
               <Text
                 accessibilityRole="text"
                 style={{ fontFamily: FONTS.sans, fontSize: 12, color: COLORS.text }}
@@ -188,17 +227,6 @@ export default function ModeracioComentaris() {
                   </TouchableOpacity>
                 </View>
               )}
-
-              <TouchableOpacity
-                accessibilityRole="button"
-                accessibilityLabel="Eliminar comentari"
-                onPress={() => handleEliminar(c.id)}
-                style={{ alignSelf: "flex-start", minHeight: 44, justifyContent: "center" }}
-              >
-                <Text style={{ fontFamily: FONTS.sans, fontSize: 10, color: COLORS.love }} maxFontSizeMultiplier={1.4}>
-                  Eliminar
-                </Text>
-              </TouchableOpacity>
             </View>
           ))}
         </View>
