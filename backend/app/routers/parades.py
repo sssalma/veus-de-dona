@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.database import get_db
-from app.schemas.parada import ParadaResponse
+from app.schemas.parada import ParadaResponse, ParadaUpdate
 from app.services import parades as parades_service
 from app.services.auth import get_current_user, require_rol
 from app.services.storage import get_file_url
@@ -41,6 +41,19 @@ def get_parada_foto(parada_id: str, db: Session = Depends(get_db)):
     if not url:
         raise HTTPException(status_code=500, detail="Error en generar la URL de la foto")
     return {"url": url}
+
+@router.patch("/{parada_id}", response_model=ParadaResponse)
+def update_parada(
+    parada_id: str,
+    dades: ParadaUpdate,
+    db: Session = Depends(get_db),
+    current_user: Usuari = Depends(require_rol(RolUsuari.EDITOR, RolUsuari.ADMINISTRADOR))
+):
+    """Updates editable fields of a stop (nom_espai, foto) - editor/admin only"""
+    parada = parades_service.update_parada(db, parada_id, dades.model_dump(exclude_unset=True))
+    if not parada:
+        raise HTTPException(status_code=404, detail="Parada no trobada")
+    return parada
 
 @router.patch("/{parada_id}/activa")
 def toggle_parada(

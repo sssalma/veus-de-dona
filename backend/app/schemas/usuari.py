@@ -34,3 +34,12 @@ class UsuariResponse(BaseModel):
 class Token(BaseModel):
     access_token: str
     token_type: str = "bearer"
+
+class UsuariRolUpdate(BaseModel):
+    rol: RolUsuari
+
+class UsuariActiuUpdate(BaseModel):
+    actiu: bool
+
+class UsuariIdiomaUpdate(BaseModel):
+    idioma: Idioma

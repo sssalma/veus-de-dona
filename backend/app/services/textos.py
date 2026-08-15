@@ -18,3 +18,14 @@ def get_text_by_id(db: Session, text_id: str):
     return db.query(Text)\
         .filter(Text.id == text_id)\
         .first()
+
+def update_text(db: Session, text_id: str, dades: dict) -> Text | None:
+    """Updates the given fields of a text, returns None if not found"""
+    text = get_text_by_id(db, text_id)
+    if not text:
+        return None
+    for camp, valor in dades.items():
+        setattr(text, camp, valor)
+    db.commit()
+    db.refresh(text)
+    return text

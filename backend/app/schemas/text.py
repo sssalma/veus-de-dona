@@ -16,3 +16,9 @@ class TextResponse(TextBase):
 
     class Config:
         from_attributes = True
+
+class TextUpdate(BaseModel):
+    titol: str | None = None
+    obra_origen: str | None = None
+    contingut: str | None = None
+    youtube_url: str | None = None

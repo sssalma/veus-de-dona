@@ -2,10 +2,11 @@ from sqlalchemy.orm import Session
 from app.models.visita import Visita, Mode
 from app.models.parada import Parada
 from app.models.usuari import Usuari
+from app.services.geo import haversine
 from uuid import UUID
 
-# GPS proximity threshold in degrees (~50 metres)
-PROXIMITY_THRESHOLD = 0.0005
+# GPS proximity threshold in metres
+PROXIMITY_THRESHOLD_M = 50
 
 # GPS coordinates for each stop
 from app.models.parada import COORDENADES_GPS, CoordenadesParada
@@ -23,10 +24,9 @@ def detectar_mode(
 
     # check proximity to the stop
     coord = COORDENADES_GPS[parada.coordenades] # type: ignore
-    dist_lat = abs(lat - coord[0])
-    dist_lng = abs(lng - coord[1])
+    distance_m = haversine(lat, lng, coord[0], coord[1])
 
-    if dist_lat > PROXIMITY_THRESHOLD or dist_lng > PROXIMITY_THRESHOLD:
+    if distance_m > PROXIMITY_THRESHOLD_M:
         return Mode.REMOT
 
     # check if previous stop was visited (sequential order)

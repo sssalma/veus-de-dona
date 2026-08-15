@@ -23,3 +23,14 @@ def toggle_parada_activa(db: Session, parada_id: str, activa: bool) -> Parada | 
     db.commit()
     db.refresh(parada)
     return parada
+
+def update_parada(db: Session, parada_id: str, dades: dict) -> Parada | None:
+    """Updates the given fields of a stop, returns None if not found"""
+    parada = get_parada_by_id(db, parada_id)
+    if not parada:
+        return None
+    for camp, valor in dades.items():
+        setattr(parada, camp, valor)
+    db.commit()
+    db.refresh(parada)
+    return parada

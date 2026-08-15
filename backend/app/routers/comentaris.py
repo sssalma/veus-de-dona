@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.database import get_db
-from app.schemas.comentari import ComentariCreate, ComentariResponse
+from app.schemas.comentari import ComentariCreate, ComentariResponse, ComentariResposta
 from app.services import comentaris as comentaris_service
 from app.services.auth import get_current_user, require_rol
 from app.models.usuari import Usuari, RolUsuari
@@ -11,6 +11,16 @@ router = APIRouter(
     prefix="/comentaris",
     tags=["comentaris"]
 )
+
+@router.get("/", response_model=List[ComentariResponse])
+def get_tots_els_comentaris(
+    db: Session = Depends(get_db),
+    current_user: Usuari = Depends(
+        require_rol(RolUsuari.EDITOR, RolUsuari.ADMINISTRADOR)
+    )
+):
+    """Lists all comments across all stops, for moderation - editor/admin only"""
+    return comentaris_service.get_all_comentaris(db)
 
 @router.post("/", response_model=ComentariResponse, status_code=201)
 def afegir_comentari(
@@ -41,6 +51,23 @@ def eliminar_comentari(
     deleted = comentaris_service.eliminar_comentari(db, comentari_id)
     if not deleted:
         raise HTTPException(status_code=404, detail="Comentari no trobat")
+
+@router.patch("/{comentari_id}/resposta", response_model=ComentariResponse)
+def respondre_comentari(
+    comentari_id: str,
+    resposta_data: ComentariResposta,
+    db: Session = Depends(get_db),
+    current_user: Usuari = Depends(
+        require_rol(RolUsuari.EDITOR, RolUsuari.ADMINISTRADOR)
+    )
+):
+    """Replies to a comment - editor/admin only"""
+    comentari = comentaris_service.respondre_comentari(
+        db, comentari_id, resposta_data.resposta_editor
+    )
+    if not comentari:
+        raise HTTPException(status_code=404, detail="Comentari no trobat")
+    return comentari
 
 @router.get("/parada/{parada_id}", response_model=List[ComentariResponse])
 def get_comentaris(parada_id: str, db: Session = Depends(get_db)):

@@ -12,6 +12,11 @@ class ComentariResponse(BaseModel):
     data_creacio: datetime
     parada_id: UUID
     usuari_id: UUID
+    resposta_editor: str | None = None
+    resposta_data: datetime | None = None
 
     class Config:
         from_attributes = True
+
+class ComentariResposta(BaseModel):
+    resposta_editor: str
