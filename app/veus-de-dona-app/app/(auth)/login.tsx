@@ -3,17 +3,19 @@ import { View, Text, TextInput, TouchableOpacity, Alert } from "react-native";
 import { useRouter } from "expo-router";
 import { COLORS, FONTS } from "../../constants";
 import { useAuth } from "../../contexts/AuthContext";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 export default function LoginScreen() {
   const router = useRouter();
   const { login } = useAuth();
+  const { t } = useLanguage();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
     if (!email || !password) {
-      Alert.alert("Error", "Omple tots els camps");
+      Alert.alert(t("common.error"), t("auth.fillAllFields"));
       return;
     }
     setLoading(true);
@@ -21,8 +23,8 @@ export default function LoginScreen() {
       await login({ email, password });
       router.replace("/(tabs)");
     } catch (err: any) {
-      const msg = err?.response?.data?.detail || "Error en iniciar sessió";
-      Alert.alert("Error", msg);
+      const msg = err?.response?.data?.detail || t("auth.loginError");
+      Alert.alert(t("common.error"), msg);
     } finally {
       setLoading(false);
     }
@@ -60,10 +62,10 @@ export default function LoginScreen() {
             textTransform: "uppercase",
           }}
         >
-          Email
+          {t("auth.email")}
         </Text>
         <TextInput
-          placeholder="nom@exemple.cat"
+          placeholder={t("auth.emailPlaceholder")}
           placeholderTextColor={COLORS.textSecondary}
           value={email}
           onChangeText={setEmail}
@@ -93,7 +95,7 @@ export default function LoginScreen() {
             textTransform: "uppercase",
           }}
         >
-          Contrasenya
+          {t("auth.password")}
         </Text>
         <TextInput
           secureTextEntry
@@ -135,7 +137,7 @@ export default function LoginScreen() {
             textAlign: "center",
           }}
         >
-          {loading ? "Entrant..." : "Iniciar sessió"}
+          {loading ? t("auth.loggingIn") : t("auth.loginButton")}
         </Text>
       </TouchableOpacity>
 
@@ -155,7 +157,7 @@ export default function LoginScreen() {
             color: COLORS.textSecondary,
           }}
         >
-          o
+          {t("auth.or")}
         </Text>
         <View style={{ flex: 1, height: 1, backgroundColor: COLORS.border }} />
       </View>
@@ -178,7 +180,7 @@ export default function LoginScreen() {
             textAlign: "center",
           }}
         >
-          Crear compte nou
+          {t("auth.createAccount")}
         </Text>
       </TouchableOpacity>
 
@@ -192,7 +194,7 @@ export default function LoginScreen() {
             marginTop: 4,
           }}
         >
-          Continuar sense registre →
+          {t("auth.continueGuest")}
         </Text>
       </TouchableOpacity>
     </View>

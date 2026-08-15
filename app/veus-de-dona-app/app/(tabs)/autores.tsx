@@ -3,12 +3,14 @@ import { View, Text, FlatList, TouchableOpacity, TextInput } from "react-native"
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { COLORS, FONTS } from "../../constants";
+import { useLanguage } from "../../contexts/LanguageContext";
 import { getAutores } from "../../services/autores";
 import { Autora } from "../../types";
 
 export default function AutoresScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { t } = useLanguage();
   const [autores, setAutores] = useState<Autora[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -47,14 +49,14 @@ export default function AutoresScreen() {
             color: COLORS.text,
           }}
         >
-          Autores
+          {t("autoresScreen.title")}
         </Text>
       </View>
       <View style={{ paddingHorizontal: 14, paddingVertical: 8 }}>
         <TextInput
           accessibilityRole="search"
-          accessibilityLabel="Cercar autores"
-          placeholder="Cercar autora..."
+          accessibilityLabel={t("autoresScreen.searchPlaceholder")}
+          placeholder={t("autoresScreen.searchPlaceholder")}
           placeholderTextColor={COLORS.textSecondary}
           value={searchQuery}
           onChangeText={setSearchQuery}
@@ -87,7 +89,7 @@ export default function AutoresScreen() {
               paddingVertical: 20,
             }}
           >
-            {searchQuery ? "Cap autora coincideix amb la cerca" : "No hi ha autores"}
+            {searchQuery ? t("autoresScreen.noResults") : t("autoresScreen.empty")}
           </Text>
         }
         renderItem={({ item }) => (

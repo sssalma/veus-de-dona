@@ -1,9 +1,14 @@
 import { View, Text, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 import { COLORS, FONTS } from "../constants";
+import { useLanguage } from "../contexts/LanguageContext";
+import { Idioma } from "../i18n/translations";
+
+const IDIOMES: Idioma[] = ["CA", "ES", "EN"];
 
 export default function SplashScreen() {
   const router = useRouter();
+  const { idioma, canviarIdioma, t } = useLanguage();
 
   return (
     <View
@@ -37,75 +42,49 @@ export default function SplashScreen() {
           marginTop: 4,
         }}
       >
-        Ruta literària · Part Alta · Tarragona
+        {t("splash.subtitle")}
       </Text>
 
-      <View style={{ flexDirection: "row", gap: 8, marginTop: 32 }}>
-        <View
-          style={{
-            paddingHorizontal: 14,
-            paddingVertical: 6,
-            borderRadius: 20,
-            backgroundColor: COLORS.bg,
-          }}
-        >
-          <Text
-            style={{
-              fontFamily: FONTS.sans,
-              fontSize: 10,
-              fontWeight: "500",
-              color: COLORS.darkBg,
-              letterSpacing: 0.4,
-            }}
-          >
-            CA
-          </Text>
-        </View>
-        <View
-          style={{
-            paddingHorizontal: 14,
-            paddingVertical: 6,
-            borderRadius: 20,
-            borderWidth: 1,
-            borderColor: "rgba(255,255,255,0.3)",
-          }}
-        >
-          <Text
-            style={{
-              fontFamily: FONTS.sans,
-              fontSize: 10,
-              fontWeight: "500",
-              color: "rgba(255,255,255,0.7)",
-              letterSpacing: 0.4,
-            }}
-          >
-            ES
-          </Text>
-        </View>
-        <View
-          style={{
-            paddingHorizontal: 14,
-            paddingVertical: 6,
-            borderRadius: 20,
-            borderWidth: 1,
-            borderColor: "rgba(255,255,255,0.3)",
-          }}
-        >
-          <Text
-            style={{
-              fontFamily: FONTS.sans,
-              fontSize: 10,
-              fontWeight: "500",
-              color: "rgba(255,255,255,0.7)",
-              letterSpacing: 0.4,
-            }}
-          >
-            EN
-          </Text>
-        </View>
+      <View accessibilityRole="radiogroup" accessibilityLabel="Selecció d'idioma" style={{ flexDirection: "row", gap: 8, marginTop: 32 }}>
+        {IDIOMES.map((codi) => {
+          const selected = codi === idioma;
+          return (
+            <TouchableOpacity
+              key={codi}
+              accessibilityRole="radio"
+              accessibilityState={{ selected }}
+              accessibilityLabel={`Idioma ${codi}`}
+              onPress={() => canviarIdioma(codi)}
+              style={{
+                paddingHorizontal: 14,
+                paddingVertical: 6,
+                borderRadius: 20,
+                backgroundColor: selected ? COLORS.bg : "transparent",
+                borderWidth: selected ? 0 : 1,
+                borderColor: "rgba(255,255,255,0.3)",
+                minHeight: 32,
+                justifyContent: "center",
+              }}
+            >
+              <Text
+                style={{
+                  fontFamily: FONTS.sans,
+                  fontSize: 10,
+                  fontWeight: "500",
+                  color: selected ? COLORS.darkBg : "rgba(255,255,255,0.7)",
+                  letterSpacing: 0.4,
+                }}
+              >
+                {codi}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
       </View>
 
       <TouchableOpacity
+        accessibilityRole="button"
+        accessibilityLabel={t("splash.cta")}
         onPress={() => router.replace("/(tabs)")}
         style={{
           marginTop: 40,
@@ -113,6 +92,8 @@ export default function SplashScreen() {
           paddingVertical: 12,
           backgroundColor: COLORS.bg,
           borderRadius: 8,
+          minHeight: 44,
+          justifyContent: "center",
         }}
       >
         <Text
@@ -125,7 +106,7 @@ export default function SplashScreen() {
             letterSpacing: 0.4,
           }}
         >
-          Descobrir la ruta →
+          {t("splash.cta")}
         </Text>
       </TouchableOpacity>
     </View>

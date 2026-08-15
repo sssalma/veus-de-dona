@@ -1,8 +1,11 @@
 import { Tabs } from "expo-router";
 import { Text } from "react-native";
 import { COLORS, FONTS } from "../../constants";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 export default function TabsLayout() {
+  const { t } = useLanguage();
+
   return (
     <Tabs
       screenOptions={{
@@ -25,21 +28,21 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: "Mapa",
+          title: t("tabs.mapa"),
           tabBarIcon: ({ color }) => <Text style={{ fontSize: 14 }}>🗺</Text>,
         }}
       />
       <Tabs.Screen
         name="autores"
         options={{
-          title: "Autores",
+          title: t("tabs.autores"),
           tabBarIcon: ({ color }) => <Text style={{ fontSize: 14 }}>✍️</Text>,
         }}
       />
       <Tabs.Screen
         name="perfil"
         options={{
-          title: "Perfil",
+          title: t("tabs.perfil"),
           tabBarIcon: ({ color }) => <Text style={{ fontSize: 14 }}>👤</Text>,
         }}
       />

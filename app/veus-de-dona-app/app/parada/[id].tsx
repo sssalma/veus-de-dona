@@ -12,24 +12,34 @@ import { getParada, getParades, getParadaFoto } from "../../services/parades";
 import { getTextosByParada } from "../../services/textos";
 import { checkLike, addLike, removeLike } from "../../services/likes";
 import { getMevesVisites, registrarVisita } from "../../services/visites";
-import { getComentaris, afegirComentari } from "../../services/comentaris";
+import { getComentaris, afegirComentari, eliminarComentari, respondreComentari } from "../../services/comentaris";
 import { useAuth } from "../../contexts/AuthContext";
+import { useLanguage } from "../../contexts/LanguageContext";
 import { Parada, TextDto, Comentari } from "../../types";
 import AudioPlayer from "../../components/AudioPlayer";
+import CopyButton from "../../components/CopyButton";
 
 const ACCESSIBLE_FONT = Platform.select({ ios: "DMSans", android: "DMSans" }) ?? "DMSans";
 
-const MODE_LABELS: Record<"REMOT" | "GUIAT" | "LLIURE", string> = {
-  REMOT: "Remot",
-  GUIAT: "Guiat",
-  LLIURE: "Lliure",
+const LOCALE_PER_IDIOMA: Record<string, string> = {
+  CA: "ca-ES",
+  ES: "es-ES",
+  EN: "en-GB",
 };
 
 export default function ParadaScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
+  const { t, idioma } = useLanguage();
+  const potModerar = user?.rol === "EDITOR" || user?.rol === "ADMINISTRADOR";
+  const locale = LOCALE_PER_IDIOMA[idioma] ?? "ca-ES";
+  const MODE_LABELS: Record<"REMOT" | "GUIAT" | "LLIURE", string> = {
+    REMOT: t("parada.mode.REMOT"),
+    GUIAT: t("parada.mode.GUIAT"),
+    LLIURE: t("parada.mode.LLIURE"),
+  };
   const [parada, setParada] = useState<Parada | null>(null);
   const [textos, setTextos] = useState<TextDto[]>([]);
   const [totes, setTotes] = useState<Parada[]>([]);
@@ -42,6 +52,8 @@ export default function ParadaScreen() {
   const [comentaris, setComentaris] = useState<Comentari[]>([]);
   const [nouComentari, setNouComentari] = useState("");
   const [enviantComentari, setEnviantComentari] = useState(false);
+  const [respostesModeracio, setRespostesModeracio] = useState<Record<string, string>>({});
+  const [enviantResposta, setEnviantResposta] = useState<string | null>(null);
   const [visitLoading, setVisitLoading] = useState(false);
   const [fotoUrl, setFotoUrl] = useState<string | null>(null);
   const [fotoHeight, setFotoHeight] = useState(200);
@@ -84,7 +96,7 @@ export default function ParadaScreen() {
 
   const handleLike = async () => {
     if (!isAuthenticated) {
-      Alert.alert("Inicia sessió", "Has d'iniciar sessió per donar likes");
+      Alert.alert(t("parada.loginTitle"), t("parada.likeLoginMsg"));
       return;
     }
     if (textos.length === 0) return;
@@ -100,13 +112,13 @@ export default function ParadaScreen() {
         setLikesCount((c) => c + 1);
       }
     } catch {
-      Alert.alert("Error", "No s'ha pogut processar el like");
+      Alert.alert(t("common.error"), t("parada.likeError"));
     }
   };
 
   const handleVisitar = async () => {
     if (!isAuthenticated) {
-      Alert.alert("Inicia sessió", "Has d'iniciar sessió per marcar visitada");
+      Alert.alert(t("parada.loginTitle"), t("parada.loginToVisitMsg"));
       return;
     }
     setVisitLoading(true);
@@ -128,10 +140,10 @@ export default function ParadaScreen() {
       const visita = await registrarVisita(id as string, lat, lng);
       setVisitant(true);
       setMode(visita.mode);
-      Alert.alert("Fet!", "Parada marcada com a visitada");
+      Alert.alert(t("parada.visitSuccessTitle"), t("parada.visitSuccessMsg"));
     } catch (err: any) {
-      const msg = err?.response?.data?.detail || "Error en registrar la visita";
-      Alert.alert("Error", msg);
+      const msg = err?.response?.data?.detail || t("parada.visitError");
+      Alert.alert(t("common.error"), msg);
     } finally {
       setVisitLoading(false);
     }
@@ -140,7 +152,7 @@ export default function ParadaScreen() {
   const handleAfegirComentari = async () => {
     if (!nouComentari.trim()) return;
     if (!isAuthenticated) {
-      Alert.alert("Inicia sessió", "Has d'iniciar sessió per comentar");
+      Alert.alert(t("parada.loginTitle"), t("parada.commentLoginMsg"));
       return;
     }
     setEnviantComentari(true);
@@ -149,9 +161,42 @@ export default function ParadaScreen() {
       setComentaris((prev) => [comentari, ...prev]);
       setNouComentari("");
     } catch {
-      Alert.alert("Error", "No s'ha pogut afegir el comentari");
+      Alert.alert(t("common.error"), t("parada.commentError"));
     } finally {
       setEnviantComentari(false);
+    }
+  };
+
+  const handleEliminarComentari = (comentariId: string) => {
+    Alert.alert(t("parada.deleteCommentTitle"), t("parada.deleteCommentMsg"), [
+      { text: t("common.cancel"), style: "cancel" },
+      {
+        text: t("common.delete"),
+        style: "destructive",
+        onPress: async () => {
+          try {
+            await eliminarComentari(comentariId);
+            setComentaris((prev) => prev.filter((c) => c.id !== comentariId));
+          } catch {
+            Alert.alert(t("common.error"), t("parada.deleteCommentError"));
+          }
+        },
+      },
+    ]);
+  };
+
+  const handleRespondreComentari = async (comentariId: string) => {
+    const resposta = (respostesModeracio[comentariId] ?? "").trim();
+    if (!resposta) return;
+    setEnviantResposta(comentariId);
+    try {
+      const actualitzat = await respondreComentari(comentariId, resposta);
+      setComentaris((prev) => prev.map((c) => (c.id === comentariId ? actualitzat : c)));
+      setRespostesModeracio((prev) => ({ ...prev, [comentariId]: "" }));
+    } catch {
+      Alert.alert(t("common.error"), t("parada.replyError"));
+    } finally {
+      setEnviantResposta(null);
     }
   };
 
@@ -160,14 +205,14 @@ export default function ParadaScreen() {
       <View
         accessible
         accessibilityRole="text"
-        accessibilityLabel="Parada no trobada"
+        accessibilityLabel={t("parada.notFound")}
         style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: COLORS.bg }}
       >
         <Text
           style={{ fontFamily: FONTS.sans, color: COLORS.textSecondary, fontSize: 14 }}
           maxFontSizeMultiplier={1.5}
         >
-          Parada no trobada
+          {t("parada.notFound")}
         </Text>
       </View>
     );
@@ -195,17 +240,17 @@ export default function ParadaScreen() {
       >
         <TouchableOpacity
           accessibilityRole="button"
-          accessibilityLabel="Tornar al mapa"
+          accessibilityLabel={t("parada.back")}
           onPress={() => router.back()}
           style={{ minWidth: 44, minHeight: 44, justifyContent: "center" }}
         >
           <Text style={{ fontFamily: FONTS.sans, fontSize: 10, color: COLORS.textSecondary }} maxFontSizeMultiplier={1.4}>
-            ← Mapa
+            {t("parada.back")}
           </Text>
         </TouchableOpacity>
         <View
           accessibilityRole="text"
-          accessibilityLabel={`Parada ${parada.ordre} de 10`}
+          accessibilityLabel={`${t("parada.stopLabel")} ${parada.ordre} / 10`}
           style={{
             paddingHorizontal: 10,
             paddingVertical: 3,
@@ -222,13 +267,13 @@ export default function ParadaScreen() {
             }}
             maxFontSizeMultiplier={1.4}
           >
-            PARADA {parada.ordre} / 10
+            {t("parada.stopLabel").toUpperCase()} {parada.ordre} / 10
           </Text>
         </View>
         {mode && (
           <View
             accessibilityRole="text"
-            accessibilityLabel={`Mode ${MODE_LABELS[mode].toLowerCase()}`}
+            accessibilityLabel={`${MODE_LABELS[mode]}`}
             style={{
               paddingHorizontal: 8,
               paddingVertical: 3,
@@ -372,20 +417,26 @@ export default function ParadaScreen() {
             })}
           </ScrollView>
           <View style={{ paddingHorizontal: 14, paddingTop: 8 }}>
-            <Text
-              accessibilityRole="header"
-              style={{
-                fontFamily: FONTS.sans,
-                fontSize: 10,
-                fontStyle: "italic",
-                color: COLORS.textSecondary,
-                marginBottom: 4,
-              }}
-              maxFontSizeMultiplier={1.4}
-            >
-              {textos[textSeleccionat].titol}
-              {textos[textSeleccionat].obra_origen ? ` · ${textos[textSeleccionat].obra_origen}` : ""}
-            </Text>
+            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", gap: 6 }}>
+              <Text
+                accessibilityRole="header"
+                style={{
+                  flex: 1,
+                  fontFamily: FONTS.sans,
+                  fontSize: 10,
+                  fontStyle: "italic",
+                  color: COLORS.textSecondary,
+                  marginBottom: 4,
+                }}
+                maxFontSizeMultiplier={1.4}
+              >
+                {textos[textSeleccionat].titol}
+                {textos[textSeleccionat].obra_origen ? ` · ${textos[textSeleccionat].obra_origen}` : ""}
+              </Text>
+              <CopyButton
+                text={`${textos[textSeleccionat].titol}\n\n${textos[textSeleccionat].contingut}`}
+              />
+            </View>
             <View
               accessibilityRole="text"
               style={{
@@ -425,7 +476,7 @@ export default function ParadaScreen() {
               >
                 <TouchableOpacity
                   accessibilityRole="button"
-                  accessibilityLabel={liked ? "Treure like" : "Donar like"}
+                  accessibilityLabel={liked ? t("parada.removeLike") : t("parada.giveLike")}
                   accessibilityState={{ selected: liked }}
                   onPress={handleLike}
                   style={{
@@ -448,16 +499,16 @@ export default function ParadaScreen() {
                     style={{ fontFamily: FONTS.sans, fontSize: 11, color: liked ? COLORS.love : COLORS.text }}
                     maxFontSizeMultiplier={1.4}
                   >
-                    {likesCount > 0 ? likesCount : "M'agrada"}
+                    {likesCount > 0 ? likesCount : t("parada.likeLabel")}
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   accessibilityRole="button"
-                  accessibilityLabel="Veure vídeo"
+                  accessibilityLabel={t("parada.video")}
                   onPress={() => {
                     const url = textos[textSeleccionat]?.youtube_url;
                     if (url) Linking.openURL(url);
-                    else Alert.alert("No disponible", "Aquest text no té vídeo");
+                    else Alert.alert(t("parada.videoNotAvailableTitle"), t("parada.videoNotAvailableMsg"));
                   }}
                   style={{
                     flex: 1,
@@ -480,7 +531,7 @@ export default function ParadaScreen() {
                     }}
                     maxFontSizeMultiplier={1.4}
                   >
-                    🎬 Vídeo
+                    🎬 {t("parada.video")}
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -491,7 +542,7 @@ export default function ParadaScreen() {
           )}
           <TouchableOpacity
             accessibilityRole="button"
-            accessibilityLabel={textExpandit ? "Mostrar menys text" : "Llegir tot el text"}
+            accessibilityLabel={textExpandit ? t("parada.readLess") : t("parada.readMore")}
             accessibilityState={{ expanded: textExpandit }}
             onPress={() => setTextExpandit(!textExpandit)}
             style={{ paddingHorizontal: 14, paddingVertical: 6, minHeight: 44, justifyContent: "center" }}
@@ -504,7 +555,7 @@ export default function ParadaScreen() {
               }}
               maxFontSizeMultiplier={1.4}
             >
-              {textExpandit ? "mostrar menys ↑" : "llegir tot el text ↓"}
+              {textExpandit ? t("parada.readLess") : t("parada.readMore")}
             </Text>
           </TouchableOpacity>
         </>
@@ -512,7 +563,7 @@ export default function ParadaScreen() {
 
       <TouchableOpacity
         accessibilityRole="button"
-        accessibilityLabel={visitant ? "Parada ja visitada" : "Marcar com a visitada"}
+        accessibilityLabel={visitant ? t("parada.visited") : t("parada.markVisited")}
         accessibilityState={{ disabled: visitLoading || visitant }}
         onPress={handleVisitar}
         disabled={visitLoading || visitant}
@@ -568,49 +619,51 @@ export default function ParadaScreen() {
               }}
               maxFontSizeMultiplier={1.4}
             >
-              {visitant ? "Visitada" : "Marcar com a visitada"}
+              {visitant ? t("parada.visited") : t("parada.markVisited")}
             </Text>
           </>
         )}
       </TouchableOpacity>
 
-      {prevParada && (
+      {(prevParada || nextParada) && (
         <View
           accessibilityRole="toolbar"
           style={{ flexDirection: "row", gap: 6, paddingHorizontal: 14, paddingVertical: 6 }}
         >
-          <TouchableOpacity
-            accessibilityRole="button"
-            accessibilityLabel={`Parada anterior: ${prevParada.nom_espai}`}
-            onPress={() => router.push(`/parada/${prevParada.id}`)}
-            style={{
-              flex: 1,
-              borderWidth: 1,
-              borderColor: COLORS.border,
-              borderRadius: 6,
-              paddingVertical: 10,
-              paddingHorizontal: 10,
-              minHeight: 44,
-              justifyContent: "center",
-            }}
-          >
-            <Text
+          {prevParada && (
+            <TouchableOpacity
+              accessibilityRole="button"
+              accessibilityLabel={`${t("parada.prevStop")}: ${prevParada.nom_espai}`}
+              onPress={() => router.replace(`/parada/${prevParada.id}`)}
               style={{
-                fontFamily: FONTS.sans,
-                fontSize: 10,
-                color: COLORS.textSecondary,
+                flex: 1,
+                borderWidth: 1,
+                borderColor: COLORS.border,
+                borderRadius: 6,
+                paddingVertical: 10,
+                paddingHorizontal: 10,
+                minHeight: 44,
+                justifyContent: "center",
               }}
-              maxFontSizeMultiplier={1.4}
-              numberOfLines={1}
             >
-              ← {prevParada.nom_espai}
-            </Text>
-          </TouchableOpacity>
+              <Text
+                style={{
+                  fontFamily: FONTS.sans,
+                  fontSize: 10,
+                  color: COLORS.textSecondary,
+                }}
+                maxFontSizeMultiplier={1.4}
+                numberOfLines={1}
+              >
+                ← {prevParada.nom_espai}
+              </Text>
+            </TouchableOpacity>
+          )}
           {nextParada && (
             <TouchableOpacity
               accessibilityRole="button"
-              accessibilityLabel={`Següent parada: ${nextParada.nom_espai}`}
-              onPress={() => router.push(`/parada/${nextParada.id}`)}
+              accessibilityLabel={`${t("parada.nextStop")}: ${nextParada.nom_espai}`}
+              onPress={() => router.replace(`/parada/${nextParada.id}`)}
               style={{
                 flex: 1,
                 borderWidth: 1,
@@ -643,7 +696,7 @@ export default function ParadaScreen() {
                 }}
                 maxFontSizeMultiplier={1.3}
               >
-                Parada {nextParada.ordre}
+                {t("parada.stopLabel")} {nextParada.ordre}
               </Text>
             </TouchableOpacity>
           )}
@@ -678,11 +731,11 @@ export default function ParadaScreen() {
             }}
             maxFontSizeMultiplier={1.5}
           >
-            Comentaris
+            {t("parada.comments")}
           </Text>
           <View
             accessibilityRole="text"
-            accessibilityLabel={`${comentaris.length} comentaris`}
+            accessibilityLabel={`${comentaris.length} ${t("parada.comments").toLowerCase()}`}
             style={{
               backgroundColor: "#E8E2F0",
               borderRadius: 10,
@@ -707,8 +760,8 @@ export default function ParadaScreen() {
         <View style={{ flexDirection: "row", gap: 4, marginBottom: 8 }}>
           <TextInput
             accessibilityRole="text"
-            accessibilityLabel="Escriu un comentari"
-            placeholder="Afegeix un comentari..."
+            accessibilityLabel={t("parada.commentPlaceholder")}
+            placeholder={t("parada.commentPlaceholder")}
             placeholderTextColor={COLORS.textSecondary}
             value={nouComentari}
             onChangeText={setNouComentari}
@@ -731,7 +784,7 @@ export default function ParadaScreen() {
           />
           <TouchableOpacity
             accessibilityRole="button"
-            accessibilityLabel="Enviar comentari"
+            accessibilityLabel={t("common.send")}
             accessibilityState={{ disabled: enviantComentari || !nouComentari.trim() }}
             onPress={handleAfegirComentari}
             disabled={enviantComentari || !nouComentari.trim()}
@@ -749,7 +802,7 @@ export default function ParadaScreen() {
               style={{ fontFamily: FONTS.sans, fontSize: 11, color: COLORS.bg }}
               maxFontSizeMultiplier={1.3}
             >
-              Enviar
+              {t("common.send")}
             </Text>
           </TouchableOpacity>
         </View>
@@ -765,37 +818,75 @@ export default function ParadaScreen() {
             }}
             maxFontSizeMultiplier={1.4}
           >
-            No hi ha comentaris. Sigues el primer!
+            {t("parada.noComments")}
           </Text>
         ) : (
           comentaris.map((c) => (
             <View
               key={c.id}
-              accessibilityRole="text"
               style={{
                 paddingVertical: 8,
                 borderBottomWidth: 1,
                 borderBottomColor: "#e0dcd0",
-                minHeight: 44,
+                gap: 6,
               }}
             >
+              <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
+                <View style={{ flex: 1 }}>
+                  {user?.rol === "ADMINISTRADOR" ? (
+                    <TouchableOpacity
+                      accessibilityRole="link"
+                      accessibilityLabel={`Veure ${c.usuari_nom ?? "usuari"} ${c.usuari_cognom ?? ""} a Gestionar usuaris`}
+                      onPress={() => router.push(`/(admin)/usuaris?resaltar=${c.usuari_id}`)}
+                      style={{ minHeight: 20, justifyContent: "center" }}
+                    >
+                      <Text
+                        style={{ fontFamily: FONTS.sans, fontSize: 10, fontWeight: "600", color: COLORS.accent }}
+                        maxFontSizeMultiplier={1.4}
+                      >
+                        {c.usuari_nom ?? "Usuari"} {c.usuari_cognom ?? ""}
+                      </Text>
+                    </TouchableOpacity>
+                  ) : (
+                    c.usuari_nom && (
+                      <Text
+                        style={{ fontFamily: FONTS.sans, fontSize: 10, fontWeight: "600", color: COLORS.text }}
+                        maxFontSizeMultiplier={1.4}
+                      >
+                        {c.usuari_nom} {c.usuari_cognom ?? ""}
+                      </Text>
+                    )
+                  )}
+                  <Text
+                    style={{
+                      fontFamily: FONTS.sans,
+                      fontSize: 9,
+                      color: COLORS.textSecondary,
+                    }}
+                    maxFontSizeMultiplier={1.3}
+                  >
+                    {new Date(c.data_creacio).toLocaleDateString(locale, {
+                      day: "numeric",
+                      month: "short",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </Text>
+                </View>
+                {potModerar && (
+                  <TouchableOpacity
+                    accessibilityRole="button"
+                    accessibilityLabel={t("common.delete")}
+                    onPress={() => handleEliminarComentari(c.id)}
+                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                    style={{ minHeight: 32, minWidth: 32, alignItems: "center", justifyContent: "center" }}
+                  >
+                    <Text style={{ fontSize: 13 }}>🗑</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
               <Text
-                style={{
-                  fontFamily: FONTS.sans,
-                  fontSize: 9,
-                  color: COLORS.textSecondary,
-                  marginBottom: 2,
-                }}
-                maxFontSizeMultiplier={1.3}
-              >
-                {new Date(c.data_creacio).toLocaleDateString("ca-ES", {
-                  day: "numeric",
-                  month: "short",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
-              </Text>
-              <Text
+                accessibilityRole="text"
                 style={{
                   fontFamily: FONTS.sans,
                   fontSize: 11,
@@ -806,6 +897,74 @@ export default function ParadaScreen() {
               >
                 {c.contingut}
               </Text>
+
+              {c.resposta_editor ? (
+                <View
+                  accessibilityRole="text"
+                  accessibilityLabel={`${t("parada.editorReply")}: ${c.resposta_editor}`}
+                  style={{
+                    backgroundColor: COLORS.lightBg,
+                    borderRadius: 6,
+                    padding: 8,
+                    borderLeftWidth: 2,
+                    borderLeftColor: COLORS.accent,
+                  }}
+                >
+                  <Text style={{ fontFamily: FONTS.sans, fontSize: 9, color: COLORS.accent, marginBottom: 2 }} maxFontSizeMultiplier={1.3}>
+                    {t("parada.editorReply")}
+                  </Text>
+                  <Text style={{ fontFamily: FONTS.sans, fontSize: 11, color: COLORS.text }} maxFontSizeMultiplier={1.5}>
+                    {c.resposta_editor}
+                  </Text>
+                </View>
+              ) : (
+                potModerar && (
+                  <View style={{ flexDirection: "row", gap: 6 }}>
+                    <TextInput
+                      accessibilityRole="text"
+                      accessibilityLabel={`${t("parada.replyPlaceholder")}: ${c.contingut}`}
+                      placeholder={t("parada.replyPlaceholder")}
+                      placeholderTextColor={COLORS.textSecondary}
+                      value={respostesModeracio[c.id] ?? ""}
+                      onChangeText={(text) => setRespostesModeracio((prev) => ({ ...prev, [c.id]: text }))}
+                      maxFontSizeMultiplier={1.5}
+                      style={{
+                        flex: 1,
+                        borderWidth: 1,
+                        borderColor: COLORS.border,
+                        borderRadius: 6,
+                        paddingHorizontal: 8,
+                        paddingVertical: 6,
+                        fontFamily: FONTS.sans,
+                        fontSize: 11,
+                        color: COLORS.text,
+                        minHeight: 44,
+                      }}
+                    />
+                    <TouchableOpacity
+                      accessibilityRole="button"
+                      accessibilityLabel={t("common.send")}
+                      accessibilityState={{ disabled: enviantResposta === c.id || !(respostesModeracio[c.id] ?? "").trim() }}
+                      onPress={() => handleRespondreComentari(c.id)}
+                      disabled={enviantResposta === c.id || !(respostesModeracio[c.id] ?? "").trim()}
+                      style={{
+                        backgroundColor: COLORS.darkBg,
+                        borderRadius: 6,
+                        paddingHorizontal: 12,
+                        justifyContent: "center",
+                        opacity: enviantResposta === c.id || !(respostesModeracio[c.id] ?? "").trim() ? 0.5 : 1,
+                        minHeight: 44,
+                        minWidth: 44,
+                      }}
+                    >
+                      <Text style={{ fontFamily: FONTS.sans, fontSize: 10, color: COLORS.bg }} maxFontSizeMultiplier={1.3}>
+                        {t("common.send")}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                )
+              )}
+
             </View>
           ))
         )}

@@ -3,10 +3,12 @@ import { View, Text, TextInput, TouchableOpacity, Alert } from "react-native";
 import { useRouter } from "expo-router";
 import { COLORS, FONTS } from "../../constants";
 import { useAuth } from "../../contexts/AuthContext";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 export default function RegisterScreen() {
   const router = useRouter();
   const { register } = useAuth();
+  const { t } = useLanguage();
   const [nom, setNom] = useState("");
   const [cognom, setCognom] = useState("");
   const [email, setEmail] = useState("");
@@ -15,11 +17,11 @@ export default function RegisterScreen() {
 
   const handleRegister = async () => {
     if (!nom || !cognom || !email || !password) {
-      Alert.alert("Error", "Omple tots els camps");
+      Alert.alert(t("common.error"), t("auth.fillAllFields"));
       return;
     }
     if (password.length < 6) {
-      Alert.alert("Error", "La contrasenya ha de tenir almenys 6 caràcters");
+      Alert.alert(t("common.error"), t("auth.passwordMinLength"));
       return;
     }
     setLoading(true);
@@ -27,8 +29,8 @@ export default function RegisterScreen() {
       await register({ nom, cognom, email, password });
       router.replace("/(tabs)");
     } catch (err: any) {
-      const msg = err?.response?.data?.detail || "Error en crear el compte";
-      Alert.alert("Error", msg);
+      const msg = err?.response?.data?.detail || t("auth.registerError");
+      Alert.alert(t("common.error"), msg);
     } finally {
       setLoading(false);
     }
@@ -66,10 +68,10 @@ export default function RegisterScreen() {
             textTransform: "uppercase",
           }}
         >
-          Nom
+          {t("auth.name")}
         </Text>
         <TextInput
-          placeholder="El teu nom"
+          placeholder={t("auth.namePlaceholder")}
           placeholderTextColor={COLORS.textSecondary}
           value={nom}
           onChangeText={setNom}
@@ -97,10 +99,10 @@ export default function RegisterScreen() {
             textTransform: "uppercase",
           }}
         >
-          Cognom
+          {t("auth.surname")}
         </Text>
         <TextInput
-          placeholder="El teu cognom"
+          placeholder={t("auth.surnamePlaceholder")}
           placeholderTextColor={COLORS.textSecondary}
           value={cognom}
           onChangeText={setCognom}
@@ -128,10 +130,10 @@ export default function RegisterScreen() {
             textTransform: "uppercase",
           }}
         >
-          Email
+          {t("auth.email")}
         </Text>
         <TextInput
-          placeholder="nom@exemple.cat"
+          placeholder={t("auth.emailPlaceholder")}
           placeholderTextColor={COLORS.textSecondary}
           value={email}
           onChangeText={setEmail}
@@ -161,7 +163,7 @@ export default function RegisterScreen() {
             textTransform: "uppercase",
           }}
         >
-          Contrasenya
+          {t("auth.password")}
         </Text>
         <TextInput
           secureTextEntry
@@ -203,7 +205,7 @@ export default function RegisterScreen() {
             textAlign: "center",
           }}
         >
-          {loading ? "Creant compte..." : "Crear compte"}
+          {loading ? t("auth.creatingAccount") : t("auth.createAccountButton")}
         </Text>
       </TouchableOpacity>
 
@@ -216,7 +218,7 @@ export default function RegisterScreen() {
             textAlign: "center",
           }}
         >
-          ← Tornar
+          {t("auth.back")}
         </Text>
       </TouchableOpacity>
     </View>

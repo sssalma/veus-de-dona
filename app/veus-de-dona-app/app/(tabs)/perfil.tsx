@@ -4,12 +4,14 @@ import { useRouter, useFocusEffect } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { COLORS, FONTS } from "../../constants";
 import { useAuth } from "../../contexts/AuthContext";
+import { useLanguage } from "../../contexts/LanguageContext";
 import { getMevesVisites } from "../../services/visites";
 import { getParades } from "../../services/parades";
 
 export default function PerfilScreen() {
   const router = useRouter();
   const { user, isAuthenticated, isLoading, logout } = useAuth();
+  const { t } = useLanguage();
   const [visitedOrdres, setVisitedOrdres] = useState<Set<number>>(new Set());
   const [visitesCount, setVisitesCount] = useState(0);
 
@@ -55,7 +57,7 @@ export default function PerfilScreen() {
             color: COLORS.text,
           }}
         >
-          Perfil
+          {t("perfil.title")}
         </Text>
       </View>
 
@@ -95,7 +97,7 @@ export default function PerfilScreen() {
             <Text
               style={{ fontFamily: FONTS.sans, fontSize: 11, fontWeight: "500", color: COLORS.text }}
             >
-              {user ? `${user.nom} ${user.cognom}` : "Convidat"}
+              {user ? `${user.nom} ${user.cognom}` : t("perfil.guest")}
             </Text>
             <Text
               style={{
@@ -105,7 +107,7 @@ export default function PerfilScreen() {
                 marginTop: 2,
               }}
             >
-              {user?.email ?? "Sense sessió"}
+              {user?.email ?? t("perfil.noSession")}
             </Text>
             {user && (
                 <View
@@ -125,7 +127,7 @@ export default function PerfilScreen() {
                       color: "#6B5B8A",
                     }}
                   >
-                  {user.rol === "VISITANT" ? "Visitant" : user.rol}
+                  {user.rol === "VISITANT" ? t("perfil.visitant") : user.rol}
                   {user.procedencia ? ` · ${user.procedencia}` : ""}
                 </Text>
               </View>
@@ -155,7 +157,7 @@ export default function PerfilScreen() {
                 color: COLORS.textSecondary,
               }}
             >
-              Progrés de la ruta
+              {t("perfil.routeProgress")}
             </Text>
             <Text
               style={{
@@ -165,7 +167,7 @@ export default function PerfilScreen() {
                 color: COLORS.text,
               }}
             >
-              {visitesCount} / 10 parades
+              {visitesCount} / 10 {t("perfil.stops")}
             </Text>
           </View>
           <View style={{ flexDirection: "row", gap: 4, marginTop: 6 }}>
@@ -201,9 +203,9 @@ export default function PerfilScreen() {
 
         <View style={{ paddingHorizontal: 14 }}>
           {[
-            { label: "Idioma", value: (user?.idioma ?? "CA").toUpperCase() },
-            { label: "Procedència", value: user?.procedencia ?? "—" },
-            { label: "Grup escolar", value: user?.es_alumne ? "Sí" : "No" },
+            { label: t("perfil.language"), value: (user?.idioma ?? "CA").toUpperCase() },
+            { label: t("perfil.origin"), value: user?.procedencia ?? "—" },
+            { label: t("perfil.schoolGroup"), value: user?.es_alumne ? t("perfil.yes") : t("perfil.no") },
           ].map((item, i) => (
             <View
               key={i}
@@ -252,7 +254,7 @@ export default function PerfilScreen() {
                   color: COLORS.accent,
                 }}
               >
-                Panell d'administració →
+                {t("perfil.adminPanel")}
               </Text>
             </TouchableOpacity>
           )}
@@ -268,7 +270,7 @@ export default function PerfilScreen() {
                   color: COLORS.love,
                 }}
               >
-                Tancar sessió
+                {t("perfil.logout")}
               </Text>
             </TouchableOpacity>
           ) : (
@@ -283,7 +285,7 @@ export default function PerfilScreen() {
                   color: COLORS.accent,
                 }}
               >
-                Iniciar sessió →
+                {t("perfil.login")}
               </Text>
             </TouchableOpacity>
           )}

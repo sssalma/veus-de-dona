@@ -1,25 +1,28 @@
 import { useState, useCallback } from "react";
 import MapView, { Marker, Polyline, Callout } from "react-native-maps";
-import { View, Text, TouchableOpacity, Platform } from "react-native";
+import { View, Text, TouchableOpacity, Platform, Alert, Pressable } from "react-native";
 import { useRouter, useFocusEffect } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { getParades } from "../../services/parades";
+import { getParades, getTotesLesParades, toggleParadaActiva } from "../../services/parades";
 import { getMevesVisites } from "../../services/visites";
 import { useAuth } from "../../contexts/AuthContext";
+import { useLanguage } from "../../contexts/LanguageContext";
 import { COLORS, FONTS } from "../../constants";
 import { Parada } from "../../types";
 
 export default function MapaScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
+  const { t } = useLanguage();
+  const potModerar = user?.rol === "EDITOR" || user?.rol === "ADMINISTRADOR";
   const [parades, setParades] = useState<Parada[]>([]);
   const [visitedIds, setVisitedIds] = useState<Set<string>>(new Set());
   const [is3D, setIs3D] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
-      getParades()
+      (potModerar ? getTotesLesParades() : getParades())
         .then(setParades)
         .catch(() => setParades([]));
       if (isAuthenticated) {
@@ -27,8 +30,34 @@ export default function MapaScreen() {
           .then((visites) => setVisitedIds(new Set(visites.map((v) => v.parada_id))))
           .catch(() => {});
       }
-    }, [isAuthenticated])
+    }, [isAuthenticated, potModerar])
   );
+
+  const handleLongPressParada = (parada: Parada) => {
+    Alert.alert(
+      parada.nom_espai,
+      `Parada ${parada.ordre} · ${parada.activa ? "Activa" : "Inactiva"}`,
+      [
+        { text: "Cancel·lar", style: "cancel" },
+        {
+          text: "Editar parada",
+          onPress: () => router.push(`/(admin)/parades/${parada.id}`),
+        },
+        {
+          text: parada.activa ? "Desactivar" : "Activar",
+          style: parada.activa ? "destructive" : "default",
+          onPress: async () => {
+            try {
+              const actualitzada = await toggleParadaActiva(parada.id, !parada.activa);
+              setParades((prev) => prev.map((p) => (p.id === parada.id ? actualitzada : p)));
+            } catch {
+              Alert.alert("Error", "No s'ha pogut canviar l'estat de la parada");
+            }
+          },
+        },
+      ]
+    );
+  };
 
   const actives = parades.filter((p) => p.activa);
   const visitedCount = parades.filter((p) => visitedIds.has(p.id)).length;
@@ -59,7 +88,7 @@ export default function MapaScreen() {
             color: COLORS.text,
           }}
         >
-          La ruta
+          {t("mapa.title")}
         </Text>
         <View style={{ flexDirection: "row", gap: 6 }}>
           <TouchableOpacity
@@ -130,7 +159,7 @@ export default function MapaScreen() {
           strokeWidth={2}
           lineDashPattern={[6, 4]}
         />
-        {actives.map((parada) => {
+        {parades.map((parada) => {
           if (parada.lat == null || parada.lng == null) return null;
           const coords = { latitude: parada.lat, longitude: parada.lng };
           const visited = visitedIds.has(parada.id);
@@ -139,32 +168,38 @@ export default function MapaScreen() {
             <Marker
               key={parada.id}
               coordinate={coords}
-              onPress={() => router.push(`/parada/${parada.id}`)}
+              opacity={parada.activa ? 1 : 0.5}
             >
-              <View
-                style={{
-                  width: 26,
-                  height: 26,
-                  borderRadius: 13,
-                  backgroundColor: visited ? COLORS.accent : COLORS.darkBg,
-                  justifyContent: "center",
-                  alignItems: "center",
-                  borderWidth: 2,
-                  borderColor: COLORS.bg,
-                }}
+              <Pressable
+                onPress={() => parada.activa && router.push(`/parada/${parada.id}`)}
+                onLongPress={() => potModerar && handleLongPressParada(parada)}
+                delayLongPress={400}
               >
-                <Text
+                <View
                   style={{
-                    fontFamily: FONTS.sans,
-                    fontSize: 9,
-                    fontWeight: "600",
-                    color: COLORS.bg,
+                    width: 26,
+                    height: 26,
+                    borderRadius: 13,
+                    backgroundColor: !parada.activa ? COLORS.textSecondary : visited ? COLORS.accent : COLORS.darkBg,
+                    justifyContent: "center",
+                    alignItems: "center",
+                    borderWidth: 2,
+                    borderColor: COLORS.bg,
                   }}
                 >
-                  {parada.ordre}
-                </Text>
-              </View>
-              <Callout tooltip onPress={() => router.push(`/parada/${parada.id}`)}>
+                  <Text
+                    style={{
+                      fontFamily: FONTS.sans,
+                      fontSize: 9,
+                      fontWeight: "600",
+                      color: COLORS.bg,
+                    }}
+                  >
+                    {parada.ordre}
+                  </Text>
+                </View>
+              </Pressable>
+              <Callout tooltip onPress={() => parada.activa && router.push(`/parada/${parada.id}`)}>
                 <View
                   style={{
                     backgroundColor: COLORS.bg,
@@ -194,7 +229,9 @@ export default function MapaScreen() {
                       marginTop: 2,
                     }}
                   >
-                    Parada {parada.ordre} · {visited ? "✓ Visitada" : "Pendent"}
+                    {!parada.activa
+                      ? "Inactiva · manté polsat per gestionar"
+                      : `Parada ${parada.ordre} · ${visited ? "✓ Visitada" : "Pendent"}`}
                   </Text>
                 </View>
               </Callout>
@@ -225,7 +262,7 @@ export default function MapaScreen() {
               color: COLORS.textSecondary,
             }}
           >
-            Progrés de la ruta
+            {t("mapa.progress")}
           </Text>
           <Text
             style={{

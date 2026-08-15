@@ -6,6 +6,7 @@ import { getAutora } from "../../services/autores";
 import { getTextosByAutora } from "../../services/textos";
 import { getParades } from "../../services/parades";
 import { Autora, Parada, TextDto } from "../../types";
+import CopyButton from "../../components/CopyButton";
 
 export default function AutoraScreen() {
   const { id } = useLocalSearchParams();
@@ -158,18 +159,20 @@ export default function AutoraScreen() {
       </View>
 
       <View style={{ padding: 14, borderBottomWidth: 1, borderBottomColor: COLORS.border }}>
-        <Text
-          style={{
-            fontFamily: FONTS.sans,
-            fontSize: 10,
-            color: COLORS.textSecondary,
-            letterSpacing: 0.6,
-            textTransform: "uppercase",
-            marginBottom: 5,
-          }}
-        >
-          Biografia
-        </Text>
+        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 5 }}>
+          <Text
+            style={{
+              fontFamily: FONTS.sans,
+              fontSize: 10,
+              color: COLORS.textSecondary,
+              letterSpacing: 0.6,
+              textTransform: "uppercase",
+            }}
+          >
+            Biografia
+          </Text>
+          {autora.bio && <CopyButton text={autora.bio} />}
+        </View>
         <Text
           style={{
             fontFamily: FONTS.sans,
