@@ -15,3 +15,14 @@ dist/
 *.mobileprovision
 *.orig.*
 SESSIO_TREBALL.md
+
+# notes/docs de treball, no forme part del lliurable de codi
+CLAUDE.md
+DOCUMENTACIO_TFG.md
+INFORME_INCONSISTENCIES.md
+wcag.md
+VIDEOS.md
+Tfg_1.docx
+wireframes_veusdedona.html
+.mdperDocu/
+AUDIOS_TFG/
