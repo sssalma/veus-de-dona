@@ -58,7 +58,7 @@ def login_usuari(db: Session, email: str, password: str) -> str | None:
     usuari = get_usuari_by_email(db, email)
     if not usuari or not verify_password(password, str(usuari.password_hash)):
         return None
-    if not str(usuari.actiu):
+    if not usuari.actiu:
         return None
     return create_access_token({"sub": str(usuari.id), "rol": usuari.rol.value})
 
@@ -83,7 +83,7 @@ def get_current_user(
         raise credentials_exception
 
     usuari = db.query(Usuari).filter(Usuari.id == user_id).first()
-    if not usuari or not str(usuari.actiu):
+    if not usuari or not usuari.actiu:
         raise credentials_exception
     return usuari
 
