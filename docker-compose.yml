@@ -5,7 +5,7 @@ services:
       - "8000:8000"
     environment:
       DATABASE_URL: postgresql://admin:admin1234@db:5432/veusdedona
-      MINIO_URL: http://minio:9000
+      MINIO_URL: ${MINIO_URL:-http://minio:9000}
       MINIO_ACCESS_KEY: minioadmin
       MINIO_SECRET_KEY: minioadmin1234
       MINIO_BUCKET: veus-de-dona
