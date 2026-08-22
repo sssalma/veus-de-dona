@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
-import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert, Switch } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert, Switch, Image } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import * as ImagePicker from "expo-image-picker";
 import { COLORS, FONTS } from "../../../constants";
-import { getParada, updateParada, toggleParadaActiva } from "../../../services/parades";
+import { getParada, getParadaFoto, updateParada, updateParadaFoto, toggleParadaActiva } from "../../../services/parades";
 import AdminField from "../../../components/AdminField";
 
 export default function EditarParada() {
@@ -12,8 +13,10 @@ export default function EditarParada() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const [loading, setLoading] = useState(true);
   const [desant, setDesant] = useState(false);
+  const [pujantFoto, setPujantFoto] = useState(false);
   const [nomEspai, setNomEspai] = useState("");
   const [activa, setActiva] = useState(true);
+  const [fotoUrl, setFotoUrl] = useState<string | null>(null);
 
   useEffect(() => {
     getParada(id)
@@ -23,7 +26,39 @@ export default function EditarParada() {
       })
       .catch(() => Alert.alert("Error", "No s'ha pogut carregar la parada"))
       .finally(() => setLoading(false));
+    getParadaFoto(id)
+      .then(setFotoUrl)
+      .catch(() => setFotoUrl(null));
   }, [id]);
+
+  const handleCanviarFoto = async () => {
+    const permis = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permis.granted) {
+      Alert.alert("Error", "Cal permís per accedir a les fotos");
+      return;
+    }
+    const resultat = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images"],
+      quality: 0.8,
+    });
+    if (resultat.canceled || resultat.assets.length === 0) return;
+
+    const asset = resultat.assets[0];
+    setPujantFoto(true);
+    try {
+      await updateParadaFoto(id, {
+        uri: asset.uri,
+        name: asset.fileName || "foto.jpg",
+        type: asset.mimeType || "image/jpeg",
+      });
+      const novaUrl = await getParadaFoto(id);
+      setFotoUrl(novaUrl);
+    } catch {
+      Alert.alert("Error", "No s'ha pogut pujar la foto");
+    } finally {
+      setPujantFoto(false);
+    }
+  };
 
   const handleDesar = async () => {
     if (!nomEspai.trim()) {
@@ -88,6 +123,57 @@ export default function EditarParada() {
         </View>
       ) : (
         <View style={{ padding: 14 }}>
+          <Text style={{ fontFamily: FONTS.sans, fontSize: 10, color: COLORS.textSecondary, marginBottom: 6 }} maxFontSizeMultiplier={1.4}>
+            Foto de l'espai
+          </Text>
+          <View
+            style={{
+              width: "100%",
+              height: 160,
+              borderRadius: 8,
+              backgroundColor: COLORS.lightBg,
+              borderWidth: 1,
+              borderColor: COLORS.border,
+              marginBottom: 8,
+              overflow: "hidden",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            {fotoUrl ? (
+              <Image source={{ uri: fotoUrl }} style={{ width: "100%", height: "100%" }} resizeMode="cover" />
+            ) : (
+              <Text style={{ fontFamily: FONTS.sans, fontSize: 10, color: COLORS.textSecondary }}>
+                Sense foto
+              </Text>
+            )}
+          </View>
+          <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel="Canviar la foto de la parada"
+            accessibilityState={{ disabled: pujantFoto }}
+            onPress={handleCanviarFoto}
+            disabled={pujantFoto}
+            style={{
+              borderWidth: 1,
+              borderColor: COLORS.border,
+              borderRadius: 8,
+              paddingVertical: 10,
+              marginBottom: 14,
+              minHeight: 44,
+              justifyContent: "center",
+              opacity: pujantFoto ? 0.6 : 1,
+            }}
+          >
+            {pujantFoto ? (
+              <ActivityIndicator size="small" color={COLORS.darkBg} />
+            ) : (
+              <Text style={{ fontFamily: FONTS.sans, fontSize: 11, color: COLORS.text, textAlign: "center" }} maxFontSizeMultiplier={1.4}>
+                Canviar foto
+              </Text>
+            )}
+          </TouchableOpacity>
+
           <AdminField label="Nom de l'espai" value={nomEspai} onChangeText={setNomEspai} />
 
           <View

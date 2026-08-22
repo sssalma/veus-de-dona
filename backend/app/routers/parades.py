@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.schemas.parada import ParadaResponse, ParadaUpdate
@@ -61,6 +61,22 @@ def update_parada(
     parada = parades_service.update_parada(db, parada_id, dades.model_dump(exclude_unset=True))
     if not parada:
         raise HTTPException(status_code=404, detail="Parada no trobada")
+    return parada
+
+@router.post("/{parada_id}/foto", response_model=ParadaResponse)
+async def pujar_foto_parada(
+    parada_id: str,
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    current_user: Usuari = Depends(require_rol(RolUsuari.EDITOR, RolUsuari.ADMINISTRADOR))
+):
+    """Uploads a new photo for a stop, replacing the previous one - editor/admin only"""
+    file_bytes = await file.read()
+    parada = parades_service.update_parada_foto(
+        db, parada_id, file_bytes, file.filename or "foto.jpg", file.content_type or "image/jpeg"
+    )
+    if not parada:
+        raise HTTPException(status_code=404, detail="Parada no trobada o error al pujar la foto")
     return parada
 
 @router.patch("/{parada_id}/activa")

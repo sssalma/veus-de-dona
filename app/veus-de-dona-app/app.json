@@ -29,7 +29,13 @@
     "scheme": "veus-de-dona",
     "plugins": [
       "expo-router",
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Permet triar una foto per a la parada."
+        }
+      ]
     ]
   }
 }

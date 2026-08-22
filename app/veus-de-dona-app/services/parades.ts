@@ -30,3 +30,15 @@ export async function toggleParadaActiva(id: string, activa: boolean): Promise<P
   const { data } = await api.patch(`/parades/${id}/activa`, null, { params: { activa } });
   return data;
 }
+
+export async function updateParadaFoto(
+  id: string,
+  foto: { uri: string; name: string; type: string }
+): Promise<Parada> {
+  const formData = new FormData();
+  formData.append("file", foto as unknown as Blob);
+  const { data } = await api.post(`/parades/${id}/foto`, formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+  return data;
+}
