@@ -3,7 +3,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import {
   View, Text, ScrollView, TouchableOpacity,
   TextInput, Alert, ActivityIndicator, Image, Dimensions,
-  Platform, Linking,
+  Platform, Linking, KeyboardAvoidingView,
 } from "react-native";
 import * as Location from "expo-location";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -96,7 +96,10 @@ export default function ParadaScreen() {
 
   const handleLike = async () => {
     if (!isAuthenticated) {
-      Alert.alert(t("parada.loginTitle"), t("parada.likeLoginMsg"));
+      Alert.alert(t("parada.loginTitle"), t("parada.likeLoginMsg"), [
+        { text: t("common.cancel"), style: "cancel" },
+        { text: t("auth.loginButton"), onPress: () => router.push("/login") },
+      ]);
       return;
     }
     if (textos.length === 0) return;
@@ -118,7 +121,10 @@ export default function ParadaScreen() {
 
   const handleVisitar = async () => {
     if (!isAuthenticated) {
-      Alert.alert(t("parada.loginTitle"), t("parada.loginToVisitMsg"));
+      Alert.alert(t("parada.loginTitle"), t("parada.loginToVisitMsg"), [
+        { text: t("common.cancel"), style: "cancel" },
+        { text: t("auth.loginButton"), onPress: () => router.push("/login") },
+      ]);
       return;
     }
     setVisitLoading(true);
@@ -152,7 +158,10 @@ export default function ParadaScreen() {
   const handleAfegirComentari = async () => {
     if (!nouComentari.trim()) return;
     if (!isAuthenticated) {
-      Alert.alert(t("parada.loginTitle"), t("parada.commentLoginMsg"));
+      Alert.alert(t("parada.loginTitle"), t("parada.commentLoginMsg"), [
+        { text: t("common.cancel"), style: "cancel" },
+        { text: t("auth.loginButton"), onPress: () => router.push("/login") },
+      ]);
       return;
     }
     setEnviantComentari(true);
@@ -223,7 +232,11 @@ export default function ParadaScreen() {
   const nextParada = idx < totes.length - 1 ? totes[idx + 1] : null;
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: COLORS.bg }}>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    >
+    <ScrollView style={{ flex: 1, backgroundColor: COLORS.bg }} keyboardShouldPersistTaps="handled">
       <View
         accessibilityRole="header"
         style={{
@@ -970,5 +983,6 @@ export default function ParadaScreen() {
         )}
       </View>
     </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
