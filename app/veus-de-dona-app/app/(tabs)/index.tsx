@@ -163,7 +163,7 @@ export default function MapaScreen() {
       visitedIds: Array.from(visitedIds),
       satellite: is3D,
     });
-    webviewRef.current?.injectJavaScript(`window.updateData(${payload}); true;`);
+    webviewRef.current?.injectJavaScript(`window.updateData(${JSON.stringify(payload)}); true;`);
   }, [webviewReady, parades, visitedIds, is3D]);
 
   useEffect(() => {
