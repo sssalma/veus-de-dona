@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { View, Text, TouchableOpacity, Animated, StyleSheet } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { Audio, AVPlaybackStatus } from "expo-av";
 import { getRecursosByText, getRecursUrl } from "../services/recursos";
 import { COLORS, FONTS } from "../constants";
@@ -13,6 +14,9 @@ export default function AudioPlayer({ textId }: AudioPlayerProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [hasAudio, setHasAudio] = useState(false);
+  const [hasError, setHasError] = useState(false);
+  const [positionMillis, setPositionMillis] = useState(0);
+  const [durationMillis, setDurationMillis] = useState(0);
   const soundRef = useRef<Audio.Sound | null>(null);
 
   const animHeight = useRef(new Animated.Value(44)).current;
@@ -31,7 +35,10 @@ export default function AudioPlayer({ textId }: AudioPlayerProps) {
   async function initAudio() {
     setIsLoading(true);
     setHasAudio(false);
+    setHasError(false);
     setIsPlaying(false);
+    setPositionMillis(0);
+    setDurationMillis(0);
 
     if (soundRef.current) {
       await soundRef.current.unloadAsync();
@@ -45,7 +52,6 @@ export default function AudioPlayer({ textId }: AudioPlayerProps) {
       if (!audioRecurs) {
         return;
       }
-      setHasAudio(true);
 
       const url = await getRecursUrl(audioRecurs.id);
       const { sound: newSound } = await Audio.Sound.createAsync(
@@ -54,14 +60,19 @@ export default function AudioPlayer({ textId }: AudioPlayerProps) {
       );
       soundRef.current = newSound;
       setSound(newSound);
+      setHasAudio(true);
 
       newSound.setOnPlaybackStatusUpdate((status: AVPlaybackStatus) => {
-        if (status.isLoaded && status.didJustFinish) {
+        if (!status.isLoaded) return;
+        setPositionMillis(status.positionMillis);
+        setDurationMillis(status.durationMillis ?? 0);
+        if (status.didJustFinish) {
           setIsPlaying(false);
+          setPositionMillis(0);
         }
       });
     } catch {
-      // silently fail - audio not available
+      setHasError(true);
     } finally {
       setIsLoading(false);
     }
@@ -79,6 +90,8 @@ export default function AudioPlayer({ textId }: AudioPlayerProps) {
     }
   }, [sound, isPlaying, isLoading]);
 
+  const progressPct = durationMillis > 0 ? Math.min(100, (positionMillis / durationMillis) * 100) : 0;
+
   useEffect(() => {
     Animated.parallel([
       Animated.timing(animHeight, {
@@ -94,9 +107,8 @@ export default function AudioPlayer({ textId }: AudioPlayerProps) {
     ]).start();
   }, [isPlaying]);
 
-  if (!hasAudio) return null;
-
-  const icon = isLoading ? "" : isPlaying ? "⏸" : "▶";
+  if (!hasAudio && !isLoading) return null;
+  if (hasError) return null;
 
   return (
     <Animated.View style={[styles.container, { height: animHeight }]}>
@@ -105,7 +117,9 @@ export default function AudioPlayer({ textId }: AudioPlayerProps) {
         disabled={isLoading}
         style={styles.button}
       >
-        <Text style={styles.icon}>{icon}</Text>
+        {!isLoading && (
+          <Ionicons name={isPlaying ? "pause" : "play"} size={14} color={COLORS.bg} />
+        )}
         <Text style={styles.label}>
           {isLoading
             ? "Carregant..."
@@ -116,7 +130,7 @@ export default function AudioPlayer({ textId }: AudioPlayerProps) {
       </TouchableOpacity>
       <Animated.View style={[styles.progressSection, { opacity: animOpacity }]}>
         <View style={styles.progressTrack}>
-          <View style={styles.progressFill} />
+          <View style={[styles.progressFill, { width: `${progressPct}%` }]} />
         </View>
       </Animated.View>
     </Animated.View>
@@ -138,10 +152,6 @@ const styles = StyleSheet.create({
     minHeight: 44,
     paddingHorizontal: 10,
   },
-  icon: {
-    fontSize: 12,
-    color: COLORS.bg,
-  },
   label: {
     fontFamily: FONTS.sans,
     fontSize: 10,
@@ -159,7 +169,6 @@ const styles = StyleSheet.create({
     borderRadius: 2,
   },
   progressFill: {
-    width: "60%",
     height: "100%",
     backgroundColor: COLORS.bg,
     borderRadius: 2,
