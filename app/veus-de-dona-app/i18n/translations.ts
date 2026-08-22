@@ -35,6 +35,7 @@ export const ca = {
 
   "mapa.title": "La ruta",
   "mapa.progress": "Progrés de la ruta",
+  "mapa.recenter": "Centra la meva ubicació",
 
   "autoresScreen.title": "Autores",
   "autoresScreen.searchPlaceholder": "Cercar autora...",
@@ -131,6 +132,7 @@ export const es: typeof ca = {
 
   "mapa.title": "La ruta",
   "mapa.progress": "Progreso de la ruta",
+  "mapa.recenter": "Centra mi ubicación",
 
   "autoresScreen.title": "Autoras",
   "autoresScreen.searchPlaceholder": "Buscar autora...",
@@ -227,6 +229,7 @@ export const en: typeof ca = {
 
   "mapa.title": "The route",
   "mapa.progress": "Route progress",
+  "mapa.recenter": "Center my location",
 
   "autoresScreen.title": "Authors",
   "autoresScreen.searchPlaceholder": "Search for an author...",
