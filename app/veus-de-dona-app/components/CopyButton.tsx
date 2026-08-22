@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
-import { TouchableOpacity, Text } from "react-native";
+import { TouchableOpacity } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import * as Clipboard from "expo-clipboard";
 import { COLORS } from "../constants";
 import { useLanguage } from "../contexts/LanguageContext";
@@ -24,9 +25,11 @@ export default function CopyButton({ text }: { text: string }) {
       hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
       style={{ minHeight: 28, minWidth: 28, alignItems: "center", justifyContent: "center" }}
     >
-      <Text style={{ fontSize: 13, color: copiat ? COLORS.accent : COLORS.textSecondary }}>
-        {copiat ? "✓" : "📋"}
-      </Text>
+      <Ionicons
+        name={copiat ? "checkmark" : "copy-outline"}
+        size={16}
+        color={copiat ? COLORS.accent : COLORS.textSecondary}
+      />
     </TouchableOpacity>
   );
 }
