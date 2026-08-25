@@ -223,7 +223,7 @@ export default function AutoraScreen() {
                 {texto.titol}
               </Text>
               <Text style={{ fontFamily: FONTS.sans, fontSize: 10, color: COLORS.textSecondary, marginTop: 2 }}>
-                {texto.obra_origen} · Parada {parada?.ordre ?? "?"}
+                {parada ? `${texto.obra_origen} · Parada ${parada.ordre}` : texto.obra_origen}
               </Text>
             </TouchableOpacity>
           );

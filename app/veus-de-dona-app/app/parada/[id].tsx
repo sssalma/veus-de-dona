@@ -229,7 +229,7 @@ export default function ParadaScreen() {
 
   const idx = totes.findIndex((p) => p.id === id);
   const prevParada = idx > 0 ? totes[idx - 1] : null;
-  const nextParada = idx < totes.length - 1 ? totes[idx + 1] : null;
+  const nextParada = idx !== -1 && idx < totes.length - 1 ? totes[idx + 1] : null;
 
   return (
     <KeyboardAvoidingView
