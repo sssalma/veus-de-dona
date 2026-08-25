@@ -50,7 +50,7 @@ export default function AutoraScreen() {
       >
         <TouchableOpacity onPress={() => router.back()}>
           <Text style={{ fontFamily: FONTS.sans, fontSize: 10, color: COLORS.textSecondary }}>
-            ← Parada {id}
+            ← Enrere
           </Text>
         </TouchableOpacity>
         <Text
