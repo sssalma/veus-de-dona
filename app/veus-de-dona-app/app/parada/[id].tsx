@@ -515,38 +515,35 @@ export default function ParadaScreen() {
                     {likesCount > 0 ? likesCount : t("parada.likeLabel")}
                   </Text>
                 </TouchableOpacity>
-                <TouchableOpacity
-                  accessibilityRole="button"
-                  accessibilityLabel={t("parada.video")}
-                  onPress={() => {
-                    const url = textos[textSeleccionat]?.youtube_url;
-                    if (url) Linking.openURL(url);
-                    else Alert.alert(t("parada.videoNotAvailableTitle"), t("parada.videoNotAvailableMsg"));
-                  }}
-                  style={{
-                    flex: 1,
-                    borderWidth: 1,
-                    borderColor: COLORS.text,
-                    paddingVertical: 12,
-                    borderRadius: 6,
-                    minHeight: 44,
-                    justifyContent: "center",
-                    opacity: textos[textSeleccionat]?.youtube_url ? 1 : 0.4,
-                  }}
-                >
-                  <Text
+                {textos[textSeleccionat]?.youtube_url && (
+                  <TouchableOpacity
+                    accessibilityRole="button"
+                    accessibilityLabel={t("parada.video")}
+                    onPress={() => Linking.openURL(textos[textSeleccionat].youtube_url!)}
                     style={{
-                      fontFamily: FONTS.sans,
-                      fontSize: 10,
-                      fontWeight: "500",
-                      color: COLORS.text,
-                      textAlign: "center",
+                      flex: 1,
+                      borderWidth: 1,
+                      borderColor: COLORS.text,
+                      paddingVertical: 12,
+                      borderRadius: 6,
+                      minHeight: 44,
+                      justifyContent: "center",
                     }}
-                    maxFontSizeMultiplier={1.4}
                   >
-                    🎬 {t("parada.video")}
-                  </Text>
-                </TouchableOpacity>
+                    <Text
+                      style={{
+                        fontFamily: FONTS.sans,
+                        fontSize: 10,
+                        fontWeight: "500",
+                        color: COLORS.text,
+                        textAlign: "center",
+                      }}
+                      maxFontSizeMultiplier={1.4}
+                    >
+                      🎬 {t("parada.video")}
+                    </Text>
+                  </TouchableOpacity>
+                )}
               </View>
               <View style={{ paddingHorizontal: 14, paddingTop: 6 }}>
                 <AudioPlayer textId={textos[textSeleccionat].id} />
