@@ -8,11 +8,13 @@ import { getTextosByAutora } from "../../services/textos";
 import { getParades } from "../../services/parades";
 import { Autora, Parada, TextDto } from "../../types";
 import CopyButton from "../../components/CopyButton";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 export default function AutoraScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { t } = useLanguage();
   const [autora, setAutora] = useState<Autora | null>(null);
   const [textos, setTextos] = useState<TextDto[]>([]);
   const [totesParades, setTotesParades] = useState<Parada[]>([]);
@@ -28,7 +30,7 @@ export default function AutoraScreen() {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: COLORS.bg }}>
         <Text style={{ fontFamily: FONTS.sans, color: COLORS.textSecondary }}>
-          Autora no trobada
+          {t("autora.notFound")}
         </Text>
       </View>
     );
@@ -50,7 +52,7 @@ export default function AutoraScreen() {
       >
         <TouchableOpacity onPress={() => router.back()}>
           <Text style={{ fontFamily: FONTS.sans, fontSize: 10, color: COLORS.textSecondary }}>
-            ← Enrere
+            {t("autora.back")}
           </Text>
         </TouchableOpacity>
         <Text
@@ -61,7 +63,7 @@ export default function AutoraScreen() {
             color: COLORS.text,
           }}
         >
-          Fitxa autora
+          {t("autora.title")}
         </Text>
         <View style={{ width: 40 }} />
       </View>
@@ -136,7 +138,7 @@ export default function AutoraScreen() {
                   color: "#5a5040",
                 }}
               >
-                Poesia
+                {t("autora.tagPoetry")}
               </Text>
             </View>
             <View
@@ -154,7 +156,7 @@ export default function AutoraScreen() {
                   color: "#5a5040",
                 }}
               >
-                Narrativa
+                {t("autora.tagNarrative")}
               </Text>
             </View>
           </View>
@@ -172,7 +174,7 @@ export default function AutoraScreen() {
               textTransform: "uppercase",
             }}
           >
-            Biografia
+            {t("autora.bio")}
           </Text>
           {autora.bio && <CopyButton text={autora.bio} />}
         </View>
@@ -199,7 +201,7 @@ export default function AutoraScreen() {
             marginBottom: 6,
           }}
         >
-          Textos a la ruta
+          {t("autora.textsInRoute")}
         </Text>
         {textos.map((texto) => {
           const parada = totesParades.find((p) => p.id === texto.parada_id);
@@ -226,7 +228,7 @@ export default function AutoraScreen() {
                 {texto.titol}
               </Text>
               <Text style={{ fontFamily: FONTS.sans, fontSize: 10, color: COLORS.textSecondary, marginTop: 2 }}>
-                {parada ? `${texto.obra_origen} · Parada ${parada.ordre}` : texto.obra_origen}
+                {parada ? `${texto.obra_origen} · ${t("autora.stop")} ${parada.ordre}` : texto.obra_origen}
               </Text>
             </TouchableOpacity>
           );

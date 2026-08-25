@@ -91,6 +91,14 @@ export const ca = {
   "parada.replyError": "No s'ha pogut enviar la resposta",
   "parada.prevStop": "Parada anterior",
   "parada.nextStop": "Següent parada",
+  "autora.notFound": "Autora no trobada",
+  "autora.back": "← Enrere",
+  "autora.title": "Fitxa autora",
+  "autora.tagPoetry": "Poesia",
+  "autora.tagNarrative": "Narrativa",
+  "autora.bio": "Biografia",
+  "autora.textsInRoute": "Textos a la ruta",
+  "autora.stop": "Parada",
 };
 
 export const es: typeof ca = {
@@ -186,6 +194,14 @@ export const es: typeof ca = {
   "parada.replyError": "No se ha podido enviar la respuesta",
   "parada.prevStop": "Parada anterior",
   "parada.nextStop": "Siguiente parada",
+  "autora.notFound": "Autora no encontrada",
+  "autora.back": "← Atrás",
+  "autora.title": "Ficha autora",
+  "autora.tagPoetry": "Poesía",
+  "autora.tagNarrative": "Narrativa",
+  "autora.bio": "Biografía",
+  "autora.textsInRoute": "Textos en la ruta",
+  "autora.stop": "Parada",
 };
 
 export const en: typeof ca = {
@@ -281,6 +297,14 @@ export const en: typeof ca = {
   "parada.replyError": "Couldn't send the reply",
   "parada.prevStop": "Previous stop",
   "parada.nextStop": "Next stop",
+  "autora.notFound": "Author not found",
+  "autora.back": "← Back",
+  "autora.title": "Author profile",
+  "autora.tagPoetry": "Poetry",
+  "autora.tagNarrative": "Fiction",
+  "autora.bio": "Biography",
+  "autora.textsInRoute": "Texts on the route",
+  "autora.stop": "Stop",
 };
 
 export const translations = { CA: ca, ES: es, EN: en };
