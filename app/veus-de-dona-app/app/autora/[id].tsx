@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { View, Text, ScrollView, TouchableOpacity } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { COLORS, FONTS } from "../../constants";
 import { getAutora } from "../../services/autores";
 import { getTextosByAutora } from "../../services/textos";
@@ -11,6 +12,7 @@ import CopyButton from "../../components/CopyButton";
 export default function AutoraScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const [autora, setAutora] = useState<Autora | null>(null);
   const [textos, setTextos] = useState<TextDto[]>([]);
   const [totesParades, setTotesParades] = useState<Parada[]>([]);
@@ -40,7 +42,8 @@ export default function AutoraScreen() {
           alignItems: "center",
           justifyContent: "space-between",
           paddingHorizontal: 14,
-          paddingVertical: 10,
+          paddingTop: insets.top + 10,
+          paddingBottom: 10,
           borderBottomWidth: 1,
           borderBottomColor: COLORS.border,
         }}
