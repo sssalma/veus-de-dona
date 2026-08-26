@@ -2,6 +2,7 @@ import { View, Text, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 import { COLORS, FONTS } from "../constants";
 import { useLanguage } from "../contexts/LanguageContext";
+import { Logotip } from "../components/Logotip";
 import { Idioma } from "../i18n/translations";
 
 const IDIOMES: Idioma[] = ["CA", "ES", "EN"];
@@ -20,27 +21,18 @@ export default function SplashScreen() {
         alignItems: "center",
       }}
     >
-      <Text
-        style={{
-          fontFamily: FONTS.serif,
-          fontStyle: "italic",
-          fontSize: 28,
-          color: COLORS.bg,
-          textAlign: "center",
-          lineHeight: 34,
-        }}
-      >
-        Veus{"\n"}de Dona
-      </Text>
+      <Logotip mida={38} sobreFosc />
       <Text
         style={{
           fontFamily: FONTS.sans,
-          fontSize: 10,
-          color: "rgba(255,255,255,0.5)",
+          fontSize: 11,
+          color: "rgba(250,248,244,0.55)",
           letterSpacing: 1.2,
           textTransform: "uppercase",
-          marginTop: 4,
+          textAlign: "center",
+          marginTop: 14,
         }}
+        maxFontSizeMultiplier={1.3}
       >
         {t("splash.subtitle")}
       </Text>

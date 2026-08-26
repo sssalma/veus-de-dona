@@ -1,5 +1,5 @@
 export const ca = {
-  "splash.subtitle": "Ruta literària · Part Alta · Tarragona",
+  "splash.subtitle": "13 escriptores · Part Alta · Tarragona",
   "splash.cta": "Descobrir la ruta →",
 
   "common.cancel": "Cancel·lar",
@@ -316,7 +316,7 @@ export const ca = {
 };
 
 export const es: typeof ca = {
-  "splash.subtitle": "Ruta literaria · Part Alta · Tarragona",
+  "splash.subtitle": "13 escritoras · Part Alta · Tarragona",
   "splash.cta": "Descubrir la ruta →",
 
   "common.cancel": "Cancelar",
@@ -633,7 +633,7 @@ export const es: typeof ca = {
 };
 
 export const en: typeof ca = {
-  "splash.subtitle": "Literary route · Part Alta · Tarragona",
+  "splash.subtitle": "13 women writers · Part Alta · Tarragona",
   "splash.cta": "Discover the route →",
 
   "common.cancel": "Cancel",

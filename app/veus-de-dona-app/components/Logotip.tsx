@@ -11,7 +11,14 @@ import { APP, COLORS, FONTS } from "../constants";
  * Es llegeix com un sol element: un lector de pantalla ha de dir el nom
  * sencer d'una tirada, no partit en dues línies soltes.
  */
-export function Logotip({ mida = 22 }: { mida?: number }) {
+export function Logotip({
+  mida = 22,
+  sobreFosc = false,
+}: {
+  mida?: number;
+  /** A la pantalla d'entrada el logotip va sobre la tinta, no sobre el paper. */
+  sobreFosc?: boolean;
+}) {
   return (
     <View accessible accessibilityRole="header" accessibilityLabel={`${APP.nom} ${APP.subtitol}`}>
       <Text
@@ -20,7 +27,7 @@ export function Logotip({ mida = 22 }: { mida?: number }) {
           fontStyle: "italic",
           fontSize: mida,
           lineHeight: mida * 1.25,
-          color: COLORS.text,
+          color: sobreFosc ? COLORS.bg : COLORS.text,
           textAlign: "center",
         }}
         maxFontSizeMultiplier={1.3}
@@ -34,7 +41,8 @@ export function Logotip({ mida = 22 }: { mida?: number }) {
           fontWeight: "600",
           letterSpacing: Math.max(1.5, mida * 0.14),
           textTransform: "uppercase",
-          color: COLORS.textSecondary,
+          // sobre la tinta, el cru pur cridaria mes que el nom: es baixa un pas
+          color: sobreFosc ? "rgba(250,248,244,0.62)" : COLORS.textSecondary,
           textAlign: "center",
           // compensa l'espaiat, que empeny el text cap a l'esquerra
           marginLeft: Math.max(1.5, mida * 0.14),
