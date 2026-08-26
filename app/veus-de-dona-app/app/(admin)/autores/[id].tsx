@@ -42,6 +42,11 @@ export default function EditarAutora() {
   const [desantIdioma, setDesantIdioma] = useState<string | null>(null);
 
   useEffect(() => {
+    // Sense idioma a proposit: aquest camp edita la biografia CATALANA, que
+    // viu a autora.bio. Si es demanes en l'idioma de la interficie, una
+    // editora treballant en angles es trobaria el text angles dins del camp
+    // catala i el desaria a sobre de l'original. Les altres versions
+    // s'editen al bloc de traduccions de mes avall.
     getAutora(id)
       .then((a) => {
         setNom(a.nom);

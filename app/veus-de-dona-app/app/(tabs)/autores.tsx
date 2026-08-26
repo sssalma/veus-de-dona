@@ -10,15 +10,18 @@ import { Autora } from "../../types";
 export default function AutoresScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { t } = useLanguage();
+  const { t, idioma } = useLanguage();
   const [autores, setAutores] = useState<Autora[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
 
+  // La targeta ensenya les dues primeres linies de la biografia, de manera que
+  // la llista tambe ha de demanar-la en l'idioma de la interficie. Amb l'idioma
+  // a les dependencies es torna a demanar sola quan es canvia.
   useEffect(() => {
-    getAutores()
+    getAutores(idioma)
       .then(setAutores)
       .catch(() => setAutores([]));
-  }, []);
+  }, [idioma]);
 
   const filtered = autores.filter((a) => {
     if (!searchQuery.trim()) return true;
