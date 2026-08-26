@@ -633,7 +633,7 @@ export const es: typeof ca = {
 };
 
 export const en: typeof ca = {
-  "splash.subtitle": "13 women writers · Part Alta · Tarragona",
+  "splash.subtitle": "13 women's voices · Part Alta · Tarragona",
   "splash.cta": "Discover the route →",
 
   "common.cancel": "Cancel",
