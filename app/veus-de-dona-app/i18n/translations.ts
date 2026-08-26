@@ -299,7 +299,6 @@ export const ca = {
   "admin.assign": "Assignar",
 
   "perfil.about": "Sobre el projecte",
-  "sobre.title": "Veus de Dona",
   "sobre.leadIn": "Un projecte de ruta literària per Tarragona des d'una perspectiva femenina.",
   "sobre.projectHeading": "El projecte",
   "sobre.projectBody": "«Veus de dona a Tarragona» és un projecte que proposa recórrer la ciutat des d'una perspectiva femenina, de manera virtual i també presencial. Neix d'un grup de treball de professionals de l'ensenyament secundari i aplega textos, biografies, traduccions, materials didàctics, audiovisuals de les autores i prop d'un centenar d'àudios enregistrats per alumnat, repartits en quaranta-una ubicacions de la ciutat.",
@@ -617,7 +616,6 @@ export const es: typeof ca = {
   "admin.assign": "Asignar",
 
   "perfil.about": "Sobre el proyecto",
-  "sobre.title": "Veus de Dona",
   "sobre.leadIn": "Un proyecto de ruta literaria por Tarragona desde una perspectiva femenina.",
   "sobre.projectHeading": "El proyecto",
   "sobre.projectBody": "«Veus de dona a Tarragona» es un proyecto que propone recorrer la ciudad desde una perspectiva femenina, de forma virtual y también presencial. Nace de un grupo de trabajo de profesionales de la enseñanza secundaria y reúne textos, biografías, traducciones, materiales didácticos, audiovisuales de las autoras y cerca de un centenar de audios grabados por alumnado, repartidos en cuarenta y una ubicaciones de la ciudad.",
@@ -935,7 +933,6 @@ export const en: typeof ca = {
   "admin.assign": "Set",
 
   "perfil.about": "About the project",
-  "sobre.title": "Veus de Dona",
   "sobre.leadIn": "A literary route project through Tarragona from a woman's perspective.",
   "sobre.projectHeading": "The project",
   "sobre.projectBody": "«Veus de dona a Tarragona» is a project that invites you to walk the city from a woman's perspective, online and on foot. It grew out of a working group of secondary school teachers and brings together texts, biographies, translations, teaching material, audiovisual pieces by the writers and close to a hundred recordings made by students, spread across forty-one locations in the city.",

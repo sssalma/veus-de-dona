@@ -4,6 +4,7 @@ import { useRouter } from "expo-router";
 import { COLORS, FONTS } from "../../constants";
 import { useAuth } from "../../contexts/AuthContext";
 import { useLanguage } from "../../contexts/LanguageContext";
+import { Logotip } from "../../components/Logotip";
 import FormField from "../../components/FormField";
 import { missatgeError, correuSemblaValid } from "../../services/errors";
 
@@ -45,20 +46,9 @@ export default function LoginScreen() {
         contentContainerStyle={{ flexGrow: 1, justifyContent: "center", paddingHorizontal: 20 }}
         keyboardShouldPersistTaps="handled"
       >
-        <Text
-          accessibilityRole="header"
-          style={{
-            fontFamily: FONTS.serif,
-            fontStyle: "italic",
-            fontSize: 20,
-            color: COLORS.text,
-            textAlign: "center",
-            marginBottom: 16,
-          }}
-          maxFontSizeMultiplier={1.5}
-        >
-          Veus de Dona
-        </Text>
+        <View style={{ marginBottom: 20 }}>
+          <Logotip mida={26} />
+        </View>
 
         <FormField
           label={t("auth.email")}

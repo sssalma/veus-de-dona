@@ -5,8 +5,9 @@ import { Platform } from "react-native";
  *
  * Paper crema i tinta amb una ombra d'aubergínia. El fosc no és un negre
  * neutre sinó que comparteix temperatura amb el violeta, de manera que el
- * color del moviment feminista -que en una app que es diu Veus de Dona és
- * significat i no decoració- deixa de ser un accent solitari i tenyeix també
+ * color del moviment feminista -que en una app sobre les veus de tretze
+ * escriptores és significat i no decoració- deixa de ser un accent solitari
+ * i tenyeix també
  * les capçaleres, els botons plens i el vel de les fotografies. De lluny es
  * llegeix com a negre; de prop, el conjunt té temperatura.
  *
@@ -109,6 +110,22 @@ export const ROTUL_SECCIO = {
   textTransform: "uppercase",
   color: COLORS.textSecondary,
 } as const;
+
+/**
+ * El nom de l'aplicació, que no és el del projecte.
+ *
+ * «Veus de dona a Tarragona» és un projecte amb diversos itineraris repartits
+ * en quaranta-una ubicacions de la ciutat; aquesta aplicació en dona suport a
+ * un, la Ruta de les 13 escriptores per la Part Alta, de deu parades. Mentre
+ * l'app es deia igual que el projecte, la diferència s'havia d'explicar cada
+ * vegada. Amb nom propi s'entén sola.
+ *
+ * No va a les traduccions perquè és un nom propi: no es tradueix.
+ */
+export const APP = {
+  nom: "TarraDona",
+  subtitol: "Literària",
+};
 
 /**
  * Dades del projecte que la pantalla d'informació ensenya.

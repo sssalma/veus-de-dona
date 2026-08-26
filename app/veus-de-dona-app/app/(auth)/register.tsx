@@ -4,6 +4,7 @@ import { useRouter } from "expo-router";
 import { COLORS, FONTS, PASSWORD_MIN_LENGTH, ROTUL_SECCIO } from "../../constants";
 import { useAuth } from "../../contexts/AuthContext";
 import { useLanguage } from "../../contexts/LanguageContext";
+import { Logotip } from "../../components/Logotip";
 import FormField from "../../components/FormField";
 import { missatgeError, correuSemblaValid } from "../../services/errors";
 
@@ -66,20 +67,9 @@ export default function RegisterScreen() {
         contentContainerStyle={{ flexGrow: 1, justifyContent: "center", paddingHorizontal: 20, paddingVertical: 24 }}
         keyboardShouldPersistTaps="handled"
       >
-        <Text
-          accessibilityRole="header"
-          style={{
-            fontFamily: FONTS.serif,
-            fontStyle: "italic",
-            fontSize: 20,
-            color: COLORS.text,
-            textAlign: "center",
-            marginBottom: 16,
-          }}
-          maxFontSizeMultiplier={1.5}
-        >
-          Veus de Dona
-        </Text>
+        <View style={{ marginBottom: 20 }}>
+          <Logotip mida={26} />
+        </View>
 
         <FormField
           label={t("auth.name")}

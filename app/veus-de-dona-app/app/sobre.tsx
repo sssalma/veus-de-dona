@@ -3,6 +3,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { COLORS, FONTS, PROJECTE, ROTUL_SECCIO } from "../constants";
 import { useLanguage } from "../contexts/LanguageContext";
 import { Capcalera } from "../components/Capcalera";
+import { Logotip } from "../components/Logotip";
 
 /**
  * Qui hi ha darrere de la ruta, on trobar-ne la resta de material i a qui
@@ -27,18 +28,7 @@ export default function SobreScreen() {
 
         <View style={{ paddingHorizontal: 18, paddingTop: 22, gap: 24 }}>
           <View style={{ gap: 8 }}>
-            <Text
-              style={{
-                fontFamily: FONTS.serif,
-                fontStyle: "italic",
-                fontSize: 26,
-                color: COLORS.text,
-                lineHeight: 32,
-              }}
-              maxFontSizeMultiplier={1.3}
-            >
-              {t("sobre.title")}
-            </Text>
+            <Logotip mida={30} />
             <Text
               style={{
                 fontFamily: FONTS.sans,
