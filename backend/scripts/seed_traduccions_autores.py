@@ -10,10 +10,8 @@ Amb els textos literaris no es pot fer aixo, i per aixo no es fa: alli el
 valor es justament l'expressio, i traduir-la seria crear obra derivada sense
 tenir-ne el dret.
 
-Les autores es busquen per nom i cognom i no per identificador, perque
-scraper_autores.py buida la taula i la torna a omplir, i els UUID canvien a
-cada passada. Aixi aquest seed es pot tornar a executar despres d'un scraping
-sense que calgui tocar res.
+Les autores es busquen per nom i cognom, de manera que el seed es pot tornar
+a executar despres d'un scraping.
 
 Us:
     venv/Scripts/python.exe scripts/seed_traduccions_autores.py
@@ -74,12 +72,7 @@ BIOGRAFIES = {
             "for her crime and science fiction writing."
         ),
     },
-    # El scraper li va partir malament el nom: "Maria" / "Aurelia Capmany i
-    # Farnes" en comptes de "Maria Aurelia" / "Capmany i Farnes". Per aixo a la
-    # llista d'autores surt ordenada per la A i no per la C. Aqui es fa servir
-    # el que hi ha de debut a la base de dades; si algun dia es corregeix la
-    # divisio, aquesta clau s'ha de canviar.
-    ("Maria", "Aurèlia Capmany i Farnés"): {
+    ("Maria Aurèlia", "Capmany i Farnés"): {
         "ES": (
             "Escritora barcelonesa polifacética: novelista, traductora, dramaturga y "
             "ensayista. Estudió en el Institut Escola de la Generalitat de Catalunya y "

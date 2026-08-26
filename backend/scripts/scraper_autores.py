@@ -6,6 +6,8 @@ Execució: python -m scripts.scraper_autores
 import sys
 import os
 import time
+import re
+
 import requests
 from bs4 import BeautifulSoup
 
@@ -36,13 +38,43 @@ HEADERS = {
     "User-Agent": "Mozilla/5.0 (compatible; VeusDona-TFG/1.0)"
 }
 
+# Un parentesi amb un any tant pot ser la data de naixement com el premi o
+# l'editorial d'un llibre. El biografic es el que nomes va precedit del nom de
+# l'autora; les cites d'obres arriben enmig de la prosa.
+ANY_ENTRE_PARENTESIS = re.compile(r"\(([^)]*\d{4}[^)]*)\)")
+ANY_DE_NAIXEMENT = re.compile(
+    r"(?:va n[ée]ixer|neix|nascuda|nasqu)[^.]{0,60}?(\d{4})", re.IGNORECASE
+)
+
+
+def nomes_hi_ha_un_nom(text: str) -> bool:
+    """Cert si tot el que hi ha son paraules que comencen en majuscula."""
+    return all(paraula[:1].isupper() for paraula in text.split())
+
+
 def extreure_anys_vida(text: str) -> str:
-    """Busca el primer text entre parentesis que conte un any"""
-    import re
-    match = re.search(r'\(([^)]*\d{4}[^)]*)\)', text)
-    if match:
-        return match.group(1)
-    return ""
+    """Els anys de vida, del parentesi que obre la biografia o de la primera
+    frase si no n'hi ha."""
+    for match in ANY_ENTRE_PARENTESIS.finditer(text):
+        if nomes_hi_ha_un_nom(text[:match.start()]):
+            return match.group(1)
+
+    match = ANY_DE_NAIXEMENT.search(text)
+    return match.group(1) if match else ""
+
+
+def partir_nom(nom_complet: str) -> tuple[str, str]:
+    """Separa el nom del cognom.
+
+    Els cognoms catalans van units amb "i": el cognom son les dues paraules que
+    l'envolten i la resta del davant es el nom. Cal per als noms compostos, com
+    "Maria Aurelia Capmany i Farnes"."""
+    parts = nom_complet.split()
+    if "i" in parts:
+        tall = parts.index("i")
+        if 0 < tall < len(parts) - 1:
+            return " ".join(parts[:tall - 1]), " ".join(parts[tall - 1:])
+    return parts[0], " ".join(parts[1:])
 
 def extreure_bio_des_de_seccio(seccio, nom_complet):
     """Agafa el text d'una seccio i talla a 'Llegir mes' i el nom repetit"""
@@ -77,9 +109,7 @@ def extreure_autora(slug: str) -> dict | None:
         print(f"  X No s'ha trobat nom a {url}")
         return None
 
-    parts = nom_complet.split()
-    nom = parts[0]
-    cognom = " ".join(parts[1:])
+    nom, cognom = partir_nom(nom_complet)
 
     # 1r intent: buscar per nom dins les seccions
     sections = soup.find_all("div", class_="mYVXT")
@@ -111,30 +141,45 @@ def extreure_autora(slug: str) -> dict | None:
     }
 
 def seed():
-    """Buida la taula d'autores i les torna a scrapejar totes"""
+    """Torna a llegir les biografies del web i actualitza les autores.
+
+    Actualitza les files que ja hi son en comptes d'esborrar-les: aixi es
+    conserven els identificadors, i els textos, les traduccions i el retrat
+    segueixen lligats on toca.
+    """
     db = SessionLocal()
     try:
-        existing = db.query(Autora).count()
-        if existing > 0:
-            print(f"Esborrant {existing} autores existents...")
-            db.query(Autora).delete()
-            db.commit()
-
         print("Extraient dades de la web de Veus de Dona...")
-        inserides = 0
+        noves = 0
+        actualitzades = 0
 
         for slug in AUTORES_SLUGS:
             print(f"  -> {slug}")
             dades = extreure_autora(slug)
-            if dades:
-                autora = Autora(**dades)
-                db.add(autora)
-                inserides += 1
-                print(f"    V {dades['nom']} {dades['cognom']} ({dades['anys_vida']})")
+            if not dades:
+                time.sleep(1)
+                continue
+
+            autora = db.query(Autora).filter(
+                Autora.nom == dades["nom"],
+                Autora.cognom == dades["cognom"],
+            ).first()
+
+            if autora:
+                for camp, valor in dades.items():
+                    setattr(autora, camp, valor)
+                actualitzades += 1
+                estat = "actualitzada"
+            else:
+                db.add(Autora(**dades))
+                noves += 1
+                estat = "nova"
+
+            print(f"    V {dades['nom']} {dades['cognom']} ({dades['anys_vida']}) - {estat}")
             time.sleep(1)
 
         db.commit()
-        print(f"\nV {inserides} autores inserides correctament.")
+        print(f"\nV {noves} autores noves, {actualitzades} actualitzades.")
 
     except Exception as e:
         db.rollback()

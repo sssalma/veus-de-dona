@@ -4,6 +4,7 @@ import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app.database import SessionLocal
+from scripts.scraper_autores import partir_nom
 from app.models.autora import Autora
 from app.models.parada import Parada
 from app.models.text import Text
@@ -383,10 +384,9 @@ def seed():
     parada_per_ordre = {p.ordre: p for p in parades}
 
     def find_autora(nom_complet: str) -> Autora | None:
-        parts = nom_complet.strip().split(maxsplit=1)
-        if len(parts) != 2:
+        nom, cognom = partir_nom(nom_complet.strip())
+        if not cognom:
             return None
-        nom, cognom = parts
         return db.query(Autora).filter(
             Autora.nom == nom,
             Autora.cognom == cognom,

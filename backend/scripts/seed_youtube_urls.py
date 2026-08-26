@@ -3,6 +3,7 @@ import sys, os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app.database import SessionLocal
+from scripts.scraper_autores import partir_nom
 from app.models.text import Text
 from app.models.autora import Autora
 
@@ -30,11 +31,10 @@ def seed():
     db = SessionLocal()
     updated = 0
     for (nom_complet, titol), video_id in YOUTUBE_URLS.items():
-        parts = nom_complet.strip().split(maxsplit=1)
-        if len(parts) != 2:
+        nom, cognom = partir_nom(nom_complet.strip())
+        if not cognom:
             print(f"  Saltant {nom_complet}: format incorrecte")
             continue
-        nom, cognom = parts
         autora = db.query(Autora).filter(Autora.nom == nom, Autora.cognom == cognom).first()
         if not autora:
             print(f"  Autora no trobada: {nom_complet}")
