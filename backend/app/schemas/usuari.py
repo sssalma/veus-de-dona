@@ -45,6 +45,16 @@ class UsuariRolUpdate(BaseModel):
 class UsuariActiuUpdate(BaseModel):
     actiu: bool
 
+class UsuariPasswordReset(BaseModel):
+    """A new password set by an administrator for someone else's account.
+
+    Unlike CanviPassword this does not ask for the current one: the whole point
+    is that the account holder no longer knows it. The endpoint that uses it is
+    restricted to administrators and refuses to act on the caller's own account.
+    """
+    password_nova: str = Field(min_length=PASSWORD_MIN_LENGTH)
+
+
 class UsuariIdiomaUpdate(BaseModel):
     idioma: Idioma
 

@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.database import get_db
-from app.schemas.usuari import UsuariResponse, UsuariRolUpdate, UsuariActiuUpdate, UsuariIdiomaUpdate
+from app.schemas.usuari import UsuariResponse, UsuariRolUpdate, UsuariActiuUpdate, UsuariIdiomaUpdate, UsuariPasswordReset
 from app.services import usuaris as usuaris_service
 from app.services.auth import get_current_user, require_rol
 from app.models.usuari import Usuari, RolUsuari
@@ -66,3 +66,29 @@ def canviar_rol(
     if not usuari:
         raise HTTPException(status_code=404, detail="Usuari no trobat")
     return usuari
+
+@router.patch("/{usuari_id}/contrasenya", status_code=204)
+def assignar_contrasenya(
+    usuari_id: str,
+    dades: UsuariPasswordReset,
+    db: Session = Depends(get_db),
+    current_user: Usuari = Depends(require_rol(RolUsuari.ADMINISTRADOR))
+):
+    """Sets a new password on someone else's account - admin only.
+
+    There is no self-service password recovery in this system, so somebody who
+    forgets their password has no way back in on their own. This is the way
+    back: an administrator sets a new one and passes it on.
+
+    It refuses to act on the caller's own account on purpose. Changing your own
+    password goes through POST /auth/canvi-contrasenya, which asks for the
+    current one first - that check is what stops a stolen session from locking
+    the real owner out, and this endpoint must not be a way around it."""
+    if str(current_user.id) == usuari_id:
+        raise HTTPException(
+            status_code=400,
+            detail="Per canviar la teva contrasenya has de fer servir el canvi de contrasenya del perfil"
+        )
+    usuari = usuaris_service.set_password(db, usuari_id, dades.password_nova)
+    if not usuari:
+        raise HTTPException(status_code=404, detail="Usuari no trobat")

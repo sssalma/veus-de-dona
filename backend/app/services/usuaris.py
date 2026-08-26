@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
 from app.models.usuari import Usuari, RolUsuari, Idioma
+from app.services.auth import hash_password
 
 def get_all_usuaris(db: Session):
     """Returns all users"""
@@ -39,6 +40,21 @@ def update_perfil(db: Session, usuari: Usuari, dades: dict) -> Usuari:
 def set_idioma(db: Session, usuari: Usuari, idioma: Idioma) -> Usuari:
     """Self-service language change"""
     setattr(usuari, "idioma", idioma)
+    db.commit()
+    db.refresh(usuari)
+    return usuari
+
+def set_password(db: Session, usuari_id: str, password_nova: str) -> Usuari | None:
+    """Overwrites a user's password. Used by an administrator to get someone
+    back into an account they are locked out of: there is no self-service
+    recovery, so without this the account would be unreachable for good.
+
+    Note that any token already issued for that account stays valid until it
+    expires on its own - the API does not keep a revocation list."""
+    usuari = get_usuari_by_id(db, usuari_id)
+    if not usuari:
+        return None
+    setattr(usuari, "password_hash", hash_password(password_nova))
     db.commit()
     db.refresh(usuari)
     return usuari
