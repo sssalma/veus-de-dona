@@ -1,93 +1,65 @@
 import { useState, useCallback } from "react";
-import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator } from "react-native";
+import { View, ScrollView } from "react-native";
 import { useRouter, useFocusEffect } from "expo-router";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { COLORS, FONTS } from "../../../constants";
+import { COLORS } from "../../../constants";
+import { useLanguage } from "../../../contexts/LanguageContext";
+import { Capcalera } from "../../../components/Capcalera";
+import { EstatLlista, FilaLlista } from "../../../components/admin/LlistaAdmin";
 import { getTotesLesParades } from "../../../services/parades";
 import { Parada } from "../../../types";
 
 export default function AdminParades() {
   const router = useRouter();
-  const insets = useSafeAreaInsets();
+  const { t } = useLanguage();
   const [parades, setParades] = useState<Parada[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
       setLoading(true);
       getTotesLesParades()
-        .then(setParades)
-        .catch(() => setParades([]))
+        .then((dades) => {
+          setParades(dades);
+          setError(false);
+        })
+        .catch(() => {
+          setParades([]);
+          setError(true);
+        })
         .finally(() => setLoading(false));
     }, [])
   );
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: COLORS.bg }}>
-      <View
-        accessibilityRole="header"
-        style={{
-          paddingHorizontal: 14,
-          paddingTop: insets.top + 6,
-          paddingBottom: 10,
-          borderBottomWidth: 1,
-          borderBottomColor: COLORS.border,
-        }}
-      >
-        <TouchableOpacity
-          accessibilityRole="button"
-          accessibilityLabel="Tornar al panell"
-          onPress={() => router.back()}
-          style={{ marginBottom: 6, minHeight: 44, minWidth: 44, justifyContent: "center" }}
-        >
-          <Text style={{ fontFamily: FONTS.sans, fontSize: 10, color: COLORS.textSecondary }} maxFontSizeMultiplier={1.4}>
-            ← Panell
-          </Text>
-        </TouchableOpacity>
-        <Text
-          accessibilityRole="header"
-          style={{ fontFamily: FONTS.serif, fontSize: 16, fontWeight: "600", color: COLORS.text }}
-          maxFontSizeMultiplier={1.5}
-        >
-          Parades
-        </Text>
-      </View>
+    <View style={{ flex: 1, backgroundColor: COLORS.bg }}>
+      <ScrollView contentContainerStyle={{ paddingBottom: 32 }}>
+        <Capcalera tornarA="panell" titol={t("admin.parades")} />
 
-      {loading ? (
-        <View accessibilityLabel="Carregant parades" style={{ padding: 24, alignItems: "center" }}>
-          <ActivityIndicator size="small" color={COLORS.darkBg} />
-        </View>
-      ) : (
-        <View style={{ padding: 14, gap: 8 }}>
-          {parades.map((p) => (
-            <TouchableOpacity
-              key={p.id}
-              accessibilityRole="button"
-              accessibilityLabel={`Editar parada ${p.ordre}: ${p.nom_espai}${!p.activa ? ", inactiva" : ""}`}
-              onPress={() => router.push(`/(admin)/parades/${p.id}`)}
-              style={{
-                borderWidth: 1,
-                borderColor: COLORS.controlBorder,
-                borderRadius: 8,
-                padding: 12,
-                minHeight: 44,
-                flexDirection: "row",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
-              <Text style={{ fontFamily: FONTS.sans, fontSize: 12, fontWeight: "600", color: COLORS.text }} maxFontSizeMultiplier={1.5}>
-                {p.ordre}. {p.nom_espai}
-              </Text>
-              {!p.activa && (
-                <Text style={{ fontFamily: FONTS.sans, fontSize: 9, color: COLORS.love }} maxFontSizeMultiplier={1.4}>
-                  Inactiva
-                </Text>
-              )}
-            </TouchableOpacity>
-          ))}
-        </View>
-      )}
-    </ScrollView>
+        <EstatLlista
+          loading={loading}
+          error={error}
+          buit={parades.length === 0}
+          missatgeBuit={t("admin.paradesEmpty")}
+        />
+
+        {!loading && !error && parades.length > 0 && (
+          <View style={{ paddingHorizontal: 18, paddingTop: 18, gap: 8 }}>
+            {parades.map((p) => (
+              <FilaLlista
+                key={p.id}
+                titol={`${p.ordre}. ${p.nom_espai}`}
+                distintiu={p.activa ? null : t("admin.inactive")}
+                accessibilityLabel={
+                  `${t("admin.editParada")} ${p.ordre}: ${p.nom_espai}` +
+                  (p.activa ? "" : `, ${t("admin.inactive")}`)
+                }
+                onPress={() => router.push(`/(admin)/parades/${p.id}`)}
+              />
+            ))}
+          </View>
+        )}
+      </ScrollView>
+    </View>
   );
 }

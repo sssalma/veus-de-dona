@@ -1,17 +1,22 @@
 import { useState, useEffect } from "react";
 import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert, Image } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { COLORS, FONTS } from "../../../constants";
 import * as ImagePicker from "expo-image-picker";
+import { COLORS, FONTS, ROTUL_SECCIO } from "../../../constants";
+import { useLanguage } from "../../../contexts/LanguageContext";
+import { Capcalera } from "../../../components/Capcalera";
+import { BotoDesar } from "../../../components/admin/BotoDesar";
+import { EstatLlista } from "../../../components/admin/LlistaAdmin";
 import { getAutora, updateAutora, getAutoraFoto, updateAutoraFoto } from "../../../services/autores";
+import { missatgeError } from "../../../services/errors";
 import FormField from "../../../components/FormField";
 
 export default function EditarAutora() {
   const router = useRouter();
-  const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();
+  const { t } = useLanguage();
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [desant, setDesant] = useState(false);
   const [nom, setNom] = useState("");
   const [cognom, setCognom] = useState("");
@@ -27,17 +32,20 @@ export default function EditarAutora() {
         setCognom(a.cognom);
         setAnysVida(a.anys_vida ?? "");
         setBio(a.bio ?? "");
+        setError(false);
       })
-      .catch(() => Alert.alert("Error", "No s'ha pogut carregar l'autora"))
+      .catch(() => setError(true))
       .finally(() => setLoading(false));
-    // 404 si encara no en te: es queda amb les inicials
-    getAutoraFoto(id).then(setFotoUrl).catch(() => setFotoUrl(null));
+    // Un 404 aquí només vol dir que encara no en té: es queda sense retrat.
+    getAutoraFoto(id)
+      .then(setFotoUrl)
+      .catch(() => setFotoUrl(null));
   }, [id]);
 
   const handleCanviarFoto = async () => {
     const permis = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permis.granted) {
-      Alert.alert("Error", "Cal permis per accedir a les fotos");
+      Alert.alert(t("common.error"), t("admin.photoPermission"));
       return;
     }
     const resultat = await ImagePicker.launchImageLibraryAsync({
@@ -55,8 +63,8 @@ export default function EditarAutora() {
         type: asset.mimeType || "image/jpeg",
       });
       setFotoUrl(await getAutoraFoto(id));
-    } catch {
-      Alert.alert("Error", "No s'ha pogut pujar la foto");
+    } catch (err) {
+      Alert.alert(t("common.error"), missatgeError(err, t("admin.photoUploadError")));
     } finally {
       setPujantFoto(false);
     }
@@ -64,7 +72,7 @@ export default function EditarAutora() {
 
   const handleDesar = async () => {
     if (!nom.trim() || !cognom.trim()) {
-      Alert.alert("Error", "El nom i el cognom son obligatoris");
+      Alert.alert(t("common.error"), t("admin.nameRequired"));
       return;
     }
     setDesant(true);
@@ -76,148 +84,116 @@ export default function EditarAutora() {
         bio: bio.trim() || null,
       });
       router.back();
-    } catch {
-      Alert.alert("Error", "No s'han pogut desar els canvis");
+    } catch (err) {
+      Alert.alert(t("common.error"), missatgeError(err, t("admin.saveError")));
     } finally {
       setDesant(false);
     }
   };
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: COLORS.bg }}>
-      <View
-        accessibilityRole="header"
-        style={{
-          paddingHorizontal: 14,
-          paddingTop: insets.top + 6,
-          paddingBottom: 10,
-          borderBottomWidth: 1,
-          borderBottomColor: COLORS.border,
-        }}
-      >
-        <TouchableOpacity
-          accessibilityRole="button"
-          accessibilityLabel="Tornar a la llista d'autores"
-          onPress={() => router.back()}
-          style={{ marginBottom: 6, minHeight: 44, minWidth: 44, justifyContent: "center" }}
-        >
-          <Text style={{ fontFamily: FONTS.sans, fontSize: 10, color: COLORS.textSecondary }} maxFontSizeMultiplier={1.4}>
-            ← Autores
-          </Text>
-        </TouchableOpacity>
-        <Text
-          accessibilityRole="header"
-          style={{ fontFamily: FONTS.serif, fontSize: 16, fontWeight: "600", color: COLORS.text }}
-          maxFontSizeMultiplier={1.5}
-        >
-          Editar autora
-        </Text>
-      </View>
+    <View style={{ flex: 1, backgroundColor: COLORS.bg }}>
+      <ScrollView contentContainerStyle={{ paddingBottom: 32 }} keyboardShouldPersistTaps="handled">
+        <Capcalera tornarA="panell" titol={t("admin.editAutora")} />
 
-      {loading ? (
-        <View accessibilityLabel="Carregant autora" style={{ padding: 24, alignItems: "center" }}>
-          <ActivityIndicator size="small" color={COLORS.darkBg} />
-        </View>
-      ) : (
-        <View style={{ padding: 14 }}>
-          <Text
-            style={{ fontFamily: FONTS.sans, fontSize: 10, color: COLORS.textSecondary, marginBottom: 6 }}
-            maxFontSizeMultiplier={1.4}
-          >
-            Retrat de l'autora
-          </Text>
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 14 }}>
-            <View
-              style={{
-                width: 72,
-                height: 72,
-                borderRadius: 36,
-                backgroundColor: COLORS.lightBg,
-                borderWidth: 1,
-                borderColor: COLORS.border,
-                overflow: "hidden",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              {fotoUrl ? (
-                <Image source={{ uri: fotoUrl }} style={{ width: "100%", height: "100%" }} resizeMode="cover" />
-              ) : (
-                <Text
-                  style={{ fontFamily: FONTS.sans, fontSize: 9, color: COLORS.textSecondary }}
-                  maxFontSizeMultiplier={1.3}
-                >
-                  Sense foto
-                </Text>
-              )}
-            </View>
-            <TouchableOpacity
-              accessibilityRole="button"
-              accessibilityLabel="Canviar el retrat de l'autora"
-              accessibilityState={{ disabled: pujantFoto, busy: pujantFoto }}
-              onPress={handleCanviarFoto}
-              disabled={pujantFoto}
-              style={{
-                flex: 1,
-                borderWidth: 1,
-                borderColor: COLORS.controlBorder,
-                borderRadius: 8,
-                paddingVertical: 10,
-                minHeight: 44,
-                justifyContent: "center",
-                opacity: pujantFoto ? 0.6 : 1,
-              }}
-            >
-              {pujantFoto ? (
-                <ActivityIndicator size="small" color={COLORS.darkBg} />
-              ) : (
-                <Text
-                  style={{ fontFamily: FONTS.sans, fontSize: 11, color: COLORS.text, textAlign: "center" }}
-                  maxFontSizeMultiplier={1.4}
-                >
-                  Canviar retrat
-                </Text>
-              )}
-            </TouchableOpacity>
-          </View>
+        <EstatLlista loading={loading} error={error} buit={false} missatgeBuit={t("admin.loadError")} />
 
-          <FormField label="Nom" value={nom} onChangeText={setNom} />
-          <FormField label="Cognom" value={cognom} onChangeText={setCognom} />
-          <FormField label="Anys de vida" placeholder="1900-1980" value={anysVida} onChangeText={setAnysVida} />
-          <FormField
-            label="Biografia"
-            value={bio}
-            onChangeText={setBio}
-            multiline
-            numberOfLines={6}
-            style={{ minHeight: 110, textAlignVertical: "top" }}
-          />
-
-          <TouchableOpacity
-            accessibilityRole="button"
-            accessibilityLabel="Desar canvis de l'autora"
-            accessibilityState={{ disabled: desant }}
-            onPress={handleDesar}
-            disabled={desant}
-            style={{
-              backgroundColor: COLORS.darkBg,
-              paddingVertical: 11,
-              borderRadius: 8,
-              marginTop: 6,
-              opacity: desant ? 0.6 : 1,
-              minHeight: 44,
-              justifyContent: "center",
-            }}
-          >
+        {!loading && !error && (
+          <View style={{ paddingHorizontal: 18, paddingTop: 18 }}>
             <Text
-              style={{ fontFamily: FONTS.sans, fontSize: 11, fontWeight: "500", color: COLORS.bg, textAlign: "center" }}
+              style={[ROTUL_SECCIO, { marginBottom: 8 }]}
               maxFontSizeMultiplier={1.4}
             >
-              {desant ? "Desant..." : "Desar canvis"}
+              {t("admin.portrait")}
             </Text>
-          </TouchableOpacity>
-        </View>
-      )}
-    </ScrollView>
+
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 18 }}>
+              <View
+                style={{
+                  width: 76,
+                  height: 76,
+                  borderRadius: 38,
+                  backgroundColor: COLORS.lightBg,
+                  borderWidth: 1,
+                  borderColor: COLORS.border,
+                  overflow: "hidden",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                {fotoUrl ? (
+                  <Image
+                    accessibilityIgnoresInvertColors
+                    source={{ uri: fotoUrl }}
+                    style={{ width: "100%", height: "100%" }}
+                    resizeMode="cover"
+                  />
+                ) : (
+                  <Text
+                    style={{ fontFamily: FONTS.sans, fontSize: 11, color: COLORS.textSecondary }}
+                    maxFontSizeMultiplier={1.3}
+                  >
+                    {t("admin.noPhoto")}
+                  </Text>
+                )}
+              </View>
+
+              <TouchableOpacity
+                accessibilityRole="button"
+                accessibilityLabel={t("admin.changePortrait")}
+                accessibilityState={{ disabled: pujantFoto, busy: pujantFoto }}
+                onPress={handleCanviarFoto}
+                disabled={pujantFoto}
+                style={{
+                  flex: 1,
+                  borderWidth: 1,
+                  borderColor: COLORS.controlBorder,
+                  borderRadius: 8,
+                  paddingVertical: 12,
+                  minHeight: 46,
+                  justifyContent: "center",
+                  opacity: pujantFoto ? 0.55 : 1,
+                }}
+              >
+                {pujantFoto ? (
+                  <ActivityIndicator size="small" color={COLORS.accent} />
+                ) : (
+                  <Text
+                    style={{
+                      fontFamily: FONTS.sans,
+                      fontSize: 13,
+                      color: COLORS.text,
+                      textAlign: "center",
+                    }}
+                    maxFontSizeMultiplier={1.4}
+                  >
+                    {t("admin.changePortrait")}
+                  </Text>
+                )}
+              </TouchableOpacity>
+            </View>
+
+            <FormField label={t("admin.fieldName")} value={nom} onChangeText={setNom} />
+            <FormField label={t("admin.fieldSurname")} value={cognom} onChangeText={setCognom} />
+            <FormField
+              label={t("admin.fieldYears")}
+              placeholder="1900-1980"
+              value={anysVida}
+              onChangeText={setAnysVida}
+            />
+            <FormField
+              label={t("admin.fieldBio")}
+              value={bio}
+              onChangeText={setBio}
+              multiline
+              numberOfLines={6}
+              style={{ minHeight: 120, textAlignVertical: "top" }}
+            />
+
+            <BotoDesar desant={desant} onPress={handleDesar} />
+          </View>
+        )}
+      </ScrollView>
+    </View>
   );
 }

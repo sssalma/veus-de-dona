@@ -1,17 +1,28 @@
 import { useState, useEffect } from "react";
 import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert, Switch, Image } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as ImagePicker from "expo-image-picker";
-import { COLORS, FONTS } from "../../../constants";
-import { getParada, getParadaFoto, updateParada, updateParadaFoto, toggleParadaActiva } from "../../../services/parades";
+import { COLORS, FONTS, ROTUL_SECCIO } from "../../../constants";
+import { useLanguage } from "../../../contexts/LanguageContext";
+import { Capcalera } from "../../../components/Capcalera";
+import { BotoDesar } from "../../../components/admin/BotoDesar";
+import { EstatLlista } from "../../../components/admin/LlistaAdmin";
+import {
+  getParada,
+  getParadaFoto,
+  updateParada,
+  updateParadaFoto,
+  toggleParadaActiva,
+} from "../../../services/parades";
+import { missatgeError } from "../../../services/errors";
 import FormField from "../../../components/FormField";
 
 export default function EditarParada() {
   const router = useRouter();
-  const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();
+  const { t } = useLanguage();
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [desant, setDesant] = useState(false);
   const [pujantFoto, setPujantFoto] = useState(false);
   const [nomEspai, setNomEspai] = useState("");
@@ -23,8 +34,9 @@ export default function EditarParada() {
       .then((p) => {
         setNomEspai(p.nom_espai);
         setActiva(p.activa);
+        setError(false);
       })
-      .catch(() => Alert.alert("Error", "No s'ha pogut carregar la parada"))
+      .catch(() => setError(true))
       .finally(() => setLoading(false));
     getParadaFoto(id)
       .then(setFotoUrl)
@@ -34,7 +46,7 @@ export default function EditarParada() {
   const handleCanviarFoto = async () => {
     const permis = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permis.granted) {
-      Alert.alert("Error", "Cal permís per accedir a les fotos");
+      Alert.alert(t("common.error"), t("admin.photoPermission"));
       return;
     }
     const resultat = await ImagePicker.launchImageLibraryAsync({
@@ -51,10 +63,9 @@ export default function EditarParada() {
         name: asset.fileName || "foto.jpg",
         type: asset.mimeType || "image/jpeg",
       });
-      const novaUrl = await getParadaFoto(id);
-      setFotoUrl(novaUrl);
-    } catch {
-      Alert.alert("Error", "No s'ha pogut pujar la foto");
+      setFotoUrl(await getParadaFoto(id));
+    } catch (err) {
+      Alert.alert(t("common.error"), missatgeError(err, t("admin.photoUploadError")));
     } finally {
       setPujantFoto(false);
     }
@@ -62,169 +73,168 @@ export default function EditarParada() {
 
   const handleDesar = async () => {
     if (!nomEspai.trim()) {
-      Alert.alert("Error", "El nom de l'espai es obligatori");
+      Alert.alert(t("common.error"), t("admin.spaceNameRequired"));
       return;
     }
     setDesant(true);
     try {
       await updateParada(id, { nom_espai: nomEspai.trim() });
       router.back();
-    } catch {
-      Alert.alert("Error", "No s'han pogut desar els canvis");
+    } catch (err) {
+      Alert.alert(t("common.error"), missatgeError(err, t("admin.saveError")));
     } finally {
       setDesant(false);
     }
   };
 
+  // Aquest canvi es desa tot sol, sense passar pel botó de desar: és una
+  // acció sobre la visibilitat de la parada, no una edició del formulari.
   const handleToggleActiva = async (valor: boolean) => {
     setActiva(valor);
     try {
       await toggleParadaActiva(id, valor);
-    } catch {
+    } catch (err) {
       setActiva(!valor);
-      Alert.alert("Error", "No s'ha pogut canviar l'estat de la parada");
+      Alert.alert(t("common.error"), missatgeError(err, t("admin.stopStateError")));
     }
   };
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: COLORS.bg }}>
-      <View
-        accessibilityRole="header"
-        style={{
-          paddingHorizontal: 14,
-          paddingTop: insets.top + 6,
-          paddingBottom: 10,
-          borderBottomWidth: 1,
-          borderBottomColor: COLORS.border,
-        }}
-      >
-        <TouchableOpacity
-          accessibilityRole="button"
-          accessibilityLabel="Tornar a la llista de parades"
-          onPress={() => router.back()}
-          style={{ marginBottom: 6, minHeight: 44, minWidth: 44, justifyContent: "center" }}
-        >
-          <Text style={{ fontFamily: FONTS.sans, fontSize: 10, color: COLORS.textSecondary }} maxFontSizeMultiplier={1.4}>
-            ← Parades
-          </Text>
-        </TouchableOpacity>
-        <Text
-          accessibilityRole="header"
-          style={{ fontFamily: FONTS.serif, fontSize: 16, fontWeight: "600", color: COLORS.text }}
-          maxFontSizeMultiplier={1.5}
-        >
-          Editar parada
-        </Text>
-      </View>
+    <View style={{ flex: 1, backgroundColor: COLORS.bg }}>
+      <ScrollView contentContainerStyle={{ paddingBottom: 32 }} keyboardShouldPersistTaps="handled">
+        <Capcalera tornarA="panell" titol={t("admin.editParada")} />
 
-      {loading ? (
-        <View accessibilityLabel="Carregant parada" style={{ padding: 24, alignItems: "center" }}>
-          <ActivityIndicator size="small" color={COLORS.darkBg} />
-        </View>
-      ) : (
-        <View style={{ padding: 14 }}>
-          <Text style={{ fontFamily: FONTS.sans, fontSize: 10, color: COLORS.textSecondary, marginBottom: 6 }} maxFontSizeMultiplier={1.4}>
-            Foto de l'espai
-          </Text>
-          <View
-            style={{
-              width: "100%",
-              height: 160,
-              borderRadius: 8,
-              backgroundColor: COLORS.lightBg,
-              borderWidth: 1,
-              borderColor: COLORS.controlBorder,
-              marginBottom: 8,
-              overflow: "hidden",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            {fotoUrl ? (
-              <Image source={{ uri: fotoUrl }} style={{ width: "100%", height: "100%" }} resizeMode="cover" />
-            ) : (
-              <Text style={{ fontFamily: FONTS.sans, fontSize: 10, color: COLORS.textSecondary }}>
-                Sense foto
-              </Text>
-            )}
-          </View>
-          <TouchableOpacity
-            accessibilityRole="button"
-            accessibilityLabel="Canviar la foto de la parada"
-            accessibilityState={{ disabled: pujantFoto }}
-            onPress={handleCanviarFoto}
-            disabled={pujantFoto}
-            style={{
-              borderWidth: 1,
-              borderColor: COLORS.controlBorder,
-              borderRadius: 8,
-              paddingVertical: 10,
-              marginBottom: 14,
-              minHeight: 44,
-              justifyContent: "center",
-              opacity: pujantFoto ? 0.6 : 1,
-            }}
-          >
-            {pujantFoto ? (
-              <ActivityIndicator size="small" color={COLORS.darkBg} />
-            ) : (
-              <Text style={{ fontFamily: FONTS.sans, fontSize: 11, color: COLORS.text, textAlign: "center" }} maxFontSizeMultiplier={1.4}>
-                Canviar foto
-              </Text>
-            )}
-          </TouchableOpacity>
+        <EstatLlista loading={loading} error={error} buit={false} missatgeBuit={t("admin.loadError")} />
 
-          <FormField label="Nom de l'espai" value={nomEspai} onChangeText={setNomEspai} />
-
-          <View
-            style={{
-              flexDirection: "row",
-              justifyContent: "space-between",
-              alignItems: "center",
-              borderWidth: 1,
-              borderColor: COLORS.controlBorder,
-              borderRadius: 8,
-              padding: 12,
-              marginBottom: 14,
-              minHeight: 44,
-            }}
-          >
-            <Text style={{ fontFamily: FONTS.sans, fontSize: 11, color: COLORS.text }} maxFontSizeMultiplier={1.4}>
-              Parada activa
-            </Text>
-            <Switch
-              accessibilityLabel={activa ? "Parada activa, prem per desactivar" : "Parada inactiva, prem per activar"}
-              accessibilityRole="switch"
-              value={activa}
-              onValueChange={handleToggleActiva}
-            />
-          </View>
-
-          <TouchableOpacity
-            accessibilityRole="button"
-            accessibilityLabel="Desar canvis de la parada"
-            accessibilityState={{ disabled: desant }}
-            onPress={handleDesar}
-            disabled={desant}
-            style={{
-              backgroundColor: COLORS.darkBg,
-              paddingVertical: 11,
-              borderRadius: 8,
-              marginTop: 6,
-              opacity: desant ? 0.6 : 1,
-              minHeight: 44,
-              justifyContent: "center",
-            }}
-          >
+        {!loading && !error && (
+          <View style={{ paddingHorizontal: 18, paddingTop: 18 }}>
             <Text
-              style={{ fontFamily: FONTS.sans, fontSize: 11, fontWeight: "500", color: COLORS.bg, textAlign: "center" }}
+              style={[ROTUL_SECCIO, { marginBottom: 8 }]}
               maxFontSizeMultiplier={1.4}
             >
-              {desant ? "Desant..." : "Desar canvis"}
+              {t("admin.stopPhoto")}
             </Text>
-          </TouchableOpacity>
-        </View>
-      )}
-    </ScrollView>
+
+            <View
+              style={{
+                height: 150,
+                borderRadius: 12,
+                backgroundColor: COLORS.lightBg,
+                borderWidth: 1,
+                borderColor: COLORS.border,
+                overflow: "hidden",
+                alignItems: "center",
+                justifyContent: "center",
+                marginBottom: 10,
+              }}
+            >
+              {fotoUrl ? (
+                <Image
+                  accessibilityIgnoresInvertColors
+                  source={{ uri: fotoUrl }}
+                  style={{ width: "100%", height: "100%" }}
+                  resizeMode="cover"
+                />
+              ) : (
+                <Text
+                  style={{ fontFamily: FONTS.sans, fontSize: 12, color: COLORS.textSecondary }}
+                  maxFontSizeMultiplier={1.4}
+                >
+                  {t("admin.noPhoto")}
+                </Text>
+              )}
+            </View>
+
+            <TouchableOpacity
+              accessibilityRole="button"
+              accessibilityLabel={t("admin.changePhoto")}
+              accessibilityState={{ disabled: pujantFoto, busy: pujantFoto }}
+              onPress={handleCanviarFoto}
+              disabled={pujantFoto}
+              style={{
+                borderWidth: 1,
+                borderColor: COLORS.controlBorder,
+                borderRadius: 8,
+                paddingVertical: 12,
+                minHeight: 46,
+                justifyContent: "center",
+                opacity: pujantFoto ? 0.55 : 1,
+                marginBottom: 18,
+              }}
+            >
+              {pujantFoto ? (
+                <ActivityIndicator size="small" color={COLORS.accent} />
+              ) : (
+                <Text
+                  style={{
+                    fontFamily: FONTS.sans,
+                    fontSize: 13,
+                    color: COLORS.text,
+                    textAlign: "center",
+                  }}
+                  maxFontSizeMultiplier={1.4}
+                >
+                  {t("admin.changePhoto")}
+                </Text>
+              )}
+            </TouchableOpacity>
+
+            <FormField
+              label={t("admin.fieldSpaceName")}
+              value={nomEspai}
+              onChangeText={setNomEspai}
+            />
+
+            <View
+              style={{
+                borderWidth: 1,
+                borderColor: COLORS.border,
+                borderRadius: 12,
+                padding: 14,
+                marginBottom: 14,
+                gap: 6,
+              }}
+            >
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  gap: 12,
+                  minHeight: 44,
+                }}
+              >
+                <Text
+                  style={{ fontFamily: FONTS.sans, fontSize: 13, color: COLORS.text, flex: 1 }}
+                  maxFontSizeMultiplier={1.4}
+                >
+                  {t("admin.stopActive")}
+                </Text>
+                <Switch
+                  accessibilityRole="switch"
+                  accessibilityLabel={t("admin.stopActive")}
+                  accessibilityHint={t("admin.stopActiveHint")}
+                  value={activa}
+                  onValueChange={handleToggleActiva}
+                />
+              </View>
+              <Text
+                style={{
+                  fontFamily: FONTS.sans,
+                  fontSize: 12,
+                  color: COLORS.textSecondary,
+                  lineHeight: 16,
+                }}
+                maxFontSizeMultiplier={1.4}
+              >
+                {t("admin.stopActiveHint")}
+              </Text>
+            </View>
+
+            <BotoDesar desant={desant} onPress={handleDesar} />
+          </View>
+        )}
+      </ScrollView>
+    </View>
   );
 }

@@ -1,27 +1,33 @@
 import { useState, useEffect } from "react";
 import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { COLORS, FONTS } from "../../../constants";
 import * as DocumentPicker from "expo-document-picker";
+import { Ionicons } from "@expo/vector-icons";
+import { COLORS, FONTS, ROTUL_SECCIO } from "../../../constants";
+import { useLanguage } from "../../../contexts/LanguageContext";
+import { Capcalera } from "../../../components/Capcalera";
+import { BotoDesar } from "../../../components/admin/BotoDesar";
+import { EstatLlista } from "../../../components/admin/LlistaAdmin";
 import { getText, updateText } from "../../../services/textos";
 import { getRecursosByText, pujarRecurs, esborrarRecurs } from "../../../services/recursos";
+import { missatgeError } from "../../../services/errors";
 import { Recurs } from "../../../types";
 import FormField from "../../../components/FormField";
 
 export default function EditarText() {
   const router = useRouter();
-  const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();
+  const { t } = useLanguage();
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [desant, setDesant] = useState(false);
   const [titol, setTitol] = useState("");
   const [obraOrigen, setObraOrigen] = useState("");
   const [contingut, setContingut] = useState("");
   const [youtubeUrl, setYoutubeUrl] = useState("");
-  // Recursos d'audio vinculats al text. Fins ara l'API ja ho permetia
-  // (POST i DELETE /recursos) pero no hi havia cap pantalla: els audios de
-  // la ruta nomes es podien carregar amb l'script seed_audios.py.
+  // Recursos d'àudio vinculats al text. L'API ja ho permetia (POST i DELETE
+  // /recursos) però no hi havia cap pantalla: els àudios de la ruta només es
+  // podien carregar amb l'script seed_audios.py.
   const [recursos, setRecursos] = useState<Recurs[]>([]);
   const [pujantAudio, setPujantAudio] = useState(false);
 
@@ -35,19 +41,20 @@ export default function EditarText() {
 
   useEffect(() => {
     getText(id)
-      .then((t) => {
-        setTitol(t.titol);
-        setObraOrigen(t.obra_origen ?? "");
-        setContingut(t.contingut);
-        setYoutubeUrl(t.youtube_url ?? "");
+      .then((text) => {
+        setTitol(text.titol);
+        setObraOrigen(text.obra_origen ?? "");
+        setContingut(text.contingut);
+        setYoutubeUrl(text.youtube_url ?? "");
+        setError(false);
       })
-      .catch(() => Alert.alert("Error", "No s'ha pogut carregar el text"))
+      .catch(() => setError(true))
       .finally(() => setLoading(false));
   }, [id]);
 
   const handleDesar = async () => {
     if (!titol.trim() || !contingut.trim()) {
-      Alert.alert("Error", "El titol i el contingut son obligatoris");
+      Alert.alert(t("common.error"), t("admin.titleContentRequired"));
       return;
     }
     setDesant(true);
@@ -59,8 +66,8 @@ export default function EditarText() {
         youtube_url: youtubeUrl.trim() || null,
       });
       router.back();
-    } catch {
-      Alert.alert("Error", "No s'han pogut desar els canvis");
+    } catch (err) {
+      Alert.alert(t("common.error"), missatgeError(err, t("admin.saveError")));
     } finally {
       setDesant(false);
     }
@@ -82,25 +89,25 @@ export default function EditarText() {
         type: fitxer.mimeType || "audio/mpeg",
       });
       carregarRecursos();
-    } catch {
-      Alert.alert("Error", "No s'ha pogut pujar l'audio");
+    } catch (err) {
+      Alert.alert(t("common.error"), missatgeError(err, t("admin.uploadAudioError")));
     } finally {
       setPujantAudio(false);
     }
   };
 
   const handleEsborrarRecurs = (recursId: string) => {
-    Alert.alert("Esborrar audio", "Segur que vols esborrar aquest audio?", [
-      { text: "Cancel·lar", style: "cancel" },
+    Alert.alert(t("admin.deleteAudio"), t("admin.deleteAudioConfirm"), [
+      { text: t("common.cancel"), style: "cancel" },
       {
-        text: "Esborrar",
+        text: t("common.delete"),
         style: "destructive",
         onPress: async () => {
           try {
             await esborrarRecurs(recursId);
             setRecursos((prev) => prev.filter((r) => r.id !== recursId));
-          } catch {
-            Alert.alert("Error", "No s'ha pogut esborrar l'audio");
+          } catch (err) {
+            Alert.alert(t("common.error"), missatgeError(err, t("admin.deleteAudioError")));
           }
         },
       },
@@ -108,188 +115,147 @@ export default function EditarText() {
   };
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: COLORS.bg }}>
-      <View
-        accessibilityRole="header"
-        style={{
-          paddingHorizontal: 14,
-          paddingTop: insets.top + 6,
-          paddingBottom: 10,
-          borderBottomWidth: 1,
-          borderBottomColor: COLORS.border,
-        }}
-      >
-        <TouchableOpacity
-          accessibilityRole="button"
-          accessibilityLabel="Tornar a la llista de textos"
-          onPress={() => router.back()}
-          style={{ marginBottom: 6, minHeight: 44, minWidth: 44, justifyContent: "center" }}
-        >
-          <Text style={{ fontFamily: FONTS.sans, fontSize: 10, color: COLORS.textSecondary }} maxFontSizeMultiplier={1.4}>
-            ← Textos
-          </Text>
-        </TouchableOpacity>
-        <Text
-          accessibilityRole="header"
-          style={{ fontFamily: FONTS.serif, fontSize: 16, fontWeight: "600", color: COLORS.text }}
-          maxFontSizeMultiplier={1.5}
-        >
-          Editar text
-        </Text>
-      </View>
+    <View style={{ flex: 1, backgroundColor: COLORS.bg }}>
+      <ScrollView contentContainerStyle={{ paddingBottom: 32 }} keyboardShouldPersistTaps="handled">
+        <Capcalera tornarA="panell" titol={t("admin.editText")} />
 
-      {loading ? (
-        <View accessibilityLabel="Carregant text" style={{ padding: 24, alignItems: "center" }}>
-          <ActivityIndicator size="small" color={COLORS.darkBg} />
-        </View>
-      ) : (
-        <View style={{ padding: 14 }}>
-          <FormField label="Titol" value={titol} onChangeText={setTitol} />
-          <FormField label="Obra d'origen" value={obraOrigen} onChangeText={setObraOrigen} />
-          <FormField
-            label="Contingut"
-            value={contingut}
-            onChangeText={setContingut}
-            multiline
-            numberOfLines={8}
-            style={{ minHeight: 140, textAlignVertical: "top" }}
-          />
-          <FormField
-            label="URL de YouTube"
-            placeholder="https://youtube.com/watch?v=..."
-            value={youtubeUrl}
-            onChangeText={setYoutubeUrl}
-            autoCapitalize="none"
-          />
+        <EstatLlista loading={loading} error={error} buit={false} missatgeBuit={t("admin.loadError")} />
 
-          <TouchableOpacity
-            accessibilityRole="button"
-            accessibilityLabel="Desar canvis del text"
-            accessibilityState={{ disabled: desant }}
-            onPress={handleDesar}
-            disabled={desant}
-            style={{
-              backgroundColor: COLORS.darkBg,
-              paddingVertical: 11,
-              borderRadius: 8,
-              marginTop: 6,
-              opacity: desant ? 0.6 : 1,
-              minHeight: 44,
-              justifyContent: "center",
-            }}
-          >
-            <Text
-              style={{ fontFamily: FONTS.sans, fontSize: 11, fontWeight: "500", color: COLORS.bg, textAlign: "center" }}
-              maxFontSizeMultiplier={1.4}
-            >
-              {desant ? "Desant..." : "Desar canvis"}
-            </Text>
-          </TouchableOpacity>
+        {!loading && !error && (
+          <View style={{ paddingHorizontal: 18, paddingTop: 18 }}>
+            <FormField label={t("admin.fieldTitle")} value={titol} onChangeText={setTitol} />
+            <FormField
+              label={t("admin.fieldSourceWork")}
+              value={obraOrigen}
+              onChangeText={setObraOrigen}
+            />
+            <FormField
+              label={t("admin.fieldContent")}
+              value={contingut}
+              onChangeText={setContingut}
+              multiline
+              numberOfLines={8}
+              style={{ minHeight: 150, textAlignVertical: "top" }}
+            />
+            <FormField
+              label={t("admin.fieldYoutube")}
+              placeholder="https://youtube.com/watch?v=..."
+              value={youtubeUrl}
+              onChangeText={setYoutubeUrl}
+              autoCapitalize="none"
+            />
 
-          <View
-            style={{
-              marginTop: 24,
-              paddingTop: 16,
-              borderTopWidth: 1,
-              borderTopColor: COLORS.border,
-            }}
-          >
-            <Text
-              accessibilityRole="header"
+            <BotoDesar desant={desant} onPress={handleDesar} />
+
+            {/* ---------- àudios de lectura ---------- */}
+            <View
               style={{
-                fontFamily: FONTS.sans,
-                fontSize: 10,
-                fontWeight: "600",
-                color: COLORS.textSecondary,
-                textTransform: "uppercase",
-                letterSpacing: 0.4,
-                marginBottom: 8,
+                marginTop: 28,
+                paddingTop: 18,
+                borderTopWidth: 1,
+                borderTopColor: COLORS.border,
               }}
-              maxFontSizeMultiplier={1.4}
             >
-              Àudio de lectura
-            </Text>
-
-            {recursos.length === 0 ? (
               <Text
-                style={{
-                  fontFamily: FONTS.sans,
-                  fontSize: 10,
-                  color: COLORS.textSecondary,
-                  fontStyle: "italic",
-                  marginBottom: 10,
-                }}
-                maxFontSizeMultiplier={1.5}
+                accessibilityRole="header"
+                style={[ROTUL_SECCIO, { marginBottom: 10 }]}
+                maxFontSizeMultiplier={1.4}
               >
-                Aquest text encara no té cap àudio.
+                {t("admin.audios")}
               </Text>
-            ) : (
-              recursos.map((r) => (
-                <View
-                  key={r.id}
+
+              {recursos.length === 0 ? (
+                <Text
                   style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    gap: 8,
-                    borderWidth: 1,
-                    borderColor: COLORS.border,
-                    borderRadius: 8,
-                    padding: 10,
-                    marginBottom: 8,
-                    minHeight: 44,
+                    fontFamily: FONTS.sans,
+                    fontSize: 12,
+                    color: COLORS.textSecondary,
+                    fontStyle: "italic",
+                    marginBottom: 12,
                   }}
+                  maxFontSizeMultiplier={1.5}
                 >
+                  {t("admin.noAudios")}
+                </Text>
+              ) : (
+                recursos.map((r) => (
+                  <View
+                    key={r.id}
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      gap: 10,
+                      borderWidth: 1,
+                      borderColor: COLORS.border,
+                      borderRadius: 10,
+                      paddingHorizontal: 12,
+                      paddingVertical: 8,
+                      marginBottom: 8,
+                      minHeight: 52,
+                    }}
+                  >
+                    <Text
+                      style={{ fontFamily: FONTS.sans, fontSize: 12, color: COLORS.text, flex: 1 }}
+                      numberOfLines={1}
+                      maxFontSizeMultiplier={1.4}
+                    >
+                      {r.minio_key.split("/").pop()}
+                    </Text>
+                    <TouchableOpacity
+                      accessibilityRole="button"
+                      accessibilityLabel={t("admin.deleteAudio")}
+                      onPress={() => handleEsborrarRecurs(r.id)}
+                      hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                      style={{
+                        minHeight: 44,
+                        minWidth: 44,
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <Ionicons name="trash-outline" size={19} color={COLORS.love} />
+                    </TouchableOpacity>
+                  </View>
+                ))
+              )}
+
+              <TouchableOpacity
+                accessibilityRole="button"
+                accessibilityLabel={t("admin.uploadAudio")}
+                accessibilityState={{ disabled: pujantAudio, busy: pujantAudio }}
+                onPress={handlePujarAudio}
+                disabled={pujantAudio}
+                style={{
+                  borderWidth: 1,
+                  borderColor: COLORS.controlBorder,
+                  borderRadius: 8,
+                  paddingVertical: 12,
+                  minHeight: 46,
+                  justifyContent: "center",
+                  opacity: pujantAudio ? 0.55 : 1,
+                }}
+              >
+                {pujantAudio ? (
+                  <ActivityIndicator size="small" color={COLORS.accent} />
+                ) : (
                   <Text
-                    style={{ fontFamily: FONTS.sans, fontSize: 10, color: COLORS.text, flex: 1 }}
-                    numberOfLines={1}
+                    style={{
+                      fontFamily: FONTS.sans,
+                      fontSize: 13,
+                      color: COLORS.text,
+                      textAlign: "center",
+                    }}
                     maxFontSizeMultiplier={1.4}
                   >
-                    {r.minio_key.split("/").pop()}
+                    {t("admin.uploadAudio")}
                   </Text>
-                  <TouchableOpacity
-                    accessibilityRole="button"
-                    accessibilityLabel="Esborrar aquest àudio"
-                    onPress={() => handleEsborrarRecurs(r.id)}
-                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                    style={{ minHeight: 32, minWidth: 32, alignItems: "center", justifyContent: "center" }}
-                  >
-                    <Text style={{ fontSize: 14 }}>🗑</Text>
-                  </TouchableOpacity>
-                </View>
-              ))
-            )}
-
-            <TouchableOpacity
-              accessibilityRole="button"
-              accessibilityLabel="Pujar un àudio nou per a aquest text"
-              accessibilityState={{ disabled: pujantAudio, busy: pujantAudio }}
-              onPress={handlePujarAudio}
-              disabled={pujantAudio}
-              style={{
-                borderWidth: 1,
-                borderColor: COLORS.controlBorder,
-                borderRadius: 8,
-                paddingVertical: 10,
-                minHeight: 44,
-                justifyContent: "center",
-                opacity: pujantAudio ? 0.6 : 1,
-              }}
-            >
-              {pujantAudio ? (
-                <ActivityIndicator size="small" color={COLORS.darkBg} />
-              ) : (
-                <Text
-                  style={{ fontFamily: FONTS.sans, fontSize: 11, color: COLORS.text, textAlign: "center" }}
-                  maxFontSizeMultiplier={1.4}
-                >
-                  Pujar àudio
-                </Text>
-              )}
-            </TouchableOpacity>
+                )}
+              </TouchableOpacity>
+            </View>
           </View>
-        </View>
-      )}
-    </ScrollView>
+        )}
+      </ScrollView>
+    </View>
   );
 }
