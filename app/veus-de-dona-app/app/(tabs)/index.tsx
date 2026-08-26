@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { WebView } from "react-native-webview";
-import { View, Text, TouchableOpacity, Alert, Pressable } from "react-native";
+import { View, Text, TouchableOpacity, Alert, Pressable, Linking } from "react-native";
 import { useRouter, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Location from "expo-location";
@@ -9,6 +9,7 @@ import { getMevesVisites } from "../../services/visites";
 import { useAuth } from "../../contexts/AuthContext";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { COLORS, FONTS } from "../../constants";
+import { TranslationKey } from "../../i18n/translations";
 import { Parada } from "../../types";
 
 // Mapa basat en Leaflet + OpenStreetMap (dins d'un WebView), en comptes de
@@ -43,10 +44,24 @@ const MAP_HTML = `<!DOCTYPE html>
       window.ReactNativeWebView.postMessage(JSON.stringify(msg));
     }
 
-    function paradaIcon(color, ordre) {
+    // Una parada visitada i una de pendent es distingien nomes pel to del
+    // pin, cosa que el criteri 1.4.1 no permet: qui no distingeix els colors
+    // es quedava sense saber per on va. Ara la visitada va plena i la pendent
+    // buida -paper amb la vora de tinta-, que es una diferencia de farciment
+    // i es veu igual en escala de grisos.
+    function paradaIcon(estat, ordre) {
+      var ple = estat === 'visitada';
+      var to = estat === 'inactiva' ? '${COLORS.textSecondary}'
+             : ple ? '${COLORS.accent}' : '${COLORS.darkBg}';
+      var fons = ple ? to : '${COLORS.bg}';
+      var lletra = ple ? '${COLORS.bg}' : to;
       return L.divIcon({
         className: '',
-        html: '<div class="parada-pin" style="width:26px;height:26px;border-radius:13px;background:' + color + ';border:2px solid ${COLORS.bg};box-shadow:0 1px 3px rgba(0,0,0,0.35);"><span style="color:${COLORS.bg};font-size:11px;font-weight:600;font-family:sans-serif;">' + ordre + '</span></div>',
+        html: '<div class="parada-pin" style="width:26px;height:26px;border-radius:13px;'
+            + 'background:' + fons + ';border:2px solid ' + to + ';'
+            + 'box-shadow:0 1px 3px rgba(0,0,0,0.35);">'
+            + '<span style="color:' + lletra + ';font-size:11px;font-weight:700;'
+            + 'font-family:sans-serif;">' + ordre + '</span></div>',
         iconSize: [26, 26],
         iconAnchor: [13, 13],
       });
@@ -81,9 +96,9 @@ const MAP_HTML = `<!DOCTYPE html>
       }
 
       data.parades.forEach(function (p) {
-        var color = !p.activa ? '${COLORS.textSecondary}' : (visited[p.id] ? '${COLORS.accent}' : '${COLORS.darkBg}');
+        var estat = !p.activa ? 'inactiva' : (visited[p.id] ? 'visitada' : 'pendent');
         var marker = L.marker([p.lat, p.lng], {
-          icon: paradaIcon(color, p.ordre),
+          icon: paradaIcon(estat, p.ordre),
           opacity: p.activa ? 1 : 0.5,
         });
 
@@ -290,25 +305,40 @@ export default function MapaScreen() {
         style={{
           flexDirection: "row",
           alignItems: "center",
-          justifyContent: "space-between",
+          gap: 10,
           paddingHorizontal: 14,
           paddingTop: insets.top + 6,
-          paddingBottom: 10,
+          paddingBottom: 8,
           borderBottomWidth: 1,
           borderBottomColor: COLORS.border,
         }}
       >
+        {/* El títol és llarg i la capçalera d'un mapa ha de ser prima: va en
+            cos petit i espaiat tancat perquè càpiga en dues línies al costat
+            dels controls, en comptes d'ocupar-ne tres tot sol.
+
+            Es desa en majúscula i minúscula i es posa en versaletes aquí: així
+            el nom accessible que llegeix el lector de pantalla és "Ruta de les
+            13 escriptores...", no una tirallonga de lletres soltes. La caixa
+            alta és una decisió tipogràfica, no del text. */}
         <Text
+          accessibilityRole="header"
           style={{
+            flex: 1,
             fontFamily: FONTS.serif,
-            fontSize: 15,
+            fontSize: 13,
             fontWeight: "600",
+            letterSpacing: 0.8,
+            lineHeight: 17,
+            textTransform: "uppercase",
             color: COLORS.text,
           }}
+          maxFontSizeMultiplier={1.3}
         >
-          {t("mapa.title")}
+          <TitolAmbToponim titol={t("mapa.title")} />
         </Text>
-        <View style={{ flexDirection: "row", gap: 6 }}>
+
+        <View style={{ flexDirection: "row", gap: 8, alignItems: "center" }}>
           <TouchableOpacity
             accessibilityRole="button"
             // el text visible i el nom accessible han de coincidir (WCAG 2.5.3):
@@ -338,51 +368,15 @@ export default function MapaScreen() {
               {t("mapa.satellite")}
             </Text>
           </TouchableOpacity>
-          <View
-            accessibilityRole="text"
-            accessibilityLabel={
-              gpsEstat === "actiu"
-                ? t("mapa.gpsActiu")
-                : gpsEstat === "denegat"
-                  ? t("mapa.gpsDenegat")
-                  : t("mapa.gpsCercant")
-            }
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              gap: 4,
-              paddingHorizontal: 10,
-              paddingVertical: 6,
-              borderRadius: 12,
-              borderWidth: 1,
-              borderColor: COLORS.controlBorder,
-              minHeight: 32,
-            }}
-          >
-            <View
-              style={{
-                width: 7,
-                height: 7,
-                borderRadius: 4,
-                backgroundColor:
-                  gpsEstat === "actiu"
-                    ? COLORS.accent
-                    : gpsEstat === "denegat"
-                      ? COLORS.love
-                      : COLORS.textSecondary,
-              }}
-            />
-            <Text
-              style={{
-                fontFamily: FONTS.sans,
-                fontSize: 10,
-                color: COLORS.textSecondary,
-              }}
-              maxFontSizeMultiplier={1.3}
-            >
-              GPS
-            </Text>
-          </View>
+          {/* Rètol d'estat, no control: seia al costat del botó de satèl·lit
+              amb la mateixa píndola i la mateixa vora, i tot el que hi havia
+              en aquella fila semblava premible. Ara només porta el punt i la
+              paraula.
+
+              L'excepció és el permís denegat: aleshores sí que hi ha una cosa
+              a fer, i abans l'app t'informava del problema i t'hi deixava
+              -calia sortir a la configuració del telèfon i saber què buscar. */}
+          <GpsIndicador estat={gpsEstat} t={t} />
         </View>
       </View>
 
@@ -467,6 +461,9 @@ export default function MapaScreen() {
           </Text>
         </View>
         <View
+          accessibilityRole="progressbar"
+          accessibilityLabel={t("mapa.progress")}
+          accessibilityValue={{ min: 0, max: actives.length, now: visitedCount }}
           style={{
             height: 4,
             backgroundColor: COLORS.border,
@@ -483,20 +480,144 @@ export default function MapaScreen() {
             }}
           />
         </View>
-        <View style={{ flexDirection: "row", gap: 3, marginTop: 5 }}>
-          {actives.map((parada) => (
-            <View
-              key={parada.id}
-              style={{
-                width: 6,
-                height: 6,
-                borderRadius: 3,
-                backgroundColor: visitedIds.has(parada.id) ? COLORS.accent : COLORS.border,
-              }}
-            />
-          ))}
+        {/* Els punts es distingien nomes pel color, i el de les pendents
+            -COLORS.border sobre el fons- donava 1,25:1, molt per sota del 3:1
+            que demana el criteri 1.4.11. Ara la visitada va plena i la pendent
+            buida: la diferencia es de forma i es veu igual en escala de grisos
+            (criteri 1.4.1). La barra i el comptador ja diuen quantes n'hi ha;
+            aixo diu quines. */}
+        <View
+          accessibilityElementsHidden
+          importantForAccessibility="no"
+          style={{ flexDirection: "row", gap: 4, marginTop: 6 }}
+        >
+          {actives.map((parada) => {
+            const feta = visitedIds.has(parada.id);
+            return (
+              <View
+                key={parada.id}
+                style={{
+                  width: 7,
+                  height: 7,
+                  borderRadius: 4,
+                  backgroundColor: feta ? COLORS.accent : "transparent",
+                  borderWidth: feta ? 0 : 1,
+                  borderColor: COLORS.controlBorder,
+                }}
+              />
+            );
+          })}
         </View>
       </View>
     </View>
+  );
+}
+
+
+/**
+ * Rètol d'estat del GPS.
+ *
+ * Els tres estats es distingeixen pel color del punt, i el nom accessible diu
+ * en paraules el que el color diu en silenci: qui no distingeix el violeta del
+ * vermell no s'ha de quedar sense saber si l'app el localitza (WCAG 1.4.1, el
+ * color no pot ser l'únic mitjà per transmetre informació).
+ *
+ * Quan el permís està denegat deixa de ser un rètol i passa a ser un botó cap
+ * a la configuració del sistema, que és l'únic lloc on es pot rectificar.
+ */
+function GpsIndicador({
+  estat,
+  t,
+}: {
+  estat: "cercant" | "actiu" | "denegat";
+  t: (key: TranslationKey) => string;
+}) {
+  const denegat = estat === "denegat";
+
+  const color =
+    estat === "actiu"
+      ? COLORS.accent
+      : denegat
+        ? COLORS.love
+        : COLORS.textSecondary;
+
+  const etiqueta = denegat
+    ? t("mapa.gpsOpenSettings")
+    : estat === "actiu"
+      ? t("mapa.gpsActiu")
+      : t("mapa.gpsCercant");
+
+  const contingut = (
+    <>
+      <View style={{ width: 7, height: 7, borderRadius: 4, backgroundColor: color }} />
+      <Text
+        style={{
+          fontFamily: FONTS.sans,
+          fontSize: 11,
+          color: denegat ? COLORS.love : COLORS.textSecondary,
+          textDecorationLine: denegat ? "underline" : "none",
+        }}
+        maxFontSizeMultiplier={1.3}
+      >
+        GPS
+      </Text>
+    </>
+  );
+
+  if (!denegat) {
+    return (
+      <View
+        accessible
+        accessibilityRole="text"
+        accessibilityLabel={etiqueta}
+        style={{ flexDirection: "row", alignItems: "center", gap: 5, minHeight: 32 }}
+      >
+        {contingut}
+      </View>
+    );
+  }
+
+  return (
+    <TouchableOpacity
+      accessibilityRole="button"
+      accessibilityLabel={etiqueta}
+      onPress={() => {
+        // Un cop denegat el permís, tornar a demanar-lo des de l'app no
+        // torna a ensenyar el diàleg del sistema: cal anar a la configuració.
+        Linking.openSettings().catch(() => {});
+      }}
+      hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+      style={{ flexDirection: "row", alignItems: "center", gap: 5, minHeight: 32 }}
+    >
+      {contingut}
+    </TouchableOpacity>
+  );
+}
+
+
+/**
+ * El titol del mapa amb el nom del barri en cursiva.
+ *
+ * "Part Alta" es un toponim i es queda igual als tres idiomes -no es tradueix-,
+ * de manera que es pot trobar dins de la frase sense haver de partir la clau de
+ * traduccio en trossos. La cursiva es la mateixa distincio que ja fa servir la
+ * pantalla d'accés per al nom del projecte: dins d'un titol en versaletes,
+ * separa el nom propi de la descripcio.
+ *
+ * Si algun dia el toponim desapareix de la frase, es dibuixa el titol sencer
+ * sense cursiva en comptes de quedar-se en blanc.
+ */
+const TOPONIM = "Part Alta";
+
+function TitolAmbToponim({ titol }: { titol: string }) {
+  const tall = titol.indexOf(TOPONIM);
+  if (tall === -1) return <>{titol}</>;
+
+  return (
+    <>
+      {titol.slice(0, tall)}
+      <Text style={{ fontStyle: "italic" }}>{TOPONIM}</Text>
+      {titol.slice(tall + TOPONIM.length)}
+    </>
   );
 }

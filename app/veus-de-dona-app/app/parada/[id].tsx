@@ -8,7 +8,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import * as Location from "expo-location";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { COLORS, FONTS, VEL_RGB } from "../../constants";
+import { COLORS, FONTS, ROTUL_SECCIO, VEL_RGB } from "../../constants";
 import { getParada, getParades, getParadaFoto } from "../../services/parades";
 import { getTextosByParada } from "../../services/textos";
 import { getRecursosByText } from "../../services/recursos";
@@ -389,15 +389,7 @@ export default function ParadaScreen() {
           {textos.length > 1 && (
             <Text
               accessibilityRole="header"
-              style={{
-                fontFamily: FONTS.sans,
-                fontSize: 10,
-                fontWeight: "600",
-                letterSpacing: 0.6,
-                textTransform: "uppercase",
-                color: COLORS.textSecondary,
-                marginBottom: 10,
-              }}
+              style={[ROTUL_SECCIO, { marginBottom: 10 }]}
               maxFontSizeMultiplier={1.4}
             >
               {textos.length} {t("parada.textsHere")}

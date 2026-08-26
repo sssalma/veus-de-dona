@@ -2,11 +2,12 @@ import { useEffect, useState } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { View, Text, ScrollView, TouchableOpacity, Image } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { COLORS, FONTS } from "../../constants";
+import { COLORS, FONTS, ROTUL_SECCIO, TITOL_PANTALLA } from "../../constants";
 import { getAutora, getAutoraFoto } from "../../services/autores";
 import { getTextosByAutora } from "../../services/textos";
 import { getParades } from "../../services/parades";
 import { Autora, Parada, TextDto } from "../../types";
+import { Capcalera } from "../../components/Capcalera";
 import CopyButton from "../../components/CopyButton";
 import { useLanguage } from "../../contexts/LanguageContext";
 
@@ -41,42 +42,7 @@ export default function AutoraScreen() {
 
   return (
     <ScrollView style={{ flex: 1, backgroundColor: COLORS.bg }}>
-      <View
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "space-between",
-          paddingHorizontal: 14,
-          paddingTop: insets.top + 10,
-          paddingBottom: 10,
-          borderBottomWidth: 1,
-          borderBottomColor: COLORS.border,
-        }}
-      >
-        <TouchableOpacity
-          accessibilityRole="button"
-          accessibilityLabel={t("common.back")}
-          onPress={() => router.back()}
-          style={{ minWidth: 44, minHeight: 44, justifyContent: "center" }}
-        >
-          <Text maxFontSizeMultiplier={1.5} style={{ fontFamily: FONTS.sans, fontSize: 10, color: COLORS.textSecondary }}>
-            {t("autora.back")}
-          </Text>
-        </TouchableOpacity>
-        <Text
-          accessibilityRole="header"
-          maxFontSizeMultiplier={1.5}
-          style={{
-            fontFamily: FONTS.serif,
-            fontSize: 13,
-            fontWeight: "600",
-            color: COLORS.text,
-          }}
-        >
-          {t("autora.title")}
-        </Text>
-        <View style={{ width: 40 }} />
-      </View>
+      <Capcalera titol={t("autora.title")} />
 
       <View
         style={{
@@ -176,13 +142,7 @@ export default function AutoraScreen() {
       <View style={{ padding: 14, borderBottomWidth: 1, borderBottomColor: COLORS.border }}>
         <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 5 }}>
           <Text maxFontSizeMultiplier={1.5}
-            style={{
-              fontFamily: FONTS.sans,
-              fontSize: 10,
-              color: COLORS.textSecondary,
-              letterSpacing: 0.6,
-              textTransform: "uppercase",
-            }}
+            style={ROTUL_SECCIO}
           >
             {t("autora.bio")}
           </Text>
@@ -202,14 +162,7 @@ export default function AutoraScreen() {
 
       <View style={{ padding: 14 }}>
         <Text maxFontSizeMultiplier={1.5}
-          style={{
-            fontFamily: FONTS.sans,
-            fontSize: 10,
-            color: COLORS.textSecondary,
-            letterSpacing: 0.6,
-            textTransform: "uppercase",
-            marginBottom: 6,
-          }}
+          style={[ROTUL_SECCIO, { marginBottom: 6 }]}
         >
           {t("autora.textsInRoute")}
         </Text>

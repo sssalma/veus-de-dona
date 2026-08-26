@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { View, Text, ScrollView, TouchableOpacity, Alert, Switch, KeyboardAvoidingView, Platform } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, Alert, KeyboardAvoidingView, Platform } from "react-native";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { COLORS, FONTS } from "../constants";
+import { COLORS, FONTS, ROTUL_SECCIO, TITOL_PANTALLA } from "../constants";
 import { useAuth } from "../contexts/AuthContext";
 import { useLanguage } from "../contexts/LanguageContext";
 import { updateMeuPerfil, canviarContrasenya } from "../services/usuaris";
+import { Capcalera } from "../components/Capcalera";
 import FormField from "../components/FormField";
 
 // Longitud mínima de contrasenya. El servidor imposa la mateixa regla
@@ -20,8 +21,6 @@ export default function EditarPerfilScreen() {
 
   const [nom, setNom] = useState(user?.nom ?? "");
   const [cognom, setCognom] = useState(user?.cognom ?? "");
-  const [procedencia, setProcedencia] = useState(user?.procedencia ?? "");
-  const [esAlumne, setEsAlumne] = useState(!!user?.es_alumne);
   const [desant, setDesant] = useState(false);
 
   const [passwordActual, setPasswordActual] = useState("");
@@ -36,11 +35,12 @@ export default function EditarPerfilScreen() {
     }
     setDesant(true);
     try {
+      // Només s'envia el que aquesta pantalla deixa canviar: el servidor fa
+      // `exclude_unset`, de manera que la procedència i el grup escolar es
+      // queden tal com es van desar al registre.
       const actualitzat = await updateMeuPerfil({
         nom: nom.trim(),
         cognom: cognom.trim(),
-        procedencia: procedencia.trim() || null,
-        es_alumne: esAlumne,
       });
       setUser(actualitzat);
       Alert.alert(t("perfilEdit.savedTitle"), t("perfilEdit.savedMsg"));
@@ -89,50 +89,12 @@ export default function EditarPerfilScreen() {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <ScrollView keyboardShouldPersistTaps="handled">
-        <View
-          accessibilityRole="header"
-          style={{
-            paddingHorizontal: 14,
-            paddingTop: insets.top + 6,
-            paddingBottom: 10,
-            borderBottomWidth: 1,
-            borderBottomColor: COLORS.border,
-          }}
-        >
-          <TouchableOpacity
-            accessibilityRole="button"
-            accessibilityLabel={t("common.back")}
-            onPress={() => router.back()}
-            style={{ marginBottom: 6, minHeight: 44, minWidth: 44, justifyContent: "center" }}
-          >
-            <Text
-              style={{ fontFamily: FONTS.sans, fontSize: 10, color: COLORS.textSecondary }}
-              maxFontSizeMultiplier={1.4}
-            >
-              ← {t("common.back")}
-            </Text>
-          </TouchableOpacity>
-          <Text
-            accessibilityRole="header"
-            style={{ fontFamily: FONTS.serif, fontSize: 16, fontWeight: "600", color: COLORS.text }}
-            maxFontSizeMultiplier={1.5}
-          >
-            {t("perfilEdit.title")}
-          </Text>
-        </View>
+        <Capcalera titol={t("perfilEdit.title")} />
 
         <View style={{ padding: 14 }}>
           <Text
             accessibilityRole="header"
-            style={{
-              fontFamily: FONTS.sans,
-              fontSize: 10,
-              fontWeight: "600",
-              color: COLORS.textSecondary,
-              textTransform: "uppercase",
-              letterSpacing: 0.4,
-              marginBottom: 10,
-            }}
+            style={[ROTUL_SECCIO, { marginBottom: 10 }]}
             maxFontSizeMultiplier={1.4}
           >
             {t("perfilEdit.personalData")}
@@ -150,40 +112,11 @@ export default function EditarPerfilScreen() {
             onChangeText={setCognom}
             autoComplete="family-name"
           />
-          <FormField
-            label={t("perfil.origin")}
-            value={procedencia}
-            onChangeText={setProcedencia}
-            placeholder={t("auth.originPlaceholder")}
-          />
-
-          <View
-            style={{
-              flexDirection: "row",
-              justifyContent: "space-between",
-              alignItems: "center",
-              borderWidth: 1,
-              borderColor: COLORS.controlBorder,
-              borderRadius: 8,
-              padding: 12,
-              marginBottom: 14,
-              minHeight: 44,
-            }}
-          >
-            <Text
-              style={{ fontFamily: FONTS.sans, fontSize: 11, color: COLORS.text, flex: 1 }}
-              maxFontSizeMultiplier={1.4}
-            >
-              {t("perfil.schoolGroup")}
-            </Text>
-            <Switch
-              accessibilityRole="switch"
-              accessibilityLabel={t("perfil.schoolGroup")}
-              accessibilityState={{ checked: esAlumne }}
-              value={esAlumne}
-              onValueChange={setEsAlumne}
-            />
-          </View>
+          {/* La procedència i el grup escolar es recullen una sola vegada, al
+              registre: no són preferències sinó dades del moment de l'alta que
+              serveixen a l'entitat per saber a qui arriba la ruta. Deixar-les
+              editables aquí feia que la xifra pogués anar canviant sota els
+              peus de qui la consulta. El perfil les segueix mostrant. */}
 
           <TouchableOpacity
             accessibilityRole="button"
@@ -224,15 +157,7 @@ export default function EditarPerfilScreen() {
         >
           <Text
             accessibilityRole="header"
-            style={{
-              fontFamily: FONTS.sans,
-              fontSize: 10,
-              fontWeight: "600",
-              color: COLORS.textSecondary,
-              textTransform: "uppercase",
-              letterSpacing: 0.4,
-              marginBottom: 10,
-            }}
+            style={[ROTUL_SECCIO, { marginBottom: 10 }]}
             maxFontSizeMultiplier={1.4}
           >
             {t("perfilEdit.passwordSection")}

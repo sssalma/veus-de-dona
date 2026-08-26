@@ -3,7 +3,8 @@ import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator } from "rea
 import { useRouter, useFocusEffect } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import { COLORS, FONTS } from "../../constants";
+import { COLORS, FONTS, TITOL_PANTALLA } from "../../constants";
+import { Rotul } from "../../components/Rotul";
 import { useAuth } from "../../contexts/AuthContext";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { Idioma } from "../../i18n/translations";
@@ -119,7 +120,7 @@ export default function PerfilScreen() {
           <View style={{ flex: 1 }}>
             <Text
               accessibilityRole="header"
-              style={{ fontFamily: FONTS.serif, fontSize: 21, color: COLORS.text, lineHeight: 26 }}
+              style={TITOL_PANTALLA}
               maxFontSizeMultiplier={1.4}
             >
               {user ? `${user.nom} ${user.cognom}` : t("perfil.guest")}
@@ -205,6 +206,13 @@ export default function PerfilScreen() {
               </TouchableOpacity>
             </View>
             <SelectorIdioma idioma={idioma} canviarIdioma={canviarIdioma} etiqueta={t("perfil.language")} />
+            {/* També per a qui no ha iniciat sessió: explica de què va la ruta
+                i no demana cap compte. */}
+            <Accio
+              etiqueta={t("perfil.about")}
+              icona="information-circle-outline"
+              onPress={() => router.push("/sobre")}
+            />
           </View>
         ) : (
           <>
@@ -449,6 +457,11 @@ export default function PerfilScreen() {
                 />
               )}
               <Accio
+                etiqueta={t("perfil.about")}
+                icona="information-circle-outline"
+                onPress={() => router.push("/sobre")}
+              />
+              <Accio
                 etiqueta={t("perfil.logout")}
                 icona="log-out-outline"
                 color={COLORS.love}
@@ -462,24 +475,6 @@ export default function PerfilScreen() {
   );
 }
 
-function Rotul({ text }: { text: string }) {
-  return (
-    <Text
-      accessibilityRole="header"
-      style={{
-        fontFamily: FONTS.sans,
-        fontSize: 9,
-        fontWeight: "700",
-        letterSpacing: 1,
-        textTransform: "uppercase",
-        color: COLORS.textSecondary,
-      }}
-      maxFontSizeMultiplier={1.4}
-    >
-      {text}
-    </Text>
-  );
-}
 
 function Fila({ etiqueta, valor }: { etiqueta: string; valor: string }) {
   return (

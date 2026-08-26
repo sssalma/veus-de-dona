@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { View, Text, TouchableOpacity, Alert, Switch, KeyboardAvoidingView, Platform, ScrollView } from "react-native";
 import { useRouter } from "expo-router";
-import { COLORS, FONTS, PASSWORD_MIN_LENGTH } from "../../constants";
+import { COLORS, FONTS, PASSWORD_MIN_LENGTH, ROTUL_SECCIO } from "../../constants";
 import { useAuth } from "../../contexts/AuthContext";
 import { useLanguage } from "../../contexts/LanguageContext";
 import FormField from "../../components/FormField";
@@ -26,12 +26,16 @@ export default function RegisterScreen() {
       Alert.alert(t("common.error"), t("auth.fillAllFields"));
       return;
     }
-    if (password.length < PASSWORD_MIN_LENGTH) {
-      Alert.alert(t("common.error"), t("auth.passwordMinLength"));
-      return;
-    }
+    // L'ordre de les comprovacions segueix l'ordre dels camps a la pantalla.
+    // Amb la contrasenya primer, qui s'equivocava de correu rebia l'avís de la
+    // contrasenya i no arribava mai al del correu: al registre s'escriu una
+    // contrasenya nova, i mentre no arriba als 8 caràcters tapava l'altre.
     if (!correuSemblaValid(email)) {
       Alert.alert(t("common.error"), t("auth.invalidEmail"));
+      return;
+    }
+    if (password.length < PASSWORD_MIN_LENGTH) {
+      Alert.alert(t("common.error"), t("auth.passwordMinLength"));
       return;
     }
     setLoading(true);
@@ -119,15 +123,7 @@ export default function RegisterScreen() {
 
         <Text
           accessibilityRole="header"
-          style={{
-            fontFamily: FONTS.sans,
-            fontSize: 9,
-            color: COLORS.textSecondary,
-            letterSpacing: 0.6,
-            textTransform: "uppercase",
-            marginTop: 4,
-            marginBottom: 10,
-          }}
+          style={[ROTUL_SECCIO, { marginTop: 4, marginBottom: 10 }]}
           maxFontSizeMultiplier={1.4}
         >
           {t("auth.optionalSection")}

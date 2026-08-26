@@ -76,6 +76,54 @@ export const FONTS = {
   sans: Platform.select({ ios: "System", android: "sans-serif", default: "sans-serif" }),
 };
 
+/**
+ * Els dos nivells de capçalera de l'aplicació.
+ *
+ * Hi havia sis mides diferents de títol de pantalla -de 13 a 24- i vuit
+ * espaiats diferents als rètols de secció, tot per al mateix paper. Definir-ho
+ * aquí és el que fa que un canvi de tipografia torni a ser un canvi d'un sol
+ * fitxer, igual que passa amb la paleta.
+ *
+ * Tres pantalles no els fan servir, i és a posta:
+ *
+ *   - El mapa porta un títol de 43 caràcters i el necessita més petit i en
+ *     versaletes perquè càpiga al costat dels controls.
+ *   - La fitxa de parada escriu el nom de la parada en blanc sobre la
+ *     fotografia: és un títol de contingut, no la barra de la pantalla.
+ *   - Les pantalles d'accés no tenen títol sinó el nom de l'aplicació en
+ *     cursiva, que és una marca i no un encapçalament.
+ */
+export const TITOL_PANTALLA = {
+  fontFamily: FONTS.serif,
+  fontSize: 20,
+  fontWeight: "600",
+  color: COLORS.text,
+  lineHeight: 26,
+} as const;
+
+export const ROTUL_SECCIO = {
+  fontFamily: FONTS.sans,
+  fontSize: 11,
+  fontWeight: "700",
+  letterSpacing: 1,
+  textTransform: "uppercase",
+  color: COLORS.textSecondary,
+} as const;
+
+/**
+ * Dades del projecte que la pantalla d'informació ensenya.
+ *
+ * El correu es deixa buit a posta: al lloc web del projecte no n'hi ha cap de
+ * públic, i no se'n pot posar un d'inventat. Mentre estigui buit, la pantalla
+ * no dibuixa l'apartat de contacte; en el moment que se n'hi escrigui un, hi
+ * apareix sol.
+ */
+export const PROJECTE = {
+  web: "https://sites.google.com/view/veusdedona/",
+  correu: "",
+  repositori: "https://github.com/sssalma/veus-de-dona",
+};
+
 // Longitud mínima de contrasenya. El servidor imposa exactament la mateixa
 // regla a app/schemas/usuari.py, de manera que no es pot evitar cridant l'API
 // directament: aquí només serveix per avisar l'usuari abans d'enviar.

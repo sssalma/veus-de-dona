@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { View, Text, FlatList, TouchableOpacity, TextInput } from "react-native";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { COLORS, FONTS } from "../../constants";
+import { COLORS, FONTS, TITOL_PANTALLA } from "../../constants";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { getAutores } from "../../services/autores";
 import { Autora } from "../../types";
@@ -44,12 +44,7 @@ export default function AutoresScreen() {
         <Text
           accessibilityRole="header"
           maxFontSizeMultiplier={1.5}
-          style={{
-            fontFamily: FONTS.serif,
-            fontSize: 15,
-            fontWeight: "600",
-            color: COLORS.text,
-          }}
+          style={TITOL_PANTALLA}
         >
           {t("autoresScreen.title")}
         </Text>
