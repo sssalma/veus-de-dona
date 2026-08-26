@@ -2,14 +2,27 @@ import { useState, useEffect } from "react";
 import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert, Image } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
+import { Ionicons } from "@expo/vector-icons";
 import { COLORS, FONTS, ROTUL_SECCIO } from "../../../constants";
 import { useLanguage } from "../../../contexts/LanguageContext";
 import { Capcalera } from "../../../components/Capcalera";
 import { BotoDesar } from "../../../components/admin/BotoDesar";
 import { EstatLlista } from "../../../components/admin/LlistaAdmin";
-import { getAutora, updateAutora, getAutoraFoto, updateAutoraFoto } from "../../../services/autores";
+import {
+  getAutora,
+  updateAutora,
+  getAutoraFoto,
+  updateAutoraFoto,
+  getTraduccionsAutora,
+  setTraduccioAutora,
+  esborraTraduccioAutora,
+} from "../../../services/autores";
 import { missatgeError } from "../../../services/errors";
 import FormField from "../../../components/FormField";
+
+// El catala no hi surt: s'edita al camp de biografia de mes amunt.
+const IDIOMES_TRADUIBLES = ["ES", "EN"] as const;
+const NOM_IDIOMA: Record<string, string> = { ES: "Castella", EN: "Angles" };
 
 export default function EditarAutora() {
   const router = useRouter();
@@ -24,6 +37,9 @@ export default function EditarAutora() {
   const [bio, setBio] = useState("");
   const [fotoUrl, setFotoUrl] = useState<string | null>(null);
   const [pujantFoto, setPujantFoto] = useState(false);
+  // Biografies en els altres idiomes. El catala no hi es: viu a `bio`.
+  const [traduccions, setTraduccions] = useState<Record<string, string>>({});
+  const [desantIdioma, setDesantIdioma] = useState<string | null>(null);
 
   useEffect(() => {
     getAutora(id)
@@ -40,6 +56,15 @@ export default function EditarAutora() {
     getAutoraFoto(id)
       .then(setFotoUrl)
       .catch(() => setFotoUrl(null));
+    getTraduccionsAutora(id)
+      .then((llista) => {
+        const per: Record<string, string> = {};
+        llista.forEach((tr) => {
+          per[tr.idioma] = tr.bio;
+        });
+        setTraduccions(per);
+      })
+      .catch(() => setTraduccions({}));
   }, [id]);
 
   const handleCanviarFoto = async () => {
@@ -89,6 +114,45 @@ export default function EditarAutora() {
     } finally {
       setDesant(false);
     }
+  };
+
+  const handleDesarTraduccio = async (idiomaCodi: string) => {
+    const text = (traduccions[idiomaCodi] ?? "").trim();
+    if (!text) return;
+    setDesantIdioma(idiomaCodi);
+    try {
+      await setTraduccioAutora(id, idiomaCodi, text);
+      Alert.alert(t("admin.translationSaved"), "");
+    } catch (err) {
+      Alert.alert(t("common.error"), missatgeError(err, t("admin.translationError")));
+    } finally {
+      setDesantIdioma(null);
+    }
+  };
+
+  const handleEsborrarTraduccio = (idiomaCodi: string) => {
+    Alert.alert(t("admin.translationDelete"), t("admin.translationDeleteConfirm"), [
+      { text: t("common.cancel"), style: "cancel" },
+      {
+        text: t("common.delete"),
+        style: "destructive",
+        onPress: async () => {
+          try {
+            await esborraTraduccioAutora(id, idiomaCodi);
+            setTraduccions((prev) => {
+              const seguent = { ...prev };
+              delete seguent[idiomaCodi];
+              return seguent;
+            });
+          } catch (err) {
+            Alert.alert(
+              t("common.error"),
+              missatgeError(err, t("admin.translationDeleteError"))
+            );
+          }
+        },
+      },
+    ]);
   };
 
   return (
@@ -191,6 +255,136 @@ export default function EditarAutora() {
             />
 
             <BotoDesar desant={desant} onPress={handleDesar} />
+
+            {/* ---------- traduccions de la biografia ---------- */}
+            <View
+              style={{
+                marginTop: 28,
+                paddingTop: 18,
+                borderTopWidth: 1,
+                borderTopColor: COLORS.border,
+                gap: 8,
+              }}
+            >
+              <Text accessibilityRole="header" style={ROTUL_SECCIO} maxFontSizeMultiplier={1.4}>
+                {t("admin.translations")}
+              </Text>
+              <Text
+                style={{
+                  fontFamily: FONTS.sans,
+                  fontSize: 12,
+                  color: COLORS.textSecondary,
+                  lineHeight: 17,
+                  marginBottom: 6,
+                }}
+                maxFontSizeMultiplier={1.4}
+              >
+                {t("admin.translationsDesc")}
+              </Text>
+
+              {IDIOMES_TRADUIBLES.map((codi) => {
+                const valor = traduccions[codi] ?? "";
+                const desada = valor.trim().length > 0;
+                return (
+                  <View key={codi} style={{ marginBottom: 10 }}>
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        gap: 10,
+                      }}
+                    >
+                      <Text
+                        style={{
+                          fontFamily: FONTS.sans,
+                          fontSize: 13,
+                          fontWeight: "600",
+                          color: COLORS.text,
+                        }}
+                        maxFontSizeMultiplier={1.4}
+                      >
+                        {NOM_IDIOMA[codi]}
+                      </Text>
+                      {!desada && (
+                        <Text
+                          style={{
+                            fontFamily: FONTS.sans,
+                            fontSize: 11,
+                            fontStyle: "italic",
+                            color: COLORS.textSecondary,
+                          }}
+                          maxFontSizeMultiplier={1.3}
+                        >
+                          {t("admin.translationMissing")}
+                        </Text>
+                      )}
+                    </View>
+
+                    <FormField
+                      label=""
+                      value={valor}
+                      onChangeText={(text) =>
+                        setTraduccions((prev) => ({ ...prev, [codi]: text }))
+                      }
+                      multiline
+                      numberOfLines={5}
+                      style={{ minHeight: 100, textAlignVertical: "top" }}
+                    />
+
+                    <View style={{ flexDirection: "row", gap: 10 }}>
+                      <TouchableOpacity
+                        accessibilityRole="button"
+                        accessibilityLabel={`${t("common.save")} ${NOM_IDIOMA[codi]}`}
+                        accessibilityState={{
+                          disabled: desantIdioma === codi || !valor.trim(),
+                          busy: desantIdioma === codi,
+                        }}
+                        onPress={() => handleDesarTraduccio(codi)}
+                        disabled={desantIdioma === codi || !valor.trim()}
+                        style={{
+                          flex: 1,
+                          borderWidth: 1,
+                          borderColor: COLORS.controlBorder,
+                          borderRadius: 8,
+                          minHeight: 46,
+                          justifyContent: "center",
+                          opacity: desantIdioma === codi || !valor.trim() ? 0.45 : 1,
+                        }}
+                      >
+                        <Text
+                          style={{
+                            fontFamily: FONTS.sans,
+                            fontSize: 13,
+                            color: COLORS.text,
+                            textAlign: "center",
+                          }}
+                          maxFontSizeMultiplier={1.4}
+                        >
+                          {t("common.save")}
+                        </Text>
+                      </TouchableOpacity>
+
+                      {desada && (
+                        <TouchableOpacity
+                          accessibilityRole="button"
+                          accessibilityLabel={`${t("admin.translationDelete")} ${NOM_IDIOMA[codi]}`}
+                          onPress={() => handleEsborrarTraduccio(codi)}
+                          style={{
+                            width: 52,
+                            minHeight: 46,
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}
+                        >
+                          <Ionicons name="trash-outline" size={19} color={COLORS.love} />
+                        </TouchableOpacity>
+                      )}
+                    </View>
+                  </View>
+                );
+              })}
+            </View>
           </View>
         )}
       </ScrollView>

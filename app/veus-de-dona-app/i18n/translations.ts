@@ -313,6 +313,16 @@ export const ca = {
   "sobre.licenceHeading": "Programari lliure",
   "sobre.licenceBody": "L'aplicació és de codi obert, amb llicència MIT, i el mapa fa servir OpenStreetMap.",
   "sobre.openError": "No s'ha pogut obrir l'enllaç.",
+
+  "autora.bioOriginal": "Aquesta biografia encara no està traduïda. Es mostra l'original en català.",
+  "admin.translations": "Traduccions de la biografia",
+  "admin.translationsDesc": "El català s'edita a dalt. Els textos literaris no es tradueixen: reproduir-los està permès, traduir-los no.",
+  "admin.translationMissing": "Sense traduir",
+  "admin.translationSaved": "Traducció desada",
+  "admin.translationError": "No s'ha pogut desar la traducció.",
+  "admin.translationDelete": "Esborrar la traducció",
+  "admin.translationDeleteConfirm": "Segur que vols esborrar aquesta traducció? La fitxa tornarà a mostrar el català.",
+  "admin.translationDeleteError": "No s'ha pogut esborrar la traducció.",
 };
 
 export const es: typeof ca = {
@@ -630,6 +640,16 @@ export const es: typeof ca = {
   "sobre.licenceHeading": "Software libre",
   "sobre.licenceBody": "La aplicación es de código abierto, con licencia MIT, y el mapa usa OpenStreetMap.",
   "sobre.openError": "No se ha podido abrir el enlace.",
+
+  "autora.bioOriginal": "Esta biografía todavía no está traducida. Se muestra el original en catalán.",
+  "admin.translations": "Traducciones de la biografía",
+  "admin.translationsDesc": "El catalán se edita arriba. Los textos literarios no se traducen: reproducirlos está permitido, traducirlos no.",
+  "admin.translationMissing": "Sin traducir",
+  "admin.translationSaved": "Traducción guardada",
+  "admin.translationError": "No se ha podido guardar la traducción.",
+  "admin.translationDelete": "Borrar la traducción",
+  "admin.translationDeleteConfirm": "¿Seguro que quieres borrar esta traducción? La ficha volverá a mostrar el catalán.",
+  "admin.translationDeleteError": "No se ha podido borrar la traducción.",
 };
 
 export const en: typeof ca = {
@@ -947,6 +967,16 @@ export const en: typeof ca = {
   "sobre.licenceHeading": "Open source",
   "sobre.licenceBody": "The app is open source under the MIT licence, and the map uses OpenStreetMap.",
   "sobre.openError": "The link could not be opened.",
+
+  "autora.bioOriginal": "This biography has not been translated yet. The Catalan original is shown.",
+  "admin.translations": "Biography translations",
+  "admin.translationsDesc": "Catalan is edited above. The literary texts are not translated: reproducing them is allowed, translating them is not.",
+  "admin.translationMissing": "Not translated",
+  "admin.translationSaved": "Translation saved",
+  "admin.translationError": "The translation could not be saved.",
+  "admin.translationDelete": "Delete the translation",
+  "admin.translationDeleteConfirm": "Delete this translation? The card will show Catalan again.",
+  "admin.translationDeleteError": "The translation could not be deleted.",
 };
 
 export const translations = { CA: ca, ES: es, EN: en };

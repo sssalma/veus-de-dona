@@ -1,13 +1,13 @@
 import api from "./api";
-import { Autora } from "../types";
+import { Autora, TraduccioAutora } from "../types";
 
-export async function getAutores(): Promise<Autora[]> {
-  const { data } = await api.get("/autores/");
+export async function getAutores(idioma?: string): Promise<Autora[]> {
+  const { data } = await api.get("/autores/", { params: idioma ? { idioma } : undefined });
   return data;
 }
 
-export async function getAutora(id: string): Promise<Autora> {
-  const { data } = await api.get(`/autores/${id}`);
+export async function getAutora(id: string, idioma?: string): Promise<Autora> {
+  const { data } = await api.get(`/autores/${id}`, { params: idioma ? { idioma } : undefined });
   return data;
 }
 
@@ -31,4 +31,24 @@ export async function updateAutoraFoto(
     headers: { "Content-Type": "multipart/form-data" },
   });
   return data;
+}
+
+// ---- traduccions de la biografia: nomes edicio ----
+
+export async function getTraduccionsAutora(id: string): Promise<TraduccioAutora[]> {
+  const { data } = await api.get(`/autores/${id}/traduccions`);
+  return data;
+}
+
+export async function setTraduccioAutora(
+  id: string,
+  idioma: string,
+  bio: string
+): Promise<TraduccioAutora> {
+  const { data } = await api.put(`/autores/${id}/traduccions/${idioma}`, { bio });
+  return data;
+}
+
+export async function esborraTraduccioAutora(id: string, idioma: string): Promise<void> {
+  await api.delete(`/autores/${id}/traduccions/${idioma}`);
 }

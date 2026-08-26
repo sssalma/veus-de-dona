@@ -16,3 +16,10 @@ class Autora(Base):
 
     # one autora has one or more texts in the route
     textos = relationship("Text", back_populates="autora")
+
+    # the Catalan biography lives in `bio`; the rest, one row per language
+    traduccions = relationship(
+        "AutoraTraduccio",
+        back_populates="autora",
+        cascade="all, delete-orphan",
+    )

@@ -8,14 +8,13 @@ import { getTextosByAutora } from "../../services/textos";
 import { getParades } from "../../services/parades";
 import { Autora, Parada, TextDto } from "../../types";
 import { Capcalera } from "../../components/Capcalera";
-import CopyButton from "../../components/CopyButton";
 import { useLanguage } from "../../contexts/LanguageContext";
 
 export default function AutoraScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { t } = useLanguage();
+  const { t, idioma } = useLanguage();
   const [autora, setAutora] = useState<Autora | null>(null);
   const [textos, setTextos] = useState<TextDto[]>([]);
   const [totesParades, setTotesParades] = useState<Parada[]>([]);
@@ -23,12 +22,12 @@ export default function AutoraScreen() {
 
   useEffect(() => {
     const aid = id as string;
-    getAutora(aid).then(setAutora).catch(() => setAutora(null));
+    getAutora(aid, idioma).then(setAutora).catch(() => setAutora(null));
     getTextosByAutora(aid).then(setTextos).catch(() => setTextos([]));
     getParades().then(setTotesParades).catch(() => setTotesParades([]));
     // 404 si l'autora encara no té retrat: es cau a les inicials
     getAutoraFoto(aid).then(setFotoUrl).catch(() => setFotoUrl(null));
-  }, [id]);
+  }, [id, idioma]);
 
   if (!autora) {
     return (
@@ -140,14 +139,12 @@ export default function AutoraScreen() {
       </View>
 
       <View style={{ padding: 14, borderBottomWidth: 1, borderBottomColor: COLORS.border }}>
-        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 5 }}>
-          <Text maxFontSizeMultiplier={1.5}
-            style={ROTUL_SECCIO}
-          >
-            {t("autora.bio")}
-          </Text>
-          {autora.bio && <CopyButton text={autora.bio} />}
-        </View>
+        {/* Sense boto de copiar: te sentit en un poema, que el vols per
+            compartir-lo o guardar-lo, pero no en una biografia, que es text
+            de consulta. Al text literari s'hi queda. */}
+        <Text maxFontSizeMultiplier={1.5} style={[ROTUL_SECCIO, { marginBottom: 5 }]}>
+          {t("autora.bio")}
+        </Text>
         <Text maxFontSizeMultiplier={1.5}
           style={{
             fontFamily: FONTS.sans,
@@ -158,6 +155,25 @@ export default function AutoraScreen() {
         >
           {autora.bio}
         </Text>
+
+        {/* Quan la traduccio encara no existeix el servidor torna el catala.
+            Dir-ho es mes honest que deixar que sembli que la fitxa nomes esta
+            en catala o, pitjor, que allo es la traduccio. */}
+        {autora.bio && autora.bio_idioma !== idioma && (
+          <Text
+            maxFontSizeMultiplier={1.5}
+            style={{
+              fontFamily: FONTS.sans,
+              fontSize: 11,
+              fontStyle: "italic",
+              color: COLORS.textSecondary,
+              lineHeight: 15,
+              marginTop: 8,
+            }}
+          >
+            {t("autora.bioOriginal")}
+          </Text>
+        )}
       </View>
 
       <View style={{ padding: 14 }}>

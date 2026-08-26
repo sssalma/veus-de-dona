@@ -1,11 +1,16 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from sqlalchemy.orm import Session
 from app.database import get_db
-from app.schemas.autora import AutoraResponse, AutoraUpdate
+from app.schemas.autora import (
+    AutoraResponse,
+    AutoraUpdate,
+    TraduccioAutora,
+    TraduccioAutoraUpdate,
+)
 from app.services import autores as autores_service
 from app.services.auth import require_rol
 from app.services.storage import get_file_url
-from app.models.usuari import Usuari, RolUsuari
+from app.models.usuari import Usuari, RolUsuari, Idioma
 from typing import List
 
 router = APIRouter(
@@ -14,17 +19,19 @@ router = APIRouter(
 )
 
 @router.get("/", response_model=List[AutoraResponse])
-def get_autores(db: Session = Depends(get_db)):
-    """Returns all authors ordered by surname"""
-    return autores_service.get_all_autores(db)
+def get_autores(idioma: Idioma = Idioma.CA, db: Session = Depends(get_db)):
+    """Returns all authors ordered by surname, with the biography in the
+    requested language when there is a translation for it."""
+    autores = autores_service.get_all_autores(db)
+    return [autores_service.aplica_idioma(a, idioma) for a in autores]
 
 @router.get("/{autora_id}", response_model=AutoraResponse)
-def get_autora(autora_id: str, db: Session = Depends(get_db)):
-    """Returns a single author by ID"""
+def get_autora(autora_id: str, idioma: Idioma = Idioma.CA, db: Session = Depends(get_db)):
+    """Returns a single author by ID, biography in the requested language."""
     autora = autores_service.get_autora_by_id(db, autora_id)
     if not autora:
         raise HTTPException(status_code=404, detail="Autora no trobada")
-    return autora
+    return autores_service.aplica_idioma(autora, idioma)
 
 @router.get("/{autora_id}/foto")
 def get_autora_foto(autora_id: str, db: Session = Depends(get_db)):
@@ -67,3 +74,54 @@ def update_autora(
     if not autora:
         raise HTTPException(status_code=404, detail="Autora no trobada")
     return autora
+
+
+# ---- traduccions de la biografia: nomes edicio ----
+#
+# El catala no te endpoint propi: viu a autora.bio i s'edita amb la resta de la
+# fitxa. Nomes els textos literaris queden fora del multiidioma, i no per una
+# limitacio tecnica sino perque traduir-los seria crear obra derivada sense
+# tenir-ne el dret.
+
+@router.get("/{autora_id}/traduccions", response_model=List[TraduccioAutora])
+def get_traduccions(
+    autora_id: str,
+    db: Session = Depends(get_db),
+    current_user: Usuari = Depends(require_rol(RolUsuari.EDITOR, RolUsuari.ADMINISTRADOR))
+):
+    """Every translated biography of an author - editor/admin only"""
+    if not autores_service.get_autora_by_id(db, autora_id):
+        raise HTTPException(status_code=404, detail="Autora no trobada")
+    return autores_service.get_traduccions(db, autora_id)
+
+
+@router.put("/{autora_id}/traduccions/{idioma}", response_model=TraduccioAutora)
+def set_traduccio(
+    autora_id: str,
+    idioma: Idioma,
+    dades: TraduccioAutoraUpdate,
+    db: Session = Depends(get_db),
+    current_user: Usuari = Depends(require_rol(RolUsuari.EDITOR, RolUsuari.ADMINISTRADOR))
+):
+    """Creates or replaces the biography of an author in one language"""
+    if idioma == Idioma.CA:
+        raise HTTPException(
+            status_code=400,
+            detail="La biografia en catala s'edita a la fitxa de l'autora"
+        )
+    traduccio = autores_service.set_traduccio(db, autora_id, idioma, dades.bio)
+    if not traduccio:
+        raise HTTPException(status_code=404, detail="Autora no trobada")
+    return traduccio
+
+
+@router.delete("/{autora_id}/traduccions/{idioma}", status_code=204)
+def esborra_traduccio(
+    autora_id: str,
+    idioma: Idioma,
+    db: Session = Depends(get_db),
+    current_user: Usuari = Depends(require_rol(RolUsuari.EDITOR, RolUsuari.ADMINISTRADOR))
+):
+    """Removes a translation; the card falls back to Catalan"""
+    if not autores_service.esborra_traduccio(db, autora_id, idioma):
+        raise HTTPException(status_code=404, detail="Traduccio no trobada")

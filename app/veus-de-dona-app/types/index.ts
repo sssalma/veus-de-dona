@@ -14,8 +14,17 @@ export interface Autora {
   nom: string;
   cognom: string;
   bio: string | null;
+  // En quin idioma ve la `bio`. Quan no hi ha traduccio el servidor torna el
+  // catala i ho diu aqui, perque la fitxa ho pugui advertir en comptes de
+  // fer-lo passar per traduit.
+  bio_idioma: "CA" | "ES" | "EN";
   anys_vida: string | null;
   foto_minio_key: string | null;
+}
+
+export interface TraduccioAutora {
+  idioma: "CA" | "ES" | "EN";
+  bio: string;
 }
 
 export interface TextDto {
