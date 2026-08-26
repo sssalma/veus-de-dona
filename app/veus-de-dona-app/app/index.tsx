@@ -45,7 +45,7 @@ export default function SplashScreen() {
         {t("splash.subtitle")}
       </Text>
 
-      <View accessibilityRole="radiogroup" accessibilityLabel="Selecció d'idioma" style={{ flexDirection: "row", gap: 8, marginTop: 32 }}>
+      <View accessibilityRole="radiogroup" accessibilityLabel={t("perfil.language")} style={{ flexDirection: "row", gap: 8, marginTop: 32 }}>
         {IDIOMES.map((codi) => {
           const selected = codi === idioma;
           return (
@@ -53,7 +53,7 @@ export default function SplashScreen() {
               key={codi}
               accessibilityRole="radio"
               accessibilityState={{ selected }}
-              accessibilityLabel={`Idioma ${codi}`}
+              accessibilityLabel={`${t("perfil.language")} ${codi}`}
               onPress={() => canviarIdioma(codi)}
               style={{
                 paddingHorizontal: 14,

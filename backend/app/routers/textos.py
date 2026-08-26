@@ -12,6 +12,11 @@ router = APIRouter(
     tags=["textos"]
 )
 
+@router.get("/", response_model=List[TextResponse])
+def get_textos(db: Session = Depends(get_db)):
+    """Returns every text, ordered by route order"""
+    return textos_service.get_all_textos(db)
+
 @router.get("/parada/{parada_id}", response_model=List[TextResponse])
 def get_textos_by_parada(parada_id: str, db: Session = Depends(get_db)):
     """Returns all texts for a given stop"""

@@ -10,6 +10,10 @@ interface AuthContextType {
   login: (data: LoginRequest) => Promise<void>;
   register: (data: RegisterRequest) => Promise<void>;
   logout: () => Promise<void>;
+  /** Torna a llegir l'usuari del servidor: cal després d'editar el perfil */
+  refreshUser: () => Promise<void>;
+  /** Actualitza l'usuari en memòria sense tornar a consultar el servidor */
+  setUser: (usuari: Usuari) => void;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -55,8 +59,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
   }, []);
 
+  const refreshUser = useCallback(async () => {
+    const { data } = await api.get<Usuari>("/auth/me");
+    setUser(data);
+  }, []);
+
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated: !!user, isLoading, login, register, logout }}>
+    <AuthContext.Provider
+      value={{ user, isAuthenticated: !!user, isLoading, login, register, logout, refreshUser, setUser }}
+    >
       {children}
     </AuthContext.Provider>
   );

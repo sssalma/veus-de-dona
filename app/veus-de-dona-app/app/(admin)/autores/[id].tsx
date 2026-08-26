@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
-import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert, Image } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { COLORS, FONTS } from "../../../constants";
-import { getAutora, updateAutora } from "../../../services/autores";
-import AdminField from "../../../components/AdminField";
+import * as ImagePicker from "expo-image-picker";
+import { getAutora, updateAutora, getAutoraFoto, updateAutoraFoto } from "../../../services/autores";
+import FormField from "../../../components/FormField";
 
 export default function EditarAutora() {
   const router = useRouter();
@@ -16,6 +17,8 @@ export default function EditarAutora() {
   const [cognom, setCognom] = useState("");
   const [anysVida, setAnysVida] = useState("");
   const [bio, setBio] = useState("");
+  const [fotoUrl, setFotoUrl] = useState<string | null>(null);
+  const [pujantFoto, setPujantFoto] = useState(false);
 
   useEffect(() => {
     getAutora(id)
@@ -27,7 +30,37 @@ export default function EditarAutora() {
       })
       .catch(() => Alert.alert("Error", "No s'ha pogut carregar l'autora"))
       .finally(() => setLoading(false));
+    // 404 si encara no en te: es queda amb les inicials
+    getAutoraFoto(id).then(setFotoUrl).catch(() => setFotoUrl(null));
   }, [id]);
+
+  const handleCanviarFoto = async () => {
+    const permis = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permis.granted) {
+      Alert.alert("Error", "Cal permis per accedir a les fotos");
+      return;
+    }
+    const resultat = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images"],
+      quality: 0.8,
+    });
+    if (resultat.canceled || resultat.assets.length === 0) return;
+
+    const asset = resultat.assets[0];
+    setPujantFoto(true);
+    try {
+      await updateAutoraFoto(id, {
+        uri: asset.uri,
+        name: asset.fileName || "retrat.jpg",
+        type: asset.mimeType || "image/jpeg",
+      });
+      setFotoUrl(await getAutoraFoto(id));
+    } catch {
+      Alert.alert("Error", "No s'ha pogut pujar la foto");
+    } finally {
+      setPujantFoto(false);
+    }
+  };
 
   const handleDesar = async () => {
     if (!nom.trim() || !cognom.trim()) {
@@ -87,10 +120,71 @@ export default function EditarAutora() {
         </View>
       ) : (
         <View style={{ padding: 14 }}>
-          <AdminField label="Nom" value={nom} onChangeText={setNom} />
-          <AdminField label="Cognom" value={cognom} onChangeText={setCognom} />
-          <AdminField label="Anys de vida" placeholder="1900-1980" value={anysVida} onChangeText={setAnysVida} />
-          <AdminField
+          <Text
+            style={{ fontFamily: FONTS.sans, fontSize: 10, color: COLORS.textSecondary, marginBottom: 6 }}
+            maxFontSizeMultiplier={1.4}
+          >
+            Retrat de l'autora
+          </Text>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 14 }}>
+            <View
+              style={{
+                width: 72,
+                height: 72,
+                borderRadius: 36,
+                backgroundColor: COLORS.lightBg,
+                borderWidth: 1,
+                borderColor: COLORS.border,
+                overflow: "hidden",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              {fotoUrl ? (
+                <Image source={{ uri: fotoUrl }} style={{ width: "100%", height: "100%" }} resizeMode="cover" />
+              ) : (
+                <Text
+                  style={{ fontFamily: FONTS.sans, fontSize: 9, color: COLORS.textSecondary }}
+                  maxFontSizeMultiplier={1.3}
+                >
+                  Sense foto
+                </Text>
+              )}
+            </View>
+            <TouchableOpacity
+              accessibilityRole="button"
+              accessibilityLabel="Canviar el retrat de l'autora"
+              accessibilityState={{ disabled: pujantFoto, busy: pujantFoto }}
+              onPress={handleCanviarFoto}
+              disabled={pujantFoto}
+              style={{
+                flex: 1,
+                borderWidth: 1,
+                borderColor: COLORS.controlBorder,
+                borderRadius: 8,
+                paddingVertical: 10,
+                minHeight: 44,
+                justifyContent: "center",
+                opacity: pujantFoto ? 0.6 : 1,
+              }}
+            >
+              {pujantFoto ? (
+                <ActivityIndicator size="small" color={COLORS.darkBg} />
+              ) : (
+                <Text
+                  style={{ fontFamily: FONTS.sans, fontSize: 11, color: COLORS.text, textAlign: "center" }}
+                  maxFontSizeMultiplier={1.4}
+                >
+                  Canviar retrat
+                </Text>
+              )}
+            </TouchableOpacity>
+          </View>
+
+          <FormField label="Nom" value={nom} onChangeText={setNom} />
+          <FormField label="Cognom" value={cognom} onChangeText={setCognom} />
+          <FormField label="Anys de vida" placeholder="1900-1980" value={anysVida} onChangeText={setAnysVida} />
+          <FormField
             label="Biografia"
             value={bio}
             onChangeText={setBio}

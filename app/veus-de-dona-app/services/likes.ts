@@ -1,5 +1,7 @@
 import api from "./api";
 
+// Recompte public: el fem servir per ensenyar els likes a qui no ha
+// iniciat sessio, que no pot cridar /check perque requereix testimoni.
 export async function getLikesCount(textId: string): Promise<number> {
   const { data } = await api.get(`/likes/${textId}/count`);
   return data.likes;

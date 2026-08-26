@@ -1,9 +1,11 @@
 import { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, Alert } from "react-native";
+import { View, Text, TouchableOpacity, Alert, Switch, KeyboardAvoidingView, Platform, ScrollView } from "react-native";
 import { useRouter } from "expo-router";
-import { COLORS, FONTS } from "../../constants";
+import { COLORS, FONTS, PASSWORD_MIN_LENGTH } from "../../constants";
 import { useAuth } from "../../contexts/AuthContext";
 import { useLanguage } from "../../contexts/LanguageContext";
+import FormField from "../../components/FormField";
+import { missatgeError, correuSemblaValid } from "../../services/errors";
 
 export default function RegisterScreen() {
   const router = useRouter();
@@ -13,6 +15,10 @@ export default function RegisterScreen() {
   const [cognom, setCognom] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  // Camps opcionals: alimenten les mètriques d'ús de la ruta (procedència i
+  // visites escolars). Cap d'ells bloqueja la creació del compte.
+  const [procedencia, setProcedencia] = useState("");
+  const [esAlumne, setEsAlumne] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const handleRegister = async () => {
@@ -20,16 +26,27 @@ export default function RegisterScreen() {
       Alert.alert(t("common.error"), t("auth.fillAllFields"));
       return;
     }
-    if (password.length < 6) {
+    if (password.length < PASSWORD_MIN_LENGTH) {
       Alert.alert(t("common.error"), t("auth.passwordMinLength"));
+      return;
+    }
+    if (!correuSemblaValid(email)) {
+      Alert.alert(t("common.error"), t("auth.invalidEmail"));
       return;
     }
     setLoading(true);
     try {
-      await register({ nom, cognom, email, password });
+      await register({
+        nom,
+        cognom,
+        email,
+        password,
+        procedencia: procedencia.trim() || undefined,
+        es_alumne: esAlumne,
+      });
       router.replace("/(tabs)");
     } catch (err: any) {
-      const msg = err?.response?.data?.detail || t("auth.registerError");
+      const msg = missatgeError(err, t("auth.registerError"));
       Alert.alert(t("common.error"), msg);
     } finally {
       setLoading(false);
@@ -37,190 +54,182 @@ export default function RegisterScreen() {
   };
 
   return (
-    <View
-      style={{
-        flex: 1,
-        backgroundColor: COLORS.bg,
-        paddingHorizontal: 20,
-        justifyContent: "center",
-      }}
+    <KeyboardAvoidingView
+      style={{ flex: 1, backgroundColor: COLORS.bg }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
-      <Text
-        style={{
-          fontFamily: FONTS.serif,
-          fontStyle: "italic",
-          fontSize: 20,
-          color: COLORS.text,
-          textAlign: "center",
-          marginBottom: 16,
-        }}
+      <ScrollView
+        contentContainerStyle={{ flexGrow: 1, justifyContent: "center", paddingHorizontal: 20, paddingVertical: 24 }}
+        keyboardShouldPersistTaps="handled"
       >
-        Veus de Dona
-      </Text>
-
-      <View style={{ gap: 4, marginBottom: 14 }}>
         <Text
+          accessibilityRole="header"
           style={{
-            fontFamily: FONTS.sans,
-            fontSize: 9,
-            color: COLORS.textSecondary,
-            letterSpacing: 0.6,
-            textTransform: "uppercase",
+            fontFamily: FONTS.serif,
+            fontStyle: "italic",
+            fontSize: 20,
+            color: COLORS.text,
+            textAlign: "center",
+            marginBottom: 16,
           }}
+          maxFontSizeMultiplier={1.5}
         >
-          {t("auth.name")}
+          Veus de Dona
         </Text>
-        <TextInput
+
+        <FormField
+          label={t("auth.name")}
           placeholder={t("auth.namePlaceholder")}
-          placeholderTextColor={COLORS.textSecondary}
           value={nom}
           onChangeText={setNom}
-          style={{
-            borderWidth: 1,
-            borderColor: COLORS.border,
-            borderRadius: 6,
-            paddingHorizontal: 10,
-            paddingVertical: 8,
-            fontFamily: FONTS.sans,
-            fontSize: 11,
-            color: COLORS.text,
-            backgroundColor: "#f5f2ec",
-          }}
+          autoComplete="given-name"
+          textContentType="givenName"
         />
-      </View>
 
-      <View style={{ gap: 4, marginBottom: 14 }}>
-        <Text
-          style={{
-            fontFamily: FONTS.sans,
-            fontSize: 9,
-            color: COLORS.textSecondary,
-            letterSpacing: 0.6,
-            textTransform: "uppercase",
-          }}
-        >
-          {t("auth.surname")}
-        </Text>
-        <TextInput
+        <FormField
+          label={t("auth.surname")}
           placeholder={t("auth.surnamePlaceholder")}
-          placeholderTextColor={COLORS.textSecondary}
           value={cognom}
           onChangeText={setCognom}
-          style={{
-            borderWidth: 1,
-            borderColor: COLORS.border,
-            borderRadius: 6,
-            paddingHorizontal: 10,
-            paddingVertical: 8,
-            fontFamily: FONTS.sans,
-            fontSize: 11,
-            color: COLORS.text,
-            backgroundColor: "#f5f2ec",
-          }}
+          autoComplete="family-name"
+          textContentType="familyName"
         />
-      </View>
 
-      <View style={{ gap: 4, marginBottom: 14 }}>
-        <Text
-          style={{
-            fontFamily: FONTS.sans,
-            fontSize: 9,
-            color: COLORS.textSecondary,
-            letterSpacing: 0.6,
-            textTransform: "uppercase",
-          }}
-        >
-          {t("auth.email")}
-        </Text>
-        <TextInput
+        <FormField
+          label={t("auth.email")}
           placeholder={t("auth.emailPlaceholder")}
-          placeholderTextColor={COLORS.textSecondary}
           value={email}
           onChangeText={setEmail}
           autoCapitalize="none"
+          autoCorrect={false}
           keyboardType="email-address"
-          style={{
-            borderWidth: 1,
-            borderColor: COLORS.border,
-            borderRadius: 6,
-            paddingHorizontal: 10,
-            paddingVertical: 8,
-            fontFamily: FONTS.sans,
-            fontSize: 11,
-            color: COLORS.text,
-            backgroundColor: "#f5f2ec",
-          }}
+          autoComplete="email"
+          textContentType="emailAddress"
         />
-      </View>
 
-      <View style={{ gap: 4, marginBottom: 14 }}>
+        <FormField
+          label={`${t("auth.password")} (${t("auth.passwordHint")})`}
+          placeholder="••••••••"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+          autoComplete="new-password"
+          textContentType="newPassword"
+        />
+
         <Text
+          accessibilityRole="header"
           style={{
             fontFamily: FONTS.sans,
             fontSize: 9,
             color: COLORS.textSecondary,
             letterSpacing: 0.6,
             textTransform: "uppercase",
+            marginTop: 4,
+            marginBottom: 10,
           }}
+          maxFontSizeMultiplier={1.4}
         >
-          {t("auth.password")}
+          {t("auth.optionalSection")}
         </Text>
-        <TextInput
-          secureTextEntry
-          placeholder="••••••••"
-          placeholderTextColor={COLORS.textSecondary}
-          value={password}
-          onChangeText={setPassword}
-          style={{
-            borderWidth: 1,
-            borderColor: COLORS.border,
-            borderRadius: 6,
-            paddingHorizontal: 10,
-            paddingVertical: 8,
-            fontFamily: FONTS.sans,
-            fontSize: 11,
-            color: COLORS.text,
-            backgroundColor: "#f5f2ec",
-          }}
+
+        <FormField
+          label={t("perfil.origin")}
+          placeholder={t("auth.originPlaceholder")}
+          value={procedencia}
+          onChangeText={setProcedencia}
         />
-      </View>
 
-      <TouchableOpacity
-        onPress={handleRegister}
-        disabled={loading}
-        style={{
-          backgroundColor: COLORS.darkBg,
-          paddingVertical: 11,
-          borderRadius: 8,
-          marginBottom: 14,
-          opacity: loading ? 0.6 : 1,
-        }}
-      >
-        <Text
+        <View
           style={{
-            fontFamily: FONTS.sans,
-            fontSize: 11,
-            fontWeight: "500",
-            color: COLORS.bg,
-            textAlign: "center",
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+            borderWidth: 1,
+            borderColor: COLORS.controlBorder,
+            borderRadius: 8,
+            padding: 12,
+            marginBottom: 14,
+            minHeight: 44,
           }}
         >
-          {loading ? t("auth.creatingAccount") : t("auth.createAccountButton")}
-        </Text>
-      </TouchableOpacity>
+          <Text
+            style={{ fontFamily: FONTS.sans, fontSize: 11, color: COLORS.text, flex: 1 }}
+            maxFontSizeMultiplier={1.4}
+          >
+            {t("perfil.schoolGroup")}
+          </Text>
+          <Switch
+            accessibilityRole="switch"
+            accessibilityLabel={t("perfil.schoolGroup")}
+            accessibilityState={{ checked: esAlumne }}
+            value={esAlumne}
+            onValueChange={setEsAlumne}
+          />
+        </View>
 
-      <TouchableOpacity onPress={() => router.back()}>
         <Text
           style={{
             fontFamily: FONTS.sans,
-            fontSize: 10,
+            fontSize: 9,
             color: COLORS.textSecondary,
-            textAlign: "center",
+            lineHeight: 14,
+            marginBottom: 14,
+          }}
+          maxFontSizeMultiplier={1.5}
+        >
+          {t("auth.dataNotice")}
+        </Text>
+
+        <TouchableOpacity
+          accessibilityRole="button"
+          accessibilityLabel={t("auth.createAccountButton")}
+          accessibilityState={{ disabled: loading, busy: loading }}
+          onPress={handleRegister}
+          disabled={loading}
+          style={{
+            backgroundColor: COLORS.darkBg,
+            paddingVertical: 11,
+            borderRadius: 8,
+            marginBottom: 14,
+            opacity: loading ? 0.6 : 1,
+            minHeight: 44,
+            justifyContent: "center",
           }}
         >
-          {t("auth.back")}
-        </Text>
-      </TouchableOpacity>
-    </View>
+          <Text
+            style={{
+              fontFamily: FONTS.sans,
+              fontSize: 11,
+              fontWeight: "500",
+              color: COLORS.bg,
+              textAlign: "center",
+            }}
+            maxFontSizeMultiplier={1.4}
+          >
+            {loading ? t("auth.creatingAccount") : t("auth.createAccountButton")}
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          accessibilityRole="button"
+          accessibilityLabel={t("common.back")}
+          onPress={() => router.back()}
+          style={{ minHeight: 44, justifyContent: "center" }}
+        >
+          <Text
+            style={{
+              fontFamily: FONTS.sans,
+              fontSize: 10,
+              color: COLORS.textSecondary,
+              textAlign: "center",
+            }}
+            maxFontSizeMultiplier={1.4}
+          >
+            {t("auth.back")}
+          </Text>
+        </TouchableOpacity>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }

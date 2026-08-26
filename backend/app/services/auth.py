@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
 from jose import JWTError, jwt
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from app.models.usuari import Usuari, RolUsuari, Idioma
 from app.schemas.usuari import UsuariCreate
 from app.config import settings
@@ -27,7 +27,8 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 def create_access_token(data: dict) -> str:
     """Generates a JWT token with 24h expiry"""
     to_encode = data.copy()
-    expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    # timezone-aware UTC: datetime.utcnow() is deprecated from Python 3.12 on
+    expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=ALGORITHM)
 
@@ -62,7 +63,20 @@ def login_usuari(db: Session, email: str, password: str) -> str | None:
         return None
     return create_access_token({"sub": str(usuari.id), "rol": usuari.rol.value})
 
+def canviar_password(db: Session, usuari: Usuari, password_actual: str, password_nova: str) -> bool:
+    """Changes the user's own password. Returns False if the current password
+    does not match, so the caller can answer 401 without leaking anything else."""
+    if not verify_password(password_actual, str(usuari.password_hash)):
+        return False
+    setattr(usuari, "password_hash", hash_password(password_nova))
+    db.commit()
+    return True
+
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
+
+# same scheme but without auto_error: lets an endpoint stay public while still
+# recognising a caller who does send a valid token
+oauth2_scheme_opcional = OAuth2PasswordBearer(tokenUrl="/auth/login", auto_error=False)
 
 def get_current_user(
     token: str = Depends(oauth2_scheme),
@@ -85,6 +99,28 @@ def get_current_user(
     usuari = db.query(Usuari).filter(Usuari.id == user_id).first()
     if not usuari or not usuari.actiu:
         raise credentials_exception
+    return usuari
+
+def get_current_user_optional(
+    token: str | None = Depends(oauth2_scheme_opcional),
+    db: Session = Depends(get_db)
+) -> Usuari | None:
+    """Returns the current user if the request carries a valid token, or None.
+    Never raises: it is meant for public endpoints that show more data to a
+    recognised editor than to an anonymous visitor."""
+    if not token:
+        return None
+    try:
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[ALGORITHM])
+        user_id = payload.get("sub")
+        if user_id is None:
+            return None
+    except JWTError:
+        return None
+
+    usuari = db.query(Usuari).filter(Usuari.id == user_id).first()
+    if not usuari or not usuari.actiu:
+        return None
     return usuari
 
 def require_rol(*rols: RolUsuari):

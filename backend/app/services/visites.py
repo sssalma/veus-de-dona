@@ -29,14 +29,21 @@ def detectar_mode(
     if distance_m > PROXIMITY_THRESHOLD_M:
         return Mode.REMOT
 
-    # check if previous stop was visited (sequential order)
-    parada_ordre = int(str(parada.ordre))
-    if parada_ordre == 1:
+    # check if the previous stop was visited (sequential order).
+    # "previous" means the closest *active* stop before this one: if an editor
+    # disables a stop, the ones after it must still be reachable in GUIAT mode.
+    parada_anterior = db.query(Parada).filter(
+        Parada.ordre < parada.ordre,
+        Parada.activa == True
+    ).order_by(Parada.ordre.desc()).first()
+
+    # nothing before it: it is the start of the route as it stands today
+    if not parada_anterior:
         return Mode.GUIAT
 
-    visita_anterior = db.query(Visita).join(Parada).filter(
+    visita_anterior = db.query(Visita).filter(
         Visita.usuari_id == usuari_id,
-        Parada.ordre == parada.ordre - 1
+        Visita.parada_id == parada_anterior.id
     ).first()
 
     return Mode.GUIAT if visita_anterior else Mode.LLIURE

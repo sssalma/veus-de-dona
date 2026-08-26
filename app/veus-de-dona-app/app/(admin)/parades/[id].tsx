@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as ImagePicker from "expo-image-picker";
 import { COLORS, FONTS } from "../../../constants";
 import { getParada, getParadaFoto, updateParada, updateParadaFoto, toggleParadaActiva } from "../../../services/parades";
-import AdminField from "../../../components/AdminField";
+import FormField from "../../../components/FormField";
 
 export default function EditarParada() {
   const router = useRouter();
@@ -133,7 +133,7 @@ export default function EditarParada() {
               borderRadius: 8,
               backgroundColor: COLORS.lightBg,
               borderWidth: 1,
-              borderColor: COLORS.border,
+              borderColor: COLORS.controlBorder,
               marginBottom: 8,
               overflow: "hidden",
               alignItems: "center",
@@ -156,7 +156,7 @@ export default function EditarParada() {
             disabled={pujantFoto}
             style={{
               borderWidth: 1,
-              borderColor: COLORS.border,
+              borderColor: COLORS.controlBorder,
               borderRadius: 8,
               paddingVertical: 10,
               marginBottom: 14,
@@ -174,7 +174,7 @@ export default function EditarParada() {
             )}
           </TouchableOpacity>
 
-          <AdminField label="Nom de l'espai" value={nomEspai} onChangeText={setNomEspai} />
+          <FormField label="Nom de l'espai" value={nomEspai} onChangeText={setNomEspai} />
 
           <View
             style={{
@@ -182,7 +182,7 @@ export default function EditarParada() {
               justifyContent: "space-between",
               alignItems: "center",
               borderWidth: 1,
-              borderColor: COLORS.border,
+              borderColor: COLORS.controlBorder,
               borderRadius: 8,
               padding: 12,
               marginBottom: 14,

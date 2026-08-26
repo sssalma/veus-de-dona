@@ -1,7 +1,7 @@
 import { View, Text, TextInput, TextInputProps } from "react-native";
 import { COLORS, FONTS } from "../constants";
 
-export default function AdminField({
+export default function FormField({
   label,
   style,
   ...inputProps
@@ -28,7 +28,7 @@ export default function AdminField({
         style={[
           {
             borderWidth: 1,
-            borderColor: COLORS.border,
+            borderColor: COLORS.controlBorder,
             borderRadius: 6,
             paddingHorizontal: 10,
             paddingVertical: 8,

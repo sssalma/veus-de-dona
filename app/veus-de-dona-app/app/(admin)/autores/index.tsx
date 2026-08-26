@@ -67,7 +67,7 @@ export default function AdminAutores() {
               onPress={() => router.push(`/(admin)/autores/${a.id}`)}
               style={{
                 borderWidth: 1,
-                borderColor: COLORS.border,
+                borderColor: COLORS.controlBorder,
                 borderRadius: 8,
                 padding: 12,
                 minHeight: 44,

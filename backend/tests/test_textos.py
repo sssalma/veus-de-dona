@@ -50,3 +50,10 @@ def test_visitant_no_pot_actualitzar_text(client, auth_headers, visitant, text):
         headers=auth_headers(visitant),
     )
     assert resp.status_code == 403
+
+
+def test_llistat_de_tots_els_textos_es_public(client, text):
+    resp = client.get("/textos/")
+    assert resp.status_code == 200
+    ids = [t["id"] for t in resp.json()]
+    assert str(text.id) in ids

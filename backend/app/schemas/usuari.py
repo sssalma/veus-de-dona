@@ -1,13 +1,17 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 from uuid import UUID
 from datetime import datetime
 from app.models.usuari import RolUsuari, Idioma
 
+# minimum password length, enforced on the server so it cannot be bypassed by
+# calling the API directly. The app applies the same rule before submitting.
+PASSWORD_MIN_LENGTH = 8
+
 class UsuariCreate(BaseModel):
     email: EmailStr
-    nom: str
-    cognom: str
-    password: str
+    nom: str = Field(min_length=1)
+    cognom: str = Field(min_length=1)
+    password: str = Field(min_length=PASSWORD_MIN_LENGTH)
     idioma: Idioma = Idioma.CA
     procedencia: str | None = None
     es_alumne: bool | None = None
@@ -43,3 +47,15 @@ class UsuariActiuUpdate(BaseModel):
 
 class UsuariIdiomaUpdate(BaseModel):
     idioma: Idioma
+
+class UsuariPerfilUpdate(BaseModel):
+    """Fields a user may change about themselves. Role, email and active state
+    are deliberately absent: they are not self-service."""
+    nom: str | None = Field(default=None, min_length=1)
+    cognom: str | None = Field(default=None, min_length=1)
+    procedencia: str | None = None
+    es_alumne: bool | None = None
+
+class CanviPassword(BaseModel):
+    password_actual: str
+    password_nova: str = Field(min_length=PASSWORD_MIN_LENGTH)

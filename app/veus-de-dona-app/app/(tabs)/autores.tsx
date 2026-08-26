@@ -42,6 +42,8 @@ export default function AutoresScreen() {
         }}
       >
         <Text
+          accessibilityRole="header"
+          maxFontSizeMultiplier={1.5}
           style={{
             fontFamily: FONTS.serif,
             fontSize: 15,
@@ -62,7 +64,7 @@ export default function AutoresScreen() {
           onChangeText={setSearchQuery}
           style={{
             borderWidth: 1.5,
-            borderColor: COLORS.border,
+            borderColor: COLORS.controlBorder,
             borderRadius: 6,
             paddingHorizontal: 10,
             paddingVertical: 10,
@@ -79,7 +81,7 @@ export default function AutoresScreen() {
         contentContainerStyle={{ paddingHorizontal: 14, paddingBottom: 14 }}
         keyExtractor={(item) => item.id}
         ListEmptyComponent={
-          <Text
+          <Text maxFontSizeMultiplier={1.5}
             style={{
               fontFamily: FONTS.sans,
               fontSize: 10,
@@ -94,13 +96,15 @@ export default function AutoresScreen() {
         }
         renderItem={({ item }) => (
           <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel={`${item.nom} ${item.cognom}${item.anys_vida ? `, ${item.anys_vida}` : ""}`}
             onPress={() => router.push(`/autora/${item.id}`)}
             style={{
               flexDirection: "row",
               gap: 12,
               padding: 12,
               borderWidth: 1,
-              borderColor: COLORS.border,
+              borderColor: COLORS.controlBorder,
               borderRadius: 6,
               marginBottom: 8,
             }}
@@ -115,7 +119,7 @@ export default function AutoresScreen() {
                 alignItems: "center",
               }}
             >
-              <Text
+              <Text maxFontSizeMultiplier={1.5}
                 style={{
                   fontFamily: FONTS.serif,
                   fontSize: 16,
@@ -127,7 +131,7 @@ export default function AutoresScreen() {
               </Text>
             </View>
             <View style={{ flex: 1 }}>
-              <Text
+              <Text maxFontSizeMultiplier={1.5}
                 style={{
                   fontFamily: FONTS.sans,
                   fontSize: 11,
@@ -138,7 +142,7 @@ export default function AutoresScreen() {
                 {item.nom} {item.cognom}
               </Text>
               {item.anys_vida && (
-                <Text
+                <Text maxFontSizeMultiplier={1.5}
                   style={{
                     fontFamily: FONTS.sans,
                     fontSize: 9,
@@ -149,13 +153,14 @@ export default function AutoresScreen() {
                   {item.anys_vida}
                 </Text>
               )}
-              <Text
+              <Text maxFontSizeMultiplier={1.5}
               numberOfLines={2}
               style={{
                 fontFamily: FONTS.sans,
-                fontSize: 9,
+                fontSize: 11,
                 color: COLORS.textSecondary,
                 marginTop: 4,
+                lineHeight: 16,
               }}
               >
                 {item.bio}

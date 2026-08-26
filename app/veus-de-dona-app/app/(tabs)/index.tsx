@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { WebView } from "react-native-webview";
 import { View, Text, TouchableOpacity, Alert, Pressable } from "react-native";
-import { useRouter, useFocusEffect } from "expo-router";
+import { useRouter, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Location from "expo-location";
 import { getParades, getTotesLesParades, toggleParadaActiva } from "../../services/parades";
@@ -113,7 +113,7 @@ const MAP_HTML = `<!DOCTYPE html>
           radius: 7,
           color: '${COLORS.bg}',
           weight: 2,
-          fillColor: '#4A90D9',
+          fillColor: '${COLORS.userDot}',
           fillOpacity: 1,
         }).addTo(map);
       }
@@ -121,6 +121,24 @@ const MAP_HTML = `<!DOCTYPE html>
 
     window.recenter = function (lat, lng) {
       map.setView([lat, lng], map.getZoom());
+    };
+
+    // Centra en una parada concreta i hi dibuixa un anell durant uns segons,
+    // perque en arribar-hi des de la fitxa es vegi de quina parada parlem.
+    var focusRing = null;
+    window.focusParada = function (lat, lng) {
+      map.setView([lat, lng], 18, { animate: true });
+      if (focusRing) { map.removeLayer(focusRing); focusRing = null; }
+      focusRing = L.circleMarker([lat, lng], {
+        radius: 24,
+        color: '${COLORS.accent}',
+        weight: 2,
+        fill: false,
+        opacity: 0.95,
+      }).addTo(map);
+      setTimeout(function () {
+        if (focusRing) { map.removeLayer(focusRing); focusRing = null; }
+      }, 2800);
     };
 
     post({ type: 'ready' });
@@ -133,10 +151,15 @@ export default function MapaScreen() {
   const insets = useSafeAreaInsets();
   const { isAuthenticated, user } = useAuth();
   const { t } = useLanguage();
+  // Parada a enfocar quan s'arriba des de la seva fitxa
+  const { focus } = useLocalSearchParams<{ focus?: string }>();
+  const focusAplicat = useRef<string | null>(null);
   const potModerar = user?.rol === "EDITOR" || user?.rol === "ADMINISTRADOR";
   const [parades, setParades] = useState<Parada[]>([]);
   const [visitedIds, setVisitedIds] = useState<Set<string>>(new Set());
-  const [is3D, setIs3D] = useState(false);
+  const [satellit, setSatellit] = useState(false);
+  // estat real del GPS, per no ensenyar una insígnia decorativa que sempre diu el mateix
+  const [gpsEstat, setGpsEstat] = useState<"cercant" | "actiu" | "denegat">("cercant");
   const [webviewReady, setWebviewReady] = useState(false);
   const webviewRef = useRef<WebView>(null);
   const userLocRef = useRef<{ lat: number; lng: number } | null>(null);
@@ -161,10 +184,20 @@ export default function MapaScreen() {
         .filter((p) => p.lat != null && p.lng != null)
         .map((p) => ({ id: p.id, lat: p.lat, lng: p.lng, ordre: p.ordre, activa: p.activa })),
       visitedIds: Array.from(visitedIds),
-      satellite: is3D,
+      satellite: satellit,
     });
     webviewRef.current?.injectJavaScript(`window.updateData(${JSON.stringify(payload)}); true;`);
-  }, [webviewReady, parades, visitedIds, is3D]);
+  }, [webviewReady, parades, visitedIds, satellit]);
+
+  // Enfoca la parada que arriba per parametre, un sol cop per valor: si no,
+  // tornar a la pestanya del mapa la tornaria a centrar cada vegada.
+  useEffect(() => {
+    if (!webviewReady || !focus || focusAplicat.current === focus) return;
+    const p = parades.find((x) => x.id === focus);
+    if (!p || p.lat == null || p.lng == null) return;
+    focusAplicat.current = focus;
+    webviewRef.current?.injectJavaScript(`window.focusParada(${p.lat}, ${p.lng}); true;`);
+  }, [webviewReady, focus, parades]);
 
   useEffect(() => {
     if (!webviewReady) return;
@@ -173,12 +206,17 @@ export default function MapaScreen() {
 
     const sendLocation = (lat: number, lng: number) => {
       userLocRef.current = { lat, lng };
+      if (!cancelled) setGpsEstat("actiu");
       webviewRef.current?.injectJavaScript(`window.updateUserLocation(${lat}, ${lng}); true;`);
     };
 
     (async () => {
       const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== "granted" || cancelled) return;
+      if (status !== "granted") {
+        if (!cancelled) setGpsEstat("denegat");
+        return;
+      }
+      if (cancelled) return;
       const last = await Location.getLastKnownPositionAsync();
       if (last) sendLocation(last.coords.latitude, last.coords.longitude);
       subscription = await Location.watchPositionAsync(
@@ -196,22 +234,22 @@ export default function MapaScreen() {
   const handleLongPressParada = (parada: Parada) => {
     Alert.alert(
       parada.nom_espai,
-      `Parada ${parada.ordre} · ${parada.activa ? "Activa" : "Inactiva"}`,
+      `${t("parada.stopLabel")} ${parada.ordre} · ${parada.activa ? t("mapa.stopActive") : t("mapa.stopInactive")}`,
       [
-        { text: "Cancel·lar", style: "cancel" },
+        { text: t("common.cancel"), style: "cancel" },
         {
-          text: "Editar parada",
+          text: t("mapa.editStop"),
           onPress: () => router.push(`/(admin)/parades/${parada.id}`),
         },
         {
-          text: parada.activa ? "Desactivar" : "Activar",
+          text: parada.activa ? t("mapa.deactivate") : t("mapa.activate"),
           style: parada.activa ? "destructive" : "default",
           onPress: async () => {
             try {
               const actualitzada = await toggleParadaActiva(parada.id, !parada.activa);
               setParades((prev) => prev.map((p) => (p.id === parada.id ? actualitzada : p)));
             } catch {
-              Alert.alert("Error", "No s'ha pogut canviar l'estat de la parada");
+              Alert.alert(t("common.error"), t("mapa.toggleError"));
             }
           },
         },
@@ -241,8 +279,10 @@ export default function MapaScreen() {
     );
   };
 
+  // el progrés es mesura sobre les parades actives de la ruta, no sobre un 10
+  // fix: si l'editor en desactiva una, el màxim assolible ha de baixar amb ella
   const actives = parades.filter((p) => p.activa);
-  const visitedCount = parades.filter((p) => visitedIds.has(p.id)).length;
+  const visitedCount = actives.filter((p) => visitedIds.has(p.id)).length;
 
   return (
     <View style={{ flex: 1, backgroundColor: COLORS.bg }}>
@@ -271,45 +311,76 @@ export default function MapaScreen() {
         <View style={{ flexDirection: "row", gap: 6 }}>
           <TouchableOpacity
             accessibilityRole="button"
-            accessibilityLabel={is3D ? "Desactivar mode satel·lit" : "Activar mode satel·lit"}
-            accessibilityState={{ selected: is3D }}
-            onPress={() => setIs3D((v) => !v)}
+            // el text visible i el nom accessible han de coincidir (WCAG 2.5.3):
+            // el botó commuta entre mapa de carrer i satèl·lit, no entre 2D i 3D
+            accessibilityLabel={satellit ? t("mapa.satelliteOff") : t("mapa.satelliteOn")}
+            accessibilityState={{ selected: satellit }}
+            onPress={() => setSatellit((v) => !v)}
             style={{
-              paddingHorizontal: 8,
-              paddingVertical: 3,
+              paddingHorizontal: 10,
+              paddingVertical: 6,
               borderRadius: 12,
               borderWidth: 1,
-              borderColor: is3D ? COLORS.accent : COLORS.border,
-              backgroundColor: is3D ? COLORS.accent : "transparent",
+              borderColor: satellit ? COLORS.accent : COLORS.controlBorder,
+              backgroundColor: satellit ? COLORS.accent : "transparent",
+              minHeight: 32,
+              justifyContent: "center",
             }}
           >
             <Text
               style={{
                 fontFamily: FONTS.sans,
-                fontSize: 9,
-                color: is3D ? COLORS.bg : COLORS.textSecondary,
+                fontSize: 10,
+                color: satellit ? COLORS.bg : COLORS.textSecondary,
               }}
+              maxFontSizeMultiplier={1.3}
             >
-              3D
+              {t("mapa.satellite")}
             </Text>
           </TouchableOpacity>
           <View
+            accessibilityRole="text"
+            accessibilityLabel={
+              gpsEstat === "actiu"
+                ? t("mapa.gpsActiu")
+                : gpsEstat === "denegat"
+                  ? t("mapa.gpsDenegat")
+                  : t("mapa.gpsCercant")
+            }
             style={{
-              paddingHorizontal: 8,
-              paddingVertical: 3,
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 4,
+              paddingHorizontal: 10,
+              paddingVertical: 6,
               borderRadius: 12,
               borderWidth: 1,
-              borderColor: COLORS.border,
+              borderColor: COLORS.controlBorder,
+              minHeight: 32,
             }}
           >
+            <View
+              style={{
+                width: 7,
+                height: 7,
+                borderRadius: 4,
+                backgroundColor:
+                  gpsEstat === "actiu"
+                    ? COLORS.accent
+                    : gpsEstat === "denegat"
+                      ? COLORS.love
+                      : COLORS.textSecondary,
+              }}
+            />
             <Text
               style={{
                 fontFamily: FONTS.sans,
-                fontSize: 9,
+                fontSize: 10,
                 color: COLORS.textSecondary,
               }}
+              maxFontSizeMultiplier={1.3}
             >
-              GPS ●
+              GPS
             </Text>
           </View>
         </View>
@@ -338,7 +409,7 @@ export default function MapaScreen() {
             borderRadius: 20,
             backgroundColor: COLORS.bg,
             borderWidth: 1,
-            borderColor: COLORS.border,
+            borderColor: COLORS.controlBorder,
             alignItems: "center",
             justifyContent: "center",
             shadowColor: "#000",
@@ -392,7 +463,7 @@ export default function MapaScreen() {
               color: COLORS.text,
             }}
           >
-            {visitedCount} / 10
+            {visitedCount} / {actives.length}
           </Text>
         </View>
         <View
@@ -408,7 +479,7 @@ export default function MapaScreen() {
               height: "100%",
               backgroundColor: COLORS.accent,
               borderRadius: 2,
-              width: `${(visitedCount / 10) * 100}%`,
+              width: `${actives.length ? (visitedCount / actives.length) * 100 : 0}%`,
             }}
           />
         </View>

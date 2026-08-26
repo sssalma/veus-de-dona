@@ -10,11 +10,14 @@ app = FastAPI(
     version="0.1.0"
 )
 # allow requests from any origin (React Native app)
+# allow_credentials=False perquè l'autenticació va per capçalera Bearer, no per
+# cookies: amb credencials activades, allow_origins=["*"] no és una combinació
+# vàlida segons l'especificació CORS i els navegadors la rebutgen.
 # PER CANVIAR EN PRODUCCIÓ: restringir allow_origins a domini específic
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=True,
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )

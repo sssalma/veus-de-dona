@@ -20,3 +20,20 @@ export async function setMeuIdioma(idioma: string): Promise<Usuari> {
   const { data } = await api.patch("/usuaris/me", { idioma });
   return data;
 }
+
+export async function updateMeuPerfil(dades: {
+  nom?: string;
+  cognom?: string;
+  procedencia?: string | null;
+  es_alumne?: boolean | null;
+}): Promise<Usuari> {
+  const { data } = await api.patch("/auth/me", dades);
+  return data;
+}
+
+export async function canviarContrasenya(
+  password_actual: string,
+  password_nova: string
+): Promise<void> {
+  await api.post("/auth/canvi-contrasenya", { password_actual, password_nova });
+}

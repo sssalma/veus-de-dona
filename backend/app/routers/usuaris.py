@@ -37,6 +37,11 @@ def toggle_usuari_actiu(
     current_user: Usuari = Depends(require_rol(RolUsuari.ADMINISTRADOR))
 ):
     """Activates/deactivates a user account - admin only"""
+    if str(current_user.id) == usuari_id:
+        raise HTTPException(
+            status_code=400,
+            detail="No pots desactivar el teu propi compte"
+        )
     usuari = usuaris_service.set_actiu(db, usuari_id, actiu_data.actiu)
     if not usuari:
         raise HTTPException(status_code=404, detail="Usuari no trobat")
@@ -49,7 +54,14 @@ def canviar_rol(
     db: Session = Depends(get_db),
     current_user: Usuari = Depends(require_rol(RolUsuari.ADMINISTRADOR))
 ):
-    """Changes a user's role - admin only"""
+    """Changes a user's role - admin only.
+    An admin cannot demote themselves: with a single administrator account that
+    would leave the system with no way back into user management."""
+    if str(current_user.id) == usuari_id:
+        raise HTTPException(
+            status_code=400,
+            detail="No pots canviar el teu propi rol"
+        )
     usuari = usuaris_service.set_rol(db, usuari_id, rol_data.rol)
     if not usuari:
         raise HTTPException(status_code=404, detail="Usuari no trobat")

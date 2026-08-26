@@ -28,6 +28,14 @@ def set_rol(db: Session, usuari_id: str, rol: RolUsuari) -> Usuari | None:
     db.refresh(usuari)
     return usuari
 
+def update_perfil(db: Session, usuari: Usuari, dades: dict) -> Usuari:
+    """Self-service update of the user's own profile fields"""
+    for camp, valor in dades.items():
+        setattr(usuari, camp, valor)
+    db.commit()
+    db.refresh(usuari)
+    return usuari
+
 def set_idioma(db: Session, usuari: Usuari, idioma: Idioma) -> Usuari:
     """Self-service language change"""
     setattr(usuari, "idioma", idioma)

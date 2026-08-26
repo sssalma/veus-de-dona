@@ -110,7 +110,7 @@ export default function AdminUsuaris() {
           maxFontSizeMultiplier={1.5}
           style={{
             borderWidth: 1,
-            borderColor: COLORS.border,
+            borderColor: COLORS.controlBorder,
             borderRadius: 8,
             paddingHorizontal: 12,
             paddingVertical: 10,
@@ -133,7 +133,7 @@ export default function AdminUsuaris() {
                 onPress={() => setFiltreRol(rol)}
                 style={{
                   borderWidth: 1,
-                  borderColor: selected ? COLORS.darkBg : COLORS.border,
+                  borderColor: selected ? COLORS.darkBg : COLORS.controlBorder,
                   backgroundColor: selected ? COLORS.darkBg : "transparent",
                   borderRadius: 6,
                   paddingHorizontal: 10,
@@ -179,7 +179,7 @@ export default function AdminUsuaris() {
                 key={u.id}
                 style={{
                   borderWidth: resaltat ? 2 : 1,
-                  borderColor: resaltat ? COLORS.accent : COLORS.border,
+                  borderColor: resaltat ? COLORS.accent : COLORS.controlBorder,
                   backgroundColor: resaltat ? COLORS.lightBg : "transparent",
                   borderRadius: 8,
                   padding: 12,
@@ -220,7 +220,7 @@ export default function AdminUsuaris() {
                         onPress={() => handleCanviarRol(u, rol)}
                         style={{
                           borderWidth: 1,
-                          borderColor: selected ? COLORS.darkBg : COLORS.border,
+                          borderColor: selected ? COLORS.darkBg : COLORS.controlBorder,
                           backgroundColor: selected ? COLORS.darkBg : "transparent",
                           borderRadius: 6,
                           paddingHorizontal: 8,

@@ -1,5 +1,5 @@
 import api from "./api";
-import { TextDto, Parada } from "../types";
+import { TextDto } from "../types";
 
 export async function getTextosByParada(paradaId: string): Promise<TextDto[]> {
   const { data } = await api.get(`/textos/parada/${paradaId}`);
@@ -21,11 +21,7 @@ export async function updateText(id: string, dades: Partial<TextDto>): Promise<T
   return data;
 }
 
-// No hi ha endpoint per llistar tots els textos; els agrupem per parada.
 export async function getAllTextos(): Promise<TextDto[]> {
-  const { data: parades } = await api.get<Parada[]>("/parades/");
-  const perParada = await Promise.all(
-    parades.map((p) => api.get<TextDto[]>(`/textos/parada/${p.id}`).then((r) => r.data))
-  );
-  return perParada.flat();
+  const { data } = await api.get("/textos/");
+  return data;
 }

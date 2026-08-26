@@ -92,6 +92,7 @@ export default function AdminDashboard() {
           </Section>
 
           <View style={{ gap: 8 }}>
+            <AdminLink label="Mètriques per parada" onPress={() => router.push("/(admin)/metriques")} />
             <AdminLink label="Moderar comentaris" onPress={() => router.push("/(admin)/comentaris")} />
             <AdminLink label="Editar autores" onPress={() => router.push("/(admin)/autores")} />
             <AdminLink label="Editar textos" onPress={() => router.push("/(admin)/textos")} />
@@ -131,7 +132,7 @@ function AdminLink({ label, onPress }: { label: string; onPress: () => void }) {
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <View accessibilityRole="summary" style={{ borderWidth: 1, borderColor: COLORS.border, borderRadius: 8, padding: 10 }}>
+    <View accessibilityRole="summary" style={{ borderWidth: 1, borderColor: COLORS.controlBorder, borderRadius: 8, padding: 10 }}>
       <Text
         accessibilityRole="header"
         style={{

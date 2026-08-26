@@ -67,7 +67,7 @@ export default function AdminTextos() {
               onPress={() => router.push(`/(admin)/textos/${t.id}`)}
               style={{
                 borderWidth: 1,
-                borderColor: COLORS.border,
+                borderColor: COLORS.controlBorder,
                 borderRadius: 8,
                 padding: 12,
                 minHeight: 44,

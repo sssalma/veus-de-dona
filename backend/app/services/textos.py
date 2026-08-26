@@ -1,5 +1,14 @@
 from sqlalchemy.orm import Session
 from app.models.text import Text
+from app.models.parada import Parada
+
+def get_all_textos(db: Session):
+    """Returns every text, ordered by route order then title.
+    Without this the admin screen had to ask for one endpoint per stop."""
+    return db.query(Text)\
+        .join(Parada, Text.parada_id == Parada.id)\
+        .order_by(Parada.ordre, Text.titol)\
+        .all()
 
 def get_textos_by_parada(db: Session, parada_id: str):
     """Returns all texts for a given stop"""

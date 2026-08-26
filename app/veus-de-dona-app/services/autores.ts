@@ -15,3 +15,20 @@ export async function updateAutora(id: string, dades: Partial<Autora>): Promise<
   const { data } = await api.patch(`/autores/${id}`, dades);
   return data;
 }
+
+export async function getAutoraFoto(id: string): Promise<string> {
+  const { data } = await api.get(`/autores/${id}/foto`);
+  return data.url;
+}
+
+export async function updateAutoraFoto(
+  id: string,
+  foto: { uri: string; name: string; type: string }
+): Promise<Autora> {
+  const formData = new FormData();
+  formData.append("file", foto as unknown as Blob);
+  const { data } = await api.post(`/autores/${id}/foto`, formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+  return data;
+}

@@ -82,7 +82,9 @@ export interface Comentari {
   contingut: string;
   data_creacio: string;
   parada_id: string;
-  usuari_id: string;
+  // Nomes arriben per a editors i administradors: al llistat public els
+  // comentaris van signats amb el nom de pila i sense identificador.
+  usuari_id?: string | null;
   usuari_nom?: string | null;
   usuari_cognom?: string | null;
   resposta_editor?: string | null;

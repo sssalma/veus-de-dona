@@ -19,15 +19,31 @@ def test_gps_lluny_es_remot(db_session, visitant, parada):
 
 
 def test_gps_a_prop_de_la_primera_parada_es_guiat(db_session, visitant, parada):
-    # parada.ordre == 1 is always GUIAT when physically present, no prior visit needed
+    # the first stop of the route is always GUIAT when physically present,
+    # no prior visit needed
     mode = detectar_mode(db_session, visitant.id, parada, BALCO_LAT, BALCO_LNG)
     assert mode == Mode.GUIAT
 
 
-def test_segona_parada_sense_visitar_primera_es_lliure(db_session, visitant, segona_parada):
+def test_segona_parada_sense_visitar_primera_es_lliure(db_session, visitant, parada, segona_parada):
+    # stop 1 exists and is active but has not been visited: out of sequence
     lat, lng = COORDENADES_GPS[segona_parada.coordenades]
     mode = detectar_mode(db_session, visitant.id, segona_parada, lat, lng)
     assert mode == Mode.LLIURE
+
+
+def test_segona_parada_amb_la_primera_desactivada_es_guiat(
+    db_session, visitant, parada, segona_parada
+):
+    """Regression: if an editor disables a stop, the following one must still be
+    reachable in GUIAT mode. Before the fix, the query looked for the stop at
+    ordre - 1 regardless of its state, so no visit could ever be GUIAT again."""
+    parada.activa = False
+    db_session.commit()
+
+    lat, lng = COORDENADES_GPS[segona_parada.coordenades]
+    mode = detectar_mode(db_session, visitant.id, segona_parada, lat, lng)
+    assert mode == Mode.GUIAT
 
 
 def test_segona_parada_despres_de_visitar_primera_es_guiat(client, auth_headers, visitant, parada, segona_parada):

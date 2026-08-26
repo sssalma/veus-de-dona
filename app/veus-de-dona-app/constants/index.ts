@@ -1,15 +1,82 @@
+import { Platform } from "react-native";
+
+/**
+ * Paleta de l'aplicació: "violeta com a tinta".
+ *
+ * Paper crema i tinta amb una ombra d'aubergínia. El fosc no és un negre
+ * neutre sinó que comparteix temperatura amb el violeta, de manera que el
+ * color del moviment feminista -que en una app que es diu Veus de Dona és
+ * significat i no decoració- deixa de ser un accent solitari i tenyeix també
+ * les capçaleres, els botons plens i el vel de les fotografies. De lluny es
+ * llegeix com a negre; de prop, el conjunt té temperatura.
+ *
+ * Tots els parells de color superen els mínims de les WCAG 2.2. Ràtios sobre
+ * `bg`, mesurades amb la fórmula de luminància relativa:
+ *
+ *   text            14,06:1        accent           6,67:1
+ *   textSecondary    5,86:1        love             5,76:1
+ *   controlBorder    3,54:1  (mínim 3 per a vores de controls, criteri 1.4.11)
+ *
+ * `border` és per a separadors decoratius, que no tenen mínim exigit;
+ * `controlBorder` per a vores de camps i botons, que sí.
+ *
+ * Cap pantalla ha d'escriure un color a mà: tot el que calgui es defineix aquí
+ * perquè un canvi de paleta sigui un canvi d'un sol fitxer.
+ */
 export const COLORS = {
+  // fons
   bg: "#faf8f4",
-  text: "#2a2a2a",
-  textSecondary: "#8c7e6a",
-  border: "#e8e2d8",
-  accent: "#9B8EC4",
-  love: "#c0715a",
-  lightBg: "#f5f2ec",
-  darkBg: "#2a2a2a",
+  // Lila translúcid en lloc d'un to sòlid: es compon amb el que hi ha a sota,
+  // de manera que insinua el color sense competir amb el paper. S'usa per al
+  // fons dels camps de text, per a l'estat premut de les targetes i per a les
+  // superfícies que s'aixequen un pas per damunt del fons.
+  lightBg: "rgba(95,75,155,0.06)",
+  darkBg: "#2e2140",
+
+  // text
+  text: "#2e2140",
+  textSecondary: "#675c78",
+
+  // línies
+  border: "#e4dcef",
+  controlBorder: "#8a7f9c",
+
+  // colors amb significat
+  accent: "#5f4b9b",
+  love: "#9c4a30",
+
+  // fons dels estats actius, cadascun amb el seu color de text al davant
+  likeBg: "#F7EDE9",      // amb love         -> 5,31:1
+  visitedBg: "#EAE5F5",   // amb accent       -> 5,74:1
+  badgeBg: "#E8E2F0",     // amb badgeText    -> 5,59:1
+  badgeText: "#5f4b9b",
+  tagBg: "#ece7f3",       // amb tagText      -> 6,01:1
+  tagText: "#5d5170",
+
+  // punt de la ubicació de l'usuari al mapa: es manté blau perquè no es pugui
+  // confondre amb els pins de parada, que fan servir l'accent
+  userDot: "#4A90D9",
+
+  // text clar sobre fons foscos i sobre el vel de les fotografies
+  onDark: "#FFFFFF",
 };
 
+/**
+ * Vel fosc que se superposa a les fotografies de parada perquè el títol s'hi
+ * llegeixi sigui quina sigui la imatge. Porta la mateixa ombra d'aubergínia
+ * que la tinta. En el pitjor cas possible -una fotografia blanca pura- el text
+ * blanc sobre el tram més opac encara dona 9,4:1.
+ */
+export const VEL_RGB = "30,20,42";
+
+// El projecte no empaqueta cap tipografia pròpia: es fan servir les famílies
+// del sistema, que sí que existeixen a tots dos sistemes operatius.
 export const FONTS = {
-  serif: "PlayfairDisplay",
-  sans: "DMSans",
+  serif: Platform.select({ ios: "Georgia", android: "serif", default: "serif" }),
+  sans: Platform.select({ ios: "System", android: "sans-serif", default: "sans-serif" }),
 };
+
+// Longitud mínima de contrasenya. El servidor imposa exactament la mateixa
+// regla a app/schemas/usuari.py, de manera que no es pot evitar cridant l'API
+// directament: aquí només serveix per avisar l'usuari abans d'enviar.
+export const PASSWORD_MIN_LENGTH = 8;

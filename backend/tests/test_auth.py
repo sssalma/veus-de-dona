@@ -75,3 +75,97 @@ def test_me_sense_token_falla(client):
 def test_me_amb_token_invalid_falla(client):
     resp = client.get("/auth/me", headers={"Authorization": "Bearer token-fals"})
     assert resp.status_code == 401
+
+
+# ---- password policy (enforced server-side, not only in the app) ----
+
+def test_registre_amb_contrasenya_curta_falla(client):
+    resp = client.post("/auth/register", json={
+        "email": "curta@example.com",
+        "nom": "Nova",
+        "cognom": "Usuaria",
+        "password": "curta1",
+    })
+    assert resp.status_code == 422
+
+
+def test_registre_amb_nom_buit_falla(client):
+    resp = client.post("/auth/register", json={
+        "email": "senseNom@example.com",
+        "nom": "",
+        "cognom": "Usuaria",
+        "password": "Contrasenya123",
+    })
+    assert resp.status_code == 422
+
+
+# ---- self-service profile ----
+
+def test_usuari_pot_actualitzar_el_seu_perfil(client, auth_headers, visitant):
+    resp = client.patch(
+        "/auth/me",
+        json={"nom": "Nom Nou", "procedencia": "Reus"},
+        headers=auth_headers(visitant),
+    )
+    assert resp.status_code == 200
+    assert resp.json()["nom"] == "Nom Nou"
+    assert resp.json()["procedencia"] == "Reus"
+    # unchanged fields stay as they were
+    assert resp.json()["cognom"] == visitant.cognom
+
+
+def test_actualitzar_perfil_no_permet_canviar_el_rol(client, auth_headers, visitant):
+    resp = client.patch(
+        "/auth/me",
+        json={"rol": "ADMINISTRADOR"},
+        headers=auth_headers(visitant),
+    )
+    assert resp.status_code == 200
+    # the field is simply not part of the schema, so it is ignored
+    assert resp.json()["rol"] == "VISITANT"
+
+
+def test_actualitzar_perfil_sense_token_falla(client):
+    resp = client.patch("/auth/me", json={"nom": "Ningu"})
+    assert resp.status_code == 401
+
+
+# ---- password change ----
+
+def test_canvi_de_contrasenya_correcte(client, auth_headers, visitant):
+    resp = client.post(
+        "/auth/canvi-contrasenya",
+        json={"password_actual": "Testpass123!", "password_nova": "NovaContrasenya1"},
+        headers=auth_headers(visitant),
+    )
+    assert resp.status_code == 204
+
+    # the old password no longer works and the new one does
+    assert client.post("/auth/login", json={
+        "email": visitant.email, "password": "Testpass123!",
+    }).status_code == 401
+    assert client.post("/auth/login", json={
+        "email": visitant.email, "password": "NovaContrasenya1",
+    }).status_code == 200
+
+
+def test_canvi_de_contrasenya_amb_actual_incorrecta_falla(client, auth_headers, visitant):
+    resp = client.post(
+        "/auth/canvi-contrasenya",
+        json={"password_actual": "no-es-aquesta", "password_nova": "NovaContrasenya1"},
+        headers=auth_headers(visitant),
+    )
+    assert resp.status_code == 401
+    # the original password still works
+    assert client.post("/auth/login", json={
+        "email": visitant.email, "password": "Testpass123!",
+    }).status_code == 200
+
+
+def test_canvi_de_contrasenya_nova_massa_curta_falla(client, auth_headers, visitant):
+    resp = client.post(
+        "/auth/canvi-contrasenya",
+        json={"password_actual": "Testpass123!", "password_nova": "curta1"},
+        headers=auth_headers(visitant),
+    )
+    assert resp.status_code == 422

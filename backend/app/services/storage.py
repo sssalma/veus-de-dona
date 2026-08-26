@@ -55,15 +55,3 @@ def get_file_url(minio_key: str, expires_in: int = 3600) -> str | None:
         return url
     except ClientError:
         return None
-
-def file_exists(minio_key: str) -> bool:
-    """Checks if a file exists in MinIO"""
-    try:
-        client = get_minio_client()
-        client.head_object(
-            Bucket=settings.MINIO_BUCKET,
-            Key=minio_key
-        )
-        return True
-    except ClientError:
-        return False

@@ -109,7 +109,7 @@ export default function ModeracioComentaris() {
               key={c.id}
               style={{
                 borderWidth: 1,
-                borderColor: COLORS.border,
+                borderColor: COLORS.controlBorder,
                 borderRadius: 8,
                 padding: 10,
                 gap: 6,
@@ -195,7 +195,7 @@ export default function ModeracioComentaris() {
                     style={{
                       flex: 1,
                       borderWidth: 1,
-                      borderColor: COLORS.border,
+                      borderColor: COLORS.controlBorder,
                       borderRadius: 6,
                       paddingHorizontal: 8,
                       paddingVertical: 6,

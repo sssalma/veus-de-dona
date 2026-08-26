@@ -8,7 +8,9 @@ def test_afegir_comentari(client, auth_headers, visitant, parada):
     data = resp.json()
     assert data["contingut"] == "Molt bonic aquest espai"
     assert data["usuari_nom"] == visitant.nom
-    assert data["usuari_cognom"] == visitant.cognom
+    # el visitant veu el seu propi comentari signat igual que el veuran els
+    # altres: nomes amb el nom de pila
+    assert data["usuari_cognom"] is None
 
 
 def test_afegir_comentari_sense_token_dona_401(client, parada):
@@ -113,3 +115,74 @@ def test_eliminar_comentari_inexistent_dona_404(client, auth_headers, editor):
         headers=auth_headers(editor),
     )
     assert resp.status_code == 404
+
+
+# ---- el llistat public no ha d'exposar el cognom de qui comenta ----
+
+def _comenta(client, auth_headers, usuari, parada, text="Un comentari"):
+    return client.post(
+        "/comentaris/",
+        json={"contingut": text, "parada_id": str(parada.id)},
+        headers=auth_headers(usuari),
+    ).json()
+
+
+def test_llistat_public_amaga_cognom_i_id_de_lautor(client, auth_headers, visitant, parada):
+    _comenta(client, auth_headers, visitant, parada)
+
+    resp = client.get(f"/comentaris/parada/{parada.id}")
+    assert resp.status_code == 200
+    c = resp.json()[0]
+    # el comentari queda signat amb el nom de pila
+    assert c["usuari_nom"] == visitant.nom
+    assert c["usuari_cognom"] is None
+    assert c["usuari_id"] is None
+    # el contingut i la resta segueixen sent publics
+    assert c["contingut"] == "Un comentari"
+
+
+def test_llistat_amb_token_de_visitant_tampoc_mostra_el_cognom(
+    client, auth_headers, visitant, parada
+):
+    _comenta(client, auth_headers, visitant, parada)
+
+    resp = client.get(f"/comentaris/parada/{parada.id}", headers=auth_headers(visitant))
+    assert resp.status_code == 200
+    assert resp.json()[0]["usuari_cognom"] is None
+
+
+def test_editor_si_veu_el_cognom_al_llistat_de_la_parada(
+    client, auth_headers, visitant, editor, parada
+):
+    _comenta(client, auth_headers, visitant, parada)
+
+    resp = client.get(f"/comentaris/parada/{parada.id}", headers=auth_headers(editor))
+    assert resp.status_code == 200
+    c = resp.json()[0]
+    assert c["usuari_cognom"] == visitant.cognom
+    assert c["usuari_id"] == str(visitant.id)
+
+
+def test_llistat_de_moderacio_conserva_les_dades_completes(
+    client, auth_headers, visitant, editor, parada
+):
+    _comenta(client, auth_headers, visitant, parada)
+
+    resp = client.get("/comentaris/", headers=auth_headers(editor))
+    assert resp.status_code == 200
+    c = resp.json()[0]
+    assert c["usuari_cognom"] == visitant.cognom
+    assert c["usuari_id"] == str(visitant.id)
+
+
+def test_token_invalid_al_llistat_public_no_falla(client, auth_headers, visitant, parada):
+    """L'autenticacio es opcional: un token dolent no ha de fer caure la peticio,
+    nomes ha de deixar el lector com a anonim."""
+    _comenta(client, auth_headers, visitant, parada)
+
+    resp = client.get(
+        f"/comentaris/parada/{parada.id}",
+        headers={"Authorization": "Bearer token-fals"},
+    )
+    assert resp.status_code == 200
+    assert resp.json()[0]["usuari_cognom"] is None

@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.schemas.comentari import ComentariCreate, ComentariResponse, ComentariResposta
 from app.services import comentaris as comentaris_service
-from app.services.auth import get_current_user, require_rol
+from app.services.auth import get_current_user, get_current_user_optional, require_rol
 from app.models.usuari import Usuari, RolUsuari
 from typing import List
 
@@ -11,6 +11,13 @@ router = APIRouter(
     prefix="/comentaris",
     tags=["comentaris"]
 )
+
+def _amaga_dades_personals(comentari) -> ComentariResponse:
+    """Serialitza un comentari sense el cognom ni l'identificador de l'autor."""
+    dades = ComentariResponse.model_validate(comentari)
+    dades.usuari_cognom = None
+    dades.usuari_id = None
+    return dades
 
 @router.get("/", response_model=List[ComentariResponse])
 def get_tots_els_comentaris(
@@ -37,7 +44,12 @@ def afegir_comentari(
     )
     if not comentari:
         raise HTTPException(status_code=404, detail="Parada no trobada")
-    return comentari
+
+    # es retorna amb la mateixa forma amb què el visitant el veurà al llistat,
+    # perquè el comentari acabat d'escriure no aparegui signat diferent
+    if current_user.rol in (RolUsuari.EDITOR, RolUsuari.ADMINISTRADOR):
+        return comentari
+    return _amaga_dades_personals(comentari)
 
 @router.delete("/{comentari_id}", status_code=204)
 def eliminar_comentari(
@@ -70,6 +82,20 @@ def respondre_comentari(
     return comentari
 
 @router.get("/parada/{parada_id}", response_model=List[ComentariResponse])
-def get_comentaris(parada_id: str, db: Session = Depends(get_db)):
-    """Returns all comments for a stop"""
-    return comentaris_service.get_comentaris_by_parada(db, parada_id)
+def get_comentaris(
+    parada_id: str,
+    db: Session = Depends(get_db),
+    current_user: Usuari | None = Depends(get_current_user_optional)
+):
+    """Returns all comments for a stop. Public, so anyone can read them without
+    an account - but the author's surname and id are only included for editors
+    and administrators, who need them to moderate. For everyone else the
+    comments are signed with the first name only."""
+    comentaris = comentaris_service.get_comentaris_by_parada(db, parada_id)
+
+    pot_moderar = current_user is not None and current_user.rol in (
+        RolUsuari.EDITOR, RolUsuari.ADMINISTRADOR
+    )
+    if pot_moderar:
+        return comentaris
+    return [_amaga_dades_personals(c) for c in comentaris]
