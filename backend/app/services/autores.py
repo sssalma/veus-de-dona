@@ -58,10 +58,9 @@ def update_autora_foto(db: Session, autora_id: str, file_bytes: bytes, filename:
 def aplica_idioma(autora: Autora, idioma: Idioma) -> Autora:
     """Deixa a `bio` la biografia en l'idioma demanat, si n'hi ha.
 
-    No es desa: nomes es toca l'objecte que ja s'esta a punt de serialitzar, de
-    manera que la fila de la base de dades no es mou. `bio_idioma` diu en quin
-    idioma ha quedat, perque el client pugui avisar que ensenya el catala quan
-    la traduccio encara no existeix en comptes de fer-la passar per traduida.
+    No es desa: nomes es toca l'objecte que ja s'esta a punt de serialitzar.
+    `bio_idioma` diu en quin idioma ha quedat, perque el client pugui avisar
+    quan ensenya el catala per manca de traduccio.
     """
     autora.bio_idioma = Idioma.CA
     if idioma == Idioma.CA:

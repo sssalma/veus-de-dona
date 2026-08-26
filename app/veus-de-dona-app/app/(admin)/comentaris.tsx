@@ -233,9 +233,7 @@ export default function ModeracioComentaris() {
                         {c.resposta_editor}
                       </Text>
 
-                      {/* Abans, un cop respost el comentari la resposta quedava
-                          fixada a la pantalla encara que el servidor permet
-                          reescriure-la. */}
+                      {/* El servidor permet reescriure la resposta. */}
                       <TouchableOpacity
                         accessibilityRole="button"
                         accessibilityLabel={t("admin.editReply")}

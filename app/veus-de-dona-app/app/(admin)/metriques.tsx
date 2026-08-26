@@ -19,8 +19,7 @@ import { MetriquesGlobal, MetriquesParada } from "../../types";
  * Pantalla de mètriques.
  *
  * Recull tot el que es pot saber de l'ús de la ruta: primer les xifres
- * globals —que abans ocupaven la pantalla d'entrada del panell i li tapaven
- * els accessos— i després el desglossament parada per parada.
+ * globals i després el desglossament parada per parada.
  *
  * Els noms dels modes i dels rols es tradueixen; no s'ensenya mai el valor de
  * l'enum tal com arriba del servidor.

@@ -8,18 +8,16 @@ type Traductor = (key: TranslationKey) => string;
  * paraula. Son identificadors, no etiquetes, i no s'han de mostrar mai
  * directament a una persona.
  *
- * Les traduccions ja existien -les fa servir la pantalla de perfil- pero el
- * panell no les feia servir i ensenyava el valor cru. Es centralitzen aqui
- * perque afegir un mode o un rol nou sigui un canvi d'un sol fitxer.
+ * Centralitzats aqui perque afegir un mode o un rol nou sigui un canvi d'un
+ * sol fitxer.
  */
 
 export const ORDRE_MODES = ["GUIAT", "LLIURE", "REMOT"] as const;
 export const ORDRE_ROLS = ["VISITANT", "EDITOR", "ADMINISTRADOR"] as const;
 
 /**
- * Localitzacio per a dates i hores. L'idioma de la interficie no es un codi de
- * localitzacio valid per a `toLocaleDateString`, de manera que cal aquesta
- * taula. Estava duplicada a la pantalla de perfil i a la de parada.
+ * Localitzacio per a dates i hores: l'idioma de la interficie no es un codi
+ * valid per a `toLocaleDateString`, de manera que cal aquesta taula.
  */
 export const LOCALE_PER_IDIOMA: Record<string, string> = {
   CA: "ca-ES",

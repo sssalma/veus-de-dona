@@ -112,11 +112,9 @@ export default function EditarPerfilScreen() {
             onChangeText={setCognom}
             autoComplete="family-name"
           />
-          {/* La procedència i el grup escolar es recullen una sola vegada, al
-              registre: no són preferències sinó dades del moment de l'alta que
-              serveixen a l'entitat per saber a qui arriba la ruta. Deixar-les
-              editables aquí feia que la xifra pogués anar canviant sota els
-              peus de qui la consulta. El perfil les segueix mostrant. */}
+          {/* La procedència i el grup escolar es recullen al registre i no
+              s'editen: són dades del moment de l'alta, no preferències. El
+              perfil les mostra en només lectura. */}
 
           <TouchableOpacity
             accessibilityRole="button"

@@ -8,12 +8,7 @@ import { useLanguage } from "../contexts/LanguageContext";
 /**
  * Capçalera de pantalla: fletxa de tornada i títol, a la mateixa filera.
  *
- * Cada pantalla se la dibuixava pel seu compte i cadascuna tornava enrere a la
- * seva manera: unes amb la paraula («← Enrere»), altres amb el nom del lloc
- * («← Panell»), i el títol quedava a una alçada diferent segons la pantalla.
- *
- * La fletxa sola és el que es veu; el nom accessible diu on porta, que és el
- * que necessita qui no veu la pantalla.
+ * La fletxa sola és el que es veu; el nom accessible diu on porta.
  */
 export function Capcalera({
   titol,

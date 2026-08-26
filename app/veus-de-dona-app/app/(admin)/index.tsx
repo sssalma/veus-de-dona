@@ -13,14 +13,9 @@ import { MetriquesGlobal } from "../../types";
 /**
  * Pantalla d'entrada del panell d'edició i administració.
  *
- * Responia a dues preguntes alhora sense resoldre'n cap: apilava tres taules
- * de mètriques en brut —amb els valors dels enums tal com venen del servidor—
- * i, a sota, sis enllaços d'aspecte idèntic. Calia recórrer tot el
- * desglossament abans d'arribar a cap acció.
- *
- * Ara la pantalla només orienta: dues xifres per saber en quin estat és la
- * ruta i un índex agrupat per saber on anar a treballar. El desglossament
- * complet viu a `metriques.tsx`, que és on té sentit mirar-lo amb calma.
+ * Només orienta: dues xifres per saber en quin estat és la ruta i un índex
+ * agrupat per saber on anar a treballar. El desglossament viu a
+ * `metriques.tsx`.
  */
 export default function AdminDashboard() {
   const router = useRouter();
@@ -141,8 +136,7 @@ export default function AdminDashboard() {
 
         {/* ---------- on anar a treballar ----------
             Els accessos no depenen de les mètriques: es dibuixen encara que la
-            petició falli o vagi lenta, cosa que abans deixava el panell
-            inservible mentre durava la càrrega. */}
+            petició falli o vagi lenta. */}
         <Grup titol={t("admin.sectionContent")}>
           <Acces
             primera

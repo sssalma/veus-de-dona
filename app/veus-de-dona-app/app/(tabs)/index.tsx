@@ -44,11 +44,9 @@ const MAP_HTML = `<!DOCTYPE html>
       window.ReactNativeWebView.postMessage(JSON.stringify(msg));
     }
 
-    // Una parada visitada i una de pendent es distingien nomes pel to del
-    // pin, cosa que el criteri 1.4.1 no permet: qui no distingeix els colors
-    // es quedava sense saber per on va. Ara la visitada va plena i la pendent
-    // buida -paper amb la vora de tinta-, que es una diferencia de farciment
-    // i es veu igual en escala de grisos.
+    // La visitada va plena i la pendent buida: una diferencia de farciment
+    // es veu igual en escala de grisos, i el criteri 1.4.1 no permet que el
+    // color sigui l'unic senyal.
     function paradaIcon(estat, ordre) {
       var ple = estat === 'visitada';
       var to = estat === 'inactiva' ? '${COLORS.textSecondary}'
@@ -368,14 +366,9 @@ export default function MapaScreen() {
               {t("mapa.satellite")}
             </Text>
           </TouchableOpacity>
-          {/* Rètol d'estat, no control: seia al costat del botó de satèl·lit
-              amb la mateixa píndola i la mateixa vora, i tot el que hi havia
-              en aquella fila semblava premible. Ara només porta el punt i la
-              paraula.
-
-              L'excepció és el permís denegat: aleshores sí que hi ha una cosa
-              a fer, i abans l'app t'informava del problema i t'hi deixava
-              -calia sortir a la configuració del telèfon i saber què buscar. */}
+          {/* Rètol d'estat, no control: només el punt i la paraula. L'única
+              excepció és el permís denegat, que sí que es prem i porta a la
+              configuració del sistema. */}
           <GpsIndicador estat={gpsEstat} t={t} />
         </View>
       </View>

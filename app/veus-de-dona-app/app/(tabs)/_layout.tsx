@@ -4,14 +4,8 @@ import { COLORS, FONTS } from "../../constants";
 import { useLanguage } from "../../contexts/LanguageContext";
 
 /**
- * Les tres pestanyes portaven emojis (🗺 ✍️ 👤) dibuixats com a text. Tenien
- * dos problemes: cada sistema operatiu els dibuixa a la seva manera —i amb els
- * seus colors, que no són els de l'aplicació— i, com que eren text, el
- * paràmetre `color` que dona la barra arribava i no es feia servir, de manera
- * que la icona activa i la inactiva es veien igual.
- *
- * Ara són icones de traç d'Ionicons, la mateixa família que ja fa servir la
- * resta de l'app, i sí que agafen el color de l'estat.
+ * Icones d'Ionicons, la família que fa servir la resta de l'app. Agafen el
+ * color que dona la barra, de manera que la pestanya activa es distingeix.
  */
 export default function TabsLayout() {
   const { t } = useLanguage();

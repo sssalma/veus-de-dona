@@ -8,16 +8,12 @@ from app.models.usuari import Idioma
 class AutoraTraduccio(Base):
     """A biography in a language other than Catalan.
 
-    A table rather than one column per language: the promoting project already
-    publishes its biographies in six languages, and adding a seventh must not
-    mean a migration. It also keeps the row narrow - most authors will have no
-    translation at all, and absent rows cost nothing while empty columns do.
+    A table rather than one column per language, so that adding a language is
+    not a migration.
 
     Only the biography lives here. The literary texts are not translated: the
     project reproduces them under an implicit permission that does not extend
-    to derivative works, and a translation is one. The titles of the works and
-    the names of the stops are not translated either, because a published title
-    and a place name do not change language.
+    to derivative works, and a translation is one.
     """
 
     __tablename__ = "autora_traduccio"

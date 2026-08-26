@@ -68,9 +68,8 @@ export default function AdminUsuaris() {
     return <Redirect href="/(admin)" />;
   }
 
-  // Les dues accions són optimistes: es pinten abans de saber si el servidor
-  // les accepta. Quan no les accepta cal desfer-les *i dir-ho*: abans el canvi
-  // es revertia sol i semblava que la pantalla no responia.
+  // Les dues accions són optimistes: es pinten sense esperar el servidor.
+  // Si el rebutja, es desfan i es diu en pantalla.
   const handleToggleActiu = async (u: Usuari, valor: boolean) => {
     setAvis(null);
     setUsuaris((prev) => prev.map((x) => (x.id === u.id ? { ...x, actiu: valor } : x)));

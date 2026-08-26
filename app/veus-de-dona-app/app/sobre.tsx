@@ -7,8 +7,7 @@ import { Logotip } from "../components/Logotip";
 
 /**
  * Qui hi ha darrere de la ruta, on trobar-ne la resta de material i a qui
- * escriure. L'aplicació parlava de tretze escriptores sense dir enlloc de quin
- * projecte forma part ni de qui és el material.
+ * escriure.
  */
 export default function SobreScreen() {
   const { t } = useLanguage();

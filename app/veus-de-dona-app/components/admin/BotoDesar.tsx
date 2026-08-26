@@ -2,10 +2,7 @@ import { Text, TouchableOpacity } from "react-native";
 import { COLORS, FONTS } from "../../constants";
 import { useLanguage } from "../../contexts/LanguageContext";
 
-/**
- * Botó de desar de les pantalles d'edició. Les tres el tenien copiat amb la
- * mateixa lògica d'estat ocupat i el mateix parell de textos.
- */
+/** Botó de desar compartit per les pantalles d'edició del panell. */
 export function BotoDesar({ desant, onPress }: { desant: boolean; onPress: () => void }) {
   const { t } = useLanguage();
 

@@ -2,14 +2,10 @@ import { View, Text } from "react-native";
 import { APP, COLORS, FONTS } from "../constants";
 
 /**
- * El logotip de l'aplicació: el nom en cursiva i, a sota i molt més petit,
- * «Literària».
+ * El logotip: el nom en cursiva i, a sota i més petit, «Literària».
  *
- * Va en dos pisos perquè el nom és el que s'ha de recordar i la paraula que
- * l'acota no li ha de disputar el pes. Sortia a tres pantalles copiat a mà.
- *
- * Es llegeix com un sol element: un lector de pantalla ha de dir el nom
- * sencer d'una tirada, no partit en dues línies soltes.
+ * Es llegeix com un sol element, perquè un lector de pantalla digui el nom
+ * sencer d'una tirada i no partit en dues línies.
  */
 export function Logotip({
   mida = 22,

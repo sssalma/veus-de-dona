@@ -3,13 +3,9 @@ import { COLORS, FONTS } from "../../constants";
 import { useLanguage } from "../../contexts/LanguageContext";
 
 /**
- * Els tres llistats del panell —autores, textos i parades— eren el mateix
- * fitxer tres vegades: mateixa càrrega, mateixa targeta, mateixos marges. El
- * que canviava era d'on venien les dades i quin text porta cada fila.
- *
- * `EstatLlista` cobreix els tres estats en què es pot trobar un llistat
- * (carregant, error, buit) i `FilaLlista` dibuixa la fila. Res d'això és
- * específic d'una entitat concreta.
+ * Peces compartides pels llistats del panell. `EstatLlista` cobreix els tres
+ * estats en què es pot trobar un llistat -carregant, error, buit- i
+ * `FilaLlista` dibuixa la fila.
  */
 
 export function EstatLlista({
