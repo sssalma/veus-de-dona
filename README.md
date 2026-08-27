@@ -38,6 +38,10 @@ docker compose exec backend python -m scripts.seed_parades
 # Autores (13 escriptores, fa scraping de la web oficial)
 docker compose exec backend python -m scripts.scraper_autores
 
+# Neteja tipografica de les biografies (cal despres de cada passada del scraper:
+# el scraping perd els espais on hi havia etiquetes HTML i deixa paraules enganxades)
+docker compose exec backend python -m scripts.neteja_bios --aplica
+
 # Textos (poemes i fragments vinculats a autores i parades)
 docker compose exec backend python -m scripts.seed_textos
 
