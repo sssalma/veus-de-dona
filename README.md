@@ -57,9 +57,21 @@ docker compose exec backend python -m scripts.seed_youtube_urls
 # Fotos de parades (opcional, fa scraping)
 docker compose exec backend python -m scripts.seed_fotos_parades
 
-# Àudios (opcional, requereix carpeta AUDIOS_TFG amb els MP3)
+# Audios de les lectures (veure la nota de sota)
 docker compose exec backend python -m scripts.seed_audios
 ```
+
+### Els enregistraments de les lectures
+
+Els 17 MP3 de les lectures **no son al repositori**. Son obra del grup
+promotor i de l'alumnat que hi va participar, i es distribueixen amb llicencia
+Creative Commons BY-NC-SA, incompatible amb la llicencia MIT del codi. El
+repositori conte el sistema; no conte el contingut de la ruta.
+
+Per tenir-los, cal la carpeta `AUDIOS_TFG/` **a l'arrel del repositori** (queda
+ignorada per git). Un cop hi es, el contenidor la munta automaticament i el seed
+d'audios funciona. Sense aquesta carpeta l'aplicacio va igual, pero les fitxes
+de text no mostren el reproductor.
 
 ---
 

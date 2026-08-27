@@ -19,6 +19,10 @@ AUDIO_DIR = os.path.join(
 # Map each MP3 filename -> (author full name, text title)
 MAPPING = {
     "Retorn.mp3": ("Montserrat Abelló i Soler", "Retorn"),
+    "Fragment de Música de cambra - Olga Xirinacs.mp3": (
+        "Olga Xirinacs i Díaz",
+        "Música de cambra I",
+    ),
     "ElSilenci.mp3": ("Lurdes Malgrat i Escarp", "Silenci"),
     "PERDONIAQUINSEGLEDIUQUESOM.mp3": (
         "Noemi Bagés i Fortacín",
@@ -66,10 +70,6 @@ MAPPING = {
     "LHabitacioGrisa_PlacadelaFont.mp3": (
         "Mònica Batet i Boada",
         "L'habitació grisa VI",
-    ),
-    "LaPlacetaDelsAngels.mp3": (
-        "Olga Xirinacs i Díaz",
-        "La placeta dels Àngels",
     ),
 }
 
