@@ -14,10 +14,26 @@ def get_minio_client():
         region_name="us-east-1"
     )
 
+_bucket_ready = False
+
+
+def ensure_bucket(client) -> None:
+    """MinIO starts with no buckets: create ours the first time we need it."""
+    global _bucket_ready
+    if _bucket_ready:
+        return
+    try:
+        client.head_bucket(Bucket=settings.MINIO_BUCKET)
+    except ClientError:
+        client.create_bucket(Bucket=settings.MINIO_BUCKET)
+    _bucket_ready = True
+
+
 def upload_file(file_bytes: bytes, minio_key: str, content_type: str) -> bool:
     """Uploads a file to MinIO, returns True if successful"""
     try:
         client = get_minio_client()
+        ensure_bucket(client)
         client.put_object(
             Bucket=settings.MINIO_BUCKET,
             Key=minio_key,
