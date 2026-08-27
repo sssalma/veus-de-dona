@@ -41,6 +41,9 @@ docker compose exec backend python -m scripts.scraper_autores
 # Textos (poemes i fragments vinculats a autores i parades)
 docker compose exec backend python -m scripts.seed_textos
 
+# Biografies en castella i angles (cal fer-ho despres de les autores)
+docker compose exec backend python -m scripts.seed_traduccions_autores
+
 # Compte d'administrador (canvia email i password si cal)
 docker compose exec backend python scripts/seed_admin.py admin@veusdedona.cat admin1234
 
@@ -64,7 +67,16 @@ npm install
 npx expo start
 ```
 
-Escaneja el codi QR amb l'app **Expo Go** (iOS/Android).
+Cal tenir instal·lada l'app **Expo Go** al mòbil. La manera d'obrir el projecte
+no és la mateixa als dos sistemes:
+
+- **iOS**: escaneja el QR amb l'app **Càmera** del sistema, no des de dins d'Expo Go.
+  Surt una notificació que obre el projecte. No cal cap compte d'Expo.
+- **Android**: escaneja el QR des de dins d'Expo Go (opció *Scan QR code*).
+
+Si en arrencar surt `Unable to run simctl` és perquè no hi ha les eines de línia
+d'ordres de Xcode instal·lades. Només afecta el simulador d'iOS; amb un mòbil real
+es pot ignorar.
 
 ### Si fas servir un mòbil físic
 
