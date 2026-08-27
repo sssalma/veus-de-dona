@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View, Text, TextInput, TextInputProps, TouchableOpacity } from "react-native";
+import { View, Text, TextInput, TextInputProps, TouchableOpacity, ViewStyle, StyleProp } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { COLORS, FONTS } from "../constants";
 import { useLanguage } from "../contexts/LanguageContext";
@@ -13,8 +13,13 @@ export default function FormField({
   label,
   style,
   revelable,
+  contenidorStyle,
   ...inputProps
-}: { label: string; revelable?: boolean } & TextInputProps) {
+}: {
+  label: string;
+  revelable?: boolean;
+  contenidorStyle?: StyleProp<ViewStyle>;
+} & TextInputProps) {
   const { t } = useLanguage();
   const [visible, setVisible] = useState(false);
   const ambUll = revelable === true;
@@ -47,7 +52,7 @@ export default function FormField({
   );
 
   return (
-    <View style={{ gap: 4, marginBottom: 14 }}>
+    <View style={[{ gap: 4, marginBottom: 14 }, contenidorStyle]}>
       <Text
         style={{
           fontFamily: FONTS.sans,

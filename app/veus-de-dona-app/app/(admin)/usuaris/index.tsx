@@ -6,6 +6,7 @@ import { useAuth } from "../../../contexts/AuthContext";
 import { useLanguage } from "../../../contexts/LanguageContext";
 import { etiquetaRol, ORDRE_ROLS } from "../../../i18n/etiquetes";
 import { Capcalera } from "../../../components/Capcalera";
+import FormField from "../../../components/FormField";
 import { EstatLlista } from "../../../components/admin/LlistaAdmin";
 import {
   getUsuaris,
@@ -366,26 +367,22 @@ export default function AdminUsuaris() {
               </Text>
             )}
 
-            <TextInput
-              accessibilityLabel={t("admin.newPasswordLabel")}
+            {/* revelable: qui assigna la contrasenya l'ha de comunicar despres,
+                i tapada no hi ha manera de comprovar que s'ha escrit be */}
+            <FormField
+              label={t("admin.newPasswordLabel")}
               placeholder={t("admin.newPasswordLabel")}
-              placeholderTextColor={COLORS.textSecondary}
               value={novaContrasenya}
               onChangeText={setNovaContrasenya}
-              secureTextEntry
+              revelable
               autoCapitalize="none"
               autoCorrect={false}
-              maxFontSizeMultiplier={1.5}
+              contenidorStyle={{ marginBottom: 0 }}
               style={{
-                borderWidth: 1,
-                borderColor: COLORS.controlBorder,
                 borderRadius: 8,
                 paddingHorizontal: 12,
                 paddingVertical: 10,
-                fontFamily: FONTS.sans,
                 fontSize: 13,
-                color: COLORS.text,
-                backgroundColor: COLORS.lightBg,
                 minHeight: 46,
               }}
             />
