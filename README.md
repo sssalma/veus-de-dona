@@ -57,21 +57,21 @@ docker compose exec backend python -m scripts.seed_youtube_urls
 # Fotos de parades (opcional, fa scraping)
 docker compose exec backend python -m scripts.seed_fotos_parades
 
-# Audios de les lectures (veure la nota de sota)
+# Audios de les lectures (els MP3 ja son al repo, a AUDIOS_TFG/)
 docker compose exec backend python -m scripts.seed_audios
 ```
 
 ### Els enregistraments de les lectures
 
-Els 17 MP3 de les lectures **no son al repositori**. Son obra del grup
-promotor i de l'alumnat que hi va participar, i es distribueixen amb llicencia
-Creative Commons BY-NC-SA, incompatible amb la llicencia MIT del codi. El
-repositori conte el sistema; no conte el contingut de la ruta.
+Els 17 MP3 son a `AUDIOS_TFG/`, que el contenidor munta automaticament: no cal
+fer res mes que executar el seed.
 
-Per tenir-los, cal la carpeta `AUDIOS_TFG/` **a l'arrel del repositori** (queda
-ignorada per git). Un cop hi es, el contenidor la munta automaticament i el seed
-d'audios funciona. Sense aquesta carpeta l'aplicacio va igual, pero les fitxes
-de text no mostren el reproductor.
+**Aquests fitxers no estan coberts per la llicencia MIT.** Son obra del grup
+promotor i de l'alumnat del projecte «Veus de dona a Tarragona», i es
+distribueixen amb llicencia Creative Commons BY-NC-SA 4.0: es poden
+redistribuir amb atribucio, no se'n pot fer us comercial i les obres derivades
+han de mantenir les mateixes condicions. Els detalls son a
+[`AUDIOS_TFG/LLICENCIA.md`](AUDIOS_TFG/LLICENCIA.md).
 
 ---
 
