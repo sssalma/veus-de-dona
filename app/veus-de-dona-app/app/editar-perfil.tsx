@@ -165,7 +165,7 @@ export default function EditarPerfilScreen() {
             label={t("perfilEdit.currentPassword")}
             value={passwordActual}
             onChangeText={setPasswordActual}
-            secureTextEntry
+            revelable
             autoComplete="current-password"
             placeholder="••••••••"
           />
@@ -173,7 +173,7 @@ export default function EditarPerfilScreen() {
             label={t("perfilEdit.newPassword")}
             value={passwordNova}
             onChangeText={setPasswordNova}
-            secureTextEntry
+            revelable
             autoComplete="new-password"
             placeholder="••••••••"
           />
@@ -181,7 +181,7 @@ export default function EditarPerfilScreen() {
             label={t("perfilEdit.repeatPassword")}
             value={passwordRepetida}
             onChangeText={setPasswordRepetida}
-            secureTextEntry
+            revelable
             autoComplete="new-password"
             placeholder="••••••••"
           />

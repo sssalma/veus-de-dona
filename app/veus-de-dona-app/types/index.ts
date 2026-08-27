@@ -102,6 +102,7 @@ export interface Comentari {
 
 export interface MetriquesGlobal {
   usuaris_per_rol: Record<string, number>;
+  usuaris_grup_escolar: number;
   visites_per_mode: Record<string, number>;
   textos_mes_agradats: { text_id: string; titol: string; likes: number }[];
 }

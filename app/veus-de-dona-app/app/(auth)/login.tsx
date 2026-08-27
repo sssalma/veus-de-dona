@@ -67,7 +67,7 @@ export default function LoginScreen() {
           placeholder="••••••••"
           value={password}
           onChangeText={setPassword}
-          secureTextEntry
+          revelable
           autoComplete="current-password"
           textContentType="password"
         />

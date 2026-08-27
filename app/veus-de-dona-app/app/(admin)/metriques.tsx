@@ -99,6 +99,10 @@ export default function Metriques() {
                   {ordenaPer(global.usuaris_per_rol, ORDRE_ROLS).map(([rol, total]) => (
                     <Fila key={rol} etiqueta={etiquetaRol(t, rol)} valor={total} />
                   ))}
+                  <Fila
+                    etiqueta={t("admin.schoolGroup")}
+                    valor={global.usuaris_grup_escolar}
+                  />
                 </Bloc>
 
                 <Bloc titol={t("admin.mostLikedTexts")}>

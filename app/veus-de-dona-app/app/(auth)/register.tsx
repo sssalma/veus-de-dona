@@ -16,6 +16,7 @@ export default function RegisterScreen() {
   const [cognom, setCognom] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [passwordRepetida, setPasswordRepetida] = useState("");
   // Camps opcionals: alimenten les mètriques d'ús de la ruta (procedència i
   // visites escolars). Cap d'ells bloqueja la creació del compte.
   const [procedencia, setProcedencia] = useState("");
@@ -23,7 +24,7 @@ export default function RegisterScreen() {
   const [loading, setLoading] = useState(false);
 
   const handleRegister = async () => {
-    if (!nom || !cognom || !email || !password) {
+    if (!nom || !cognom || !email || !password || !passwordRepetida) {
       Alert.alert(t("common.error"), t("auth.fillAllFields"));
       return;
     }
@@ -37,6 +38,10 @@ export default function RegisterScreen() {
     }
     if (password.length < PASSWORD_MIN_LENGTH) {
       Alert.alert(t("common.error"), t("auth.passwordMinLength"));
+      return;
+    }
+    if (password !== passwordRepetida) {
+      Alert.alert(t("common.error"), t("auth.passwordMismatch"));
       return;
     }
     setLoading(true);
@@ -106,7 +111,17 @@ export default function RegisterScreen() {
           placeholder="••••••••"
           value={password}
           onChangeText={setPassword}
-          secureTextEntry
+          revelable
+          autoComplete="new-password"
+          textContentType="newPassword"
+        />
+
+        <FormField
+          label={t("auth.repeatPassword")}
+          placeholder="••••••••"
+          value={passwordRepetida}
+          onChangeText={setPasswordRepetida}
+          revelable
           autoComplete="new-password"
           textContentType="newPassword"
         />

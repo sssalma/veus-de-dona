@@ -10,6 +10,24 @@ def test_metriques_global_conte_totes_les_claus(client, auth_headers, editor):
     assert "visites_per_mode" in data
     assert set(data["visites_per_mode"].keys()) == {"REMOT", "GUIAT", "LLIURE"}
     assert "textos_mes_agradats" in data
+    assert "usuaris_grup_escolar" in data
+
+
+def test_metriques_global_compta_els_de_grup_escolar(client, auth_headers, editor, db_session):
+    from tests.conftest import _crear_usuari
+    from app.models.usuari import RolUsuari
+
+    abans = client.get("/metriques/global", headers=auth_headers(editor)).json()[
+        "usuaris_grup_escolar"
+    ]
+    _crear_usuari(db_session, RolUsuari.VISITANT, es_alumne=True)
+    _crear_usuari(db_session, RolUsuari.VISITANT, es_alumne=False)
+    _crear_usuari(db_session, RolUsuari.VISITANT)  # sense respondre: es None
+
+    despres = client.get("/metriques/global", headers=auth_headers(editor)).json()[
+        "usuaris_grup_escolar"
+    ]
+    assert despres == abans + 1
 
 
 def test_metriques_global_compta_usuaris_i_visites(client, auth_headers, visitant, editor, parada):

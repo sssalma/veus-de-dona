@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { View, Text, ScrollView, TouchableOpacity, Image } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, Image, ActivityIndicator } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { COLORS, FONTS, ROTUL_SECCIO, TITOL_PANTALLA } from "../../constants";
 import { getAutora, getAutoraFoto } from "../../services/autores";
@@ -19,15 +19,33 @@ export default function AutoraScreen() {
   const [textos, setTextos] = useState<TextDto[]>([]);
   const [totesParades, setTotesParades] = useState<Parada[]>([]);
   const [fotoUrl, setFotoUrl] = useState<string | null>(null);
+  const [carregant, setCarregant] = useState(true);
 
   useEffect(() => {
     const aid = id as string;
-    getAutora(aid, idioma).then(setAutora).catch(() => setAutora(null));
+    setCarregant(true);
+    getAutora(aid, idioma)
+      .then(setAutora)
+      .catch(() => setAutora(null))
+      .finally(() => setCarregant(false));
     getTextosByAutora(aid).then(setTextos).catch(() => setTextos([]));
     getParades().then(setTotesParades).catch(() => setTotesParades([]));
     // 404 si l'autora encara no té retrat: es cau a les inicials
     getAutoraFoto(aid).then(setFotoUrl).catch(() => setFotoUrl(null));
   }, [id, idioma]);
+
+  // mentre la peticio no ha tornat encara no se sap si l'autora existeix:
+  // dir "no trobada" abans d'hora era un fals negatiu a cada obertura
+  if (carregant) {
+    return (
+      <View
+        accessibilityLabel={t("common.loading")}
+        style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: COLORS.bg }}
+      >
+        <ActivityIndicator size="small" color={COLORS.darkBg} />
+      </View>
+    );
+  }
 
   if (!autora) {
     return (

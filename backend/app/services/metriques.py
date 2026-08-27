@@ -20,6 +20,11 @@ def get_metriques_global(db: Session) -> dict:
     # ensure all modes are present even with zero visits
     visites_per_mode = {mode.value: visites_per_mode.get(mode, 0) for mode in Mode}
 
+    # es_alumne es opcional al registre: nomes es compten els que han dit que si
+    usuaris_grup_escolar = (
+        db.query(func.count(Usuari.id)).filter(Usuari.es_alumne.is_(True)).scalar()
+    )
+
     textos_mes_agradats = (
         db.query(Text.id, Text.titol, func.count(Like.usuari_id).label("likes"))
         .join(Like, Like.text_id == Text.id)
@@ -31,6 +36,7 @@ def get_metriques_global(db: Session) -> dict:
 
     return {
         "usuaris_per_rol": {rol.value: count for rol, count in usuaris_per_rol.items()},
+        "usuaris_grup_escolar": usuaris_grup_escolar or 0,
         "visites_per_mode": visites_per_mode,
         "textos_mes_agradats": [
             {"text_id": str(text_id), "titol": titol, "likes": likes}

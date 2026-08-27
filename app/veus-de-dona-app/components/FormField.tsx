@@ -1,11 +1,51 @@
-import { View, Text, TextInput, TextInputProps } from "react-native";
+import { useState } from "react";
+import { View, Text, TextInput, TextInputProps, TouchableOpacity } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { COLORS, FONTS } from "../constants";
+import { useLanguage } from "../contexts/LanguageContext";
 
+/**
+ * Camp de formulari amb etiqueta. Amb `revelable` hi apareix un ull que
+ * destapa el que s'escriu: en un camp tapat no hi ha manera de saber si
+ * t'has equivocat teclejant fins que el sistema et rebutja.
+ */
 export default function FormField({
   label,
   style,
+  revelable,
   ...inputProps
-}: { label: string } & TextInputProps) {
+}: { label: string; revelable?: boolean } & TextInputProps) {
+  const { t } = useLanguage();
+  const [visible, setVisible] = useState(false);
+  const ambUll = revelable === true;
+
+  const input = (
+    <TextInput
+      accessibilityRole="text"
+      accessibilityLabel={label}
+      placeholderTextColor={COLORS.textSecondary}
+      maxFontSizeMultiplier={1.5}
+      style={[
+        {
+          borderWidth: 1,
+          borderColor: COLORS.controlBorder,
+          borderRadius: 6,
+          paddingHorizontal: 10,
+          paddingVertical: 8,
+          fontFamily: FONTS.sans,
+          fontSize: 11,
+          color: COLORS.text,
+          backgroundColor: COLORS.lightBg,
+          minHeight: 44,
+        },
+        ambUll && { flex: 1, paddingRight: 44 },
+        style,
+      ]}
+      {...inputProps}
+      secureTextEntry={ambUll ? !visible : inputProps.secureTextEntry}
+    />
+  );
+
   return (
     <View style={{ gap: 4, marginBottom: 14 }}>
       <Text
@@ -20,28 +60,27 @@ export default function FormField({
       >
         {label}
       </Text>
-      <TextInput
-        accessibilityRole="text"
-        accessibilityLabel={label}
-        placeholderTextColor={COLORS.textSecondary}
-        maxFontSizeMultiplier={1.5}
-        style={[
-          {
-            borderWidth: 1,
-            borderColor: COLORS.controlBorder,
-            borderRadius: 6,
-            paddingHorizontal: 10,
-            paddingVertical: 8,
-            fontFamily: FONTS.sans,
-            fontSize: 11,
-            color: COLORS.text,
-            backgroundColor: COLORS.lightBg,
-            minHeight: 44,
-          },
-          style,
-        ]}
-        {...inputProps}
-      />
+
+      {ambUll ? (
+        <View style={{ justifyContent: "center" }}>
+          {input}
+          <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel={visible ? t("common.hidePassword") : t("common.showPassword")}
+            onPress={() => setVisible((v) => !v)}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            style={{ position: "absolute", right: 10 }}
+          >
+            <Ionicons
+              name={visible ? "eye-off-outline" : "eye-outline"}
+              size={18}
+              color={COLORS.textSecondary}
+            />
+          </TouchableOpacity>
+        </View>
+      ) : (
+        input
+      )}
     </View>
   );
 }

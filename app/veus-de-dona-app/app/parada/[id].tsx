@@ -60,10 +60,15 @@ export default function ParadaScreen() {
   const [visitLoading, setVisitLoading] = useState(false);
   const [fotoUrl, setFotoUrl] = useState<string | null>(null);
   const [fotoHeight, setFotoHeight] = useState(HERO_MIN);
+  const [carregant, setCarregant] = useState(true);
 
   useEffect(() => {
     const pid = id as string;
-    getParada(pid).then(setParada).catch(() => setParada(null));
+    setCarregant(true);
+    getParada(pid)
+      .then(setParada)
+      .catch(() => setParada(null))
+      .finally(() => setCarregant(false));
     // tots els textos arrenquen plegats, també quan la parada només en té un:
     // així la fitxa sempre s'obre igual i el primer que es veu és la parada
     getTextosByParada(pid).then(setTextos).catch(() => setTextos([]));
@@ -236,6 +241,19 @@ export default function ParadaScreen() {
       setEnviantResposta(null);
     }
   };
+
+  // mentre la peticio no ha tornat encara no se sap si la parada existeix:
+  // dir "no trobada" abans d'hora era un fals negatiu a cada obertura
+  if (carregant) {
+    return (
+      <View
+        accessibilityLabel={t("common.loading")}
+        style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: COLORS.bg }}
+      >
+        <ActivityIndicator size="small" color={COLORS.darkBg} />
+      </View>
+    );
+  }
 
   if (!parada) {
     return (
