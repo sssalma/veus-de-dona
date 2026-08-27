@@ -11,8 +11,10 @@ services:
       MINIO_BUCKET: veus-de-dona
       SECRET_KEY: ${SECRET_KEY:-canvia-aquest-secret-en-produccio}
     depends_on:
-      - db
-      - minio
+      db:
+        condition: service_healthy
+      minio:
+        condition: service_started
 
   db:
     image: postgres:16
@@ -24,6 +26,11 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d veusdedona"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
 
   minio:
     image: minio/minio
