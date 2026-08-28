@@ -603,7 +603,6 @@ function Accio({
       >
         {etiqueta}
       </Text>
-      <Ionicons name="chevron-forward" size={15} color={COLORS.textSecondary} />
     </TouchableOpacity>
   );
 }
