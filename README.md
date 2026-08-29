@@ -55,7 +55,7 @@ docker compose exec backend python scripts/seed_admin.py admin@veusdedona.cat ad
 docker compose exec backend python -m scripts.seed_youtube_urls
 
 # Fotos de parades (opcional, fa scraping)
-docker compose exec backend python -m scripts.seed_fotos_parades
+docker compose exec backend python -m scripts.scraper_fotos_parades
 
 # Audios de les lectures (els MP3 ja son al repo, a AUDIOS_TFG/)
 docker compose exec backend python -m scripts.seed_audios

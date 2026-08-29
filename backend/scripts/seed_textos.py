@@ -1,4 +1,8 @@
-"""Seed texts linking authors to their corresponding parades, scraped from the real website."""
+"""Seed texts linking authors to their corresponding parades.
+
+The texts are literals in this file, transcribed from the project website;
+this script makes no network requests.
+"""
 import sys
 import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
