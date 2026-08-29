@@ -37,16 +37,19 @@ TEST_PASSWORD = "Testpass123!"
 TEST_PASSWORD_HASH = hash_password(TEST_PASSWORD)
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="session")
 def setup_database():
-    """Creates all tables once for the test DB, drops them at the end of the run"""
+    """Creates all tables once for the test DB, drops them at the end of the run.
+
+    Not autouse: the unit tests for the pure functions (distance, name and
+    life-span extraction) must run without a database at all."""
     Base.metadata.create_all(bind=engine)
     yield
     Base.metadata.drop_all(bind=engine)
 
 
 @pytest.fixture()
-def db_session():
+def db_session(setup_database):
     """Each test runs inside a transaction that's rolled back at the end,
     so tests never see each other's data regardless of execution order"""
     connection = engine.connect()
