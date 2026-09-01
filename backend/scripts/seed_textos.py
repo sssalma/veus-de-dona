@@ -12,7 +12,6 @@ from scripts.scraper_autores import partir_nom
 from app.models.autora import Autora
 from app.models.parada import Parada
 from app.models.text import Text
-from app.models.like import Like
 
 TEXTOS_DATA = [
     {
@@ -376,13 +375,16 @@ A Tarragona la Laura s'hi sentia millor que en qualsevol altra banda. La seva ti
 ]
 
 def seed():
+    """Deixa els textos tal com son aqui, sense esborrar res.
+
+    Abans, si ja n'hi havia, l'esborrava tot i ho tornava a crear. Un esborrat
+    massiu no dispara la cascada de l'ORM i la clau forana de `recurs` no porta
+    `ON DELETE`, de manera que una segona passada petava en trobar-hi audios; i
+    si no hi petava, els objectes es quedaven a MinIO sense ningu que els
+    referencies. Actualitzant el que ja hi es, els audios, els likes i les
+    traduccions sobreviuen a tornar a executar el guio.
+    """
     db = SessionLocal()
-    existing = db.query(Text).count()
-    if existing > 0:
-        print(f"Ja existeixen {existing} textos. Netejant...")
-        db.query(Like).delete()
-        db.query(Text).delete()
-        db.commit()
 
     parades = db.query(Parada).order_by(Parada.ordre).all()
     parada_per_ordre = {p.ordre: p for p in parades}
@@ -397,6 +399,7 @@ def seed():
         ).first()
 
     created = 0
+    updated = 0
     errors = []
     for item in TEXTOS_DATA:
         parada = parada_per_ordre.get(item["ordre_parada"])
@@ -407,19 +410,31 @@ def seed():
         if not autora:
             errors.append(f"Autora '{item['autora_nom']}' no trobada")
             continue
-        text = Text(
-            titol=item["titol"],
-            obra_origen=item["obra_origen"],
-            contingut=item["contingut"],
-            parada_id=parada.id,
-            autora_id=autora.id,
-        )
-        db.add(text)
-        created += 1
+
+        # una obra queda identificada per l'autora i el titol
+        text = db.query(Text).filter(
+            Text.autora_id == autora.id,
+            Text.titol == item["titol"],
+        ).first()
+
+        if text:
+            text.obra_origen = item["obra_origen"]
+            text.contingut = item["contingut"]
+            text.parada_id = parada.id
+            updated += 1
+        else:
+            db.add(Text(
+                titol=item["titol"],
+                obra_origen=item["obra_origen"],
+                contingut=item["contingut"],
+                parada_id=parada.id,
+                autora_id=autora.id,
+            ))
+            created += 1
 
     db.commit()
     total_parades = len(parades)
-    print(f"Creats {created} textos a {total_parades} parades")
+    print(f"{created} textos creats i {updated} actualitzats, a {total_parades} parades")
     if errors:
         for e in errors:
             print(f"  ERROR: {e}")

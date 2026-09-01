@@ -3,13 +3,11 @@ import sys
 import os
 import re
 import requests
-import uuid as uuid_mod
-from io import BytesIO
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app.database import SessionLocal
 from app.models.parada import Parada
-from app.services.storage import upload_file
+from app.services import parades as parades_service
 
 # Each parada name → espai page slug on the website
 ESPAI_PAGES = {
@@ -89,29 +87,24 @@ def seed():
             errors.append(f"Parada '{espai_name}': no espai page mapping")
             continue
 
-            print(f"\n[{parada.ordre}] {espai_name} -> {matched_key}")
+        print(f"\n[{parada.ordre}] {espai_name} -> {matched_key}")
 
         image_data = fetch_main_image(slug)
         if not image_data:
             errors.append(f"Parada '{espai_name}': could not fetch image")
             continue
 
-        # Upload to MinIO
-        ext = "jpg"
-        minio_key = f"parades/{parada.id}/{uuid_mod.uuid4()}.{ext}"
-        try:
-            upload_file(image_data, minio_key, "image/jpeg")
-            print(f"  Uploaded to MinIO: {minio_key} ({len(image_data)} bytes)")
-        except Exception as e:
-            errors.append(f"Parada '{espai_name}': MinIO upload failed: {e}")
+        # Passa per la capa de servei, que esborra la foto anterior. Pujar-la
+        # aqui deixava un objecte orfe a MinIO a cada passada del guio.
+        resultat = parades_service.update_parada_foto(
+            db, str(parada.id), image_data, "foto.jpg", "image/jpeg"
+        )
+        if not resultat:
+            errors.append(f"Parada '{espai_name}': MinIO upload failed")
             continue
 
-        # Update database
-        parada.foto_minio_key = minio_key
-        db.add(parada)
-        db.commit()
         updated += 1
-        print(f"  OK DB updated")
+        print(f"  OK: foto actualitzada ({len(image_data)} bytes)")
 
     print(f"\n\nUpdated {updated}/{len(parades)} parades")
     if errors:
