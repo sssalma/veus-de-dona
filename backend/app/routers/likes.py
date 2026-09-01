@@ -2,14 +2,29 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.schemas.like import LikeResponse
+from app.schemas.text import TextResponse
 from app.services import likes as likes_service
+from app.services import textos as textos_service
 from app.services.auth import get_current_user
-from app.models.usuari import Usuari
+from app.models.usuari import Usuari, Idioma
+from typing import List
 
 router = APIRouter(
     prefix="/likes",
     tags=["likes"]
 )
+
+# Va abans de les rutes amb parametre perque "/me" no s'interpreti com un
+# identificador de text.
+@router.get("/me", response_model=List[TextResponse])
+def get_textos_preferits(
+    idioma: Idioma = Idioma.CA,
+    db: Session = Depends(get_db),
+    current_user: Usuari = Depends(get_current_user)
+):
+    """Els textos que ha marcat qui ho demana, del mes recent al mes antic."""
+    textos = likes_service.get_textos_preferits(db, current_user)
+    return [textos_service.aplica_idioma(text, idioma) for text in textos]
 
 @router.post("/{text_id}", response_model=LikeResponse, status_code=201)
 def donar_like(

@@ -49,3 +49,18 @@ def has_liked(db: Session, usuari: Usuari, text_id: str) -> bool:
         Like.usuari_id == usuari.id,
         Like.text_id == text_id
     ).first() is not None
+
+def get_textos_preferits(db: Session, usuari: Usuari):
+    """Els textos que ha marcat una persona, del mes recent al mes antic.
+
+    El like es desa amb la seva data des de la migracio inicial, pero fins ara
+    no el llegia ningu: es podia marcar un text i no tornar-lo a trobar mai.
+    Aixo es l'unica consulta que faltava per convertir-los en una antologia.
+    """
+    return (
+        db.query(Text)
+        .join(Like, Like.text_id == Text.id)
+        .filter(Like.usuari_id == usuari.id)
+        .order_by(Like.data_creacio.desc())
+        .all()
+    )

@@ -444,6 +444,14 @@ export default function PerfilScreen() {
 
             {/* ---------- accions ---------- */}
             <View style={{ paddingHorizontal: 18, gap: 2 }}>
+              {/* Primer el que hi ha per llegir, despres el que hi ha per
+                  configurar: aquesta pantalla es un diari de ruta, no un
+                  panell d'opcions. */}
+              <Accio
+                etiqueta={t("perfil.myTexts")}
+                icona="heart-outline"
+                onPress={() => router.push("/preferits")}
+              />
               <Accio
                 etiqueta={t("perfil.editProfile")}
                 icona="create-outline"

@@ -140,6 +140,11 @@ export const ca = {
   "autora.textPlural": "textos a la ruta",
 
   "perfil.editProfile": "Editar el meu perfil",
+  "perfil.myTexts": "Els meus textos",
+  "preferits.empty": "Encara no hi ha cap text aquí.",
+  "preferits.emptyBody": "Quan un poema t'agradi, prem el cor i el retrobaràs en aquesta pàgina sempre que vulguis.",
+  "preferits.needsAccount": "Els textos que t'agraden es guarden al teu compte.",
+  "preferits.needsAccountBody": "Inicia la sessió per anar-te fent la teva pròpia antologia de la ruta.",
   "perfilEdit.title": "Editar perfil",
   "perfilEdit.personalData": "Dades personals",
   "perfilEdit.nameRequired": "El nom i el cognom són obligatoris",
@@ -180,7 +185,7 @@ export const ca = {
   "perfil.editor": "Edició",
   "perfil.administrador": "Admin",
   "perfil.guestInvite": "Vols que la ruta et recordi?",
-  "perfil.guestInviteBody": "Amb un compte pots marcar les parades que has visitat, deixar-hi comentaris i tornar-hi quan vulguis per veure per on vas.",
+  "perfil.guestInviteBody": "Amb un compte pots marcar les parades que has visitat, guardar els textos que t'agraden per retrobar-los, i deixar-hi comentaris.",
 
   "parada.viewOnMap": "Veure la parada al mapa",
   "parada.map": "Al mapa",
@@ -473,6 +478,11 @@ export const es: typeof ca = {
   "autora.textPlural": "textos en la ruta",
 
   "perfil.editProfile": "Editar mi perfil",
+  "perfil.myTexts": "Mis textos",
+  "preferits.empty": "Aquí todavía no hay ningún texto.",
+  "preferits.emptyBody": "Cuando un poema te guste, pulsa el corazón y lo reencontrarás en esta página siempre que quieras.",
+  "preferits.needsAccount": "Los textos que te gustan se guardan en tu cuenta.",
+  "preferits.needsAccountBody": "Inicia sesión para ir formando tu propia antología de la ruta.",
   "perfilEdit.title": "Editar perfil",
   "perfilEdit.personalData": "Datos personales",
   "perfilEdit.nameRequired": "El nombre y el apellido son obligatorios",
@@ -513,7 +523,7 @@ export const es: typeof ca = {
   "perfil.editor": "Edición",
   "perfil.administrador": "Admin",
   "perfil.guestInvite": "¿Quieres que la ruta te recuerde?",
-  "perfil.guestInviteBody": "Con una cuenta puedes marcar las paradas que has visitado, dejar comentarios y volver cuando quieras para ver por dónde vas.",
+  "perfil.guestInviteBody": "Con una cuenta puedes marcar las paradas que has visitado, guardar los textos que te gustan para reencontrarlos, y dejar comentarios.",
 
   "parada.viewOnMap": "Ver la parada en el mapa",
   "parada.map": "En el mapa",
@@ -806,6 +816,11 @@ export const en: typeof ca = {
   "autora.textPlural": "texts on the route",
 
   "perfil.editProfile": "Edit my profile",
+  "perfil.myTexts": "My texts",
+  "preferits.empty": "There is nothing here yet.",
+  "preferits.emptyBody": "When a poem moves you, tap the heart and you will find it again on this page whenever you like.",
+  "preferits.needsAccount": "The texts you like are kept in your account.",
+  "preferits.needsAccountBody": "Sign in to build your own anthology of the route.",
   "perfilEdit.title": "Edit profile",
   "perfilEdit.personalData": "Personal details",
   "perfilEdit.nameRequired": "First name and surname are required",
@@ -846,7 +861,7 @@ export const en: typeof ca = {
   "perfil.editor": "Editor",
   "perfil.administrador": "Admin",
   "perfil.guestInvite": "Want the route to remember you?",
-  "perfil.guestInviteBody": "With an account you can mark the stops you have visited, leave comments, and come back any time to see how far you have got.",
+  "perfil.guestInviteBody": "With an account you can mark the stops you have visited, keep the texts you like so you can find them again, and leave comments.",
 
   "parada.viewOnMap": "See this stop on the map",
   "parada.map": "On the map",
