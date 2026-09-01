@@ -28,7 +28,7 @@ export default function AutoraScreen() {
       .then(setAutora)
       .catch(() => setAutora(null))
       .finally(() => setCarregant(false));
-    getTextosByAutora(aid).then(setTextos).catch(() => setTextos([]));
+    getTextosByAutora(aid, idioma).then(setTextos).catch(() => setTextos([]));
     getParades().then(setTotesParades).catch(() => setTotesParades([]));
     // 404 si l'autora encara no té retrat: es cau a les inicials
     getAutoraFoto(aid).then(setFotoUrl).catch(() => setFotoUrl(null));

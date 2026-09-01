@@ -48,7 +48,7 @@ export default function TextCard({
   onLike,
 }: TextCardProps) {
   const router = useRouter();
-  const { t } = useLanguage();
+  const { t, idioma } = useLanguage();
   const autora = text.autora;
 
   const trets = [
@@ -228,6 +228,24 @@ export default function TextCard({
               {text.contingut}
             </Text>
           </View>
+
+          {/* El web del projecte no publica totes les obres traduïdes. Quan
+              en falta una arriba l'original: dir-ho és més honest que deixar
+              que sembli que aquella obra és així en l'idioma triat. */}
+          {text.contingut_idioma !== idioma && (
+            <Text
+              maxFontSizeMultiplier={1.5}
+              style={{
+                fontFamily: FONTS.sans,
+                fontSize: 11,
+                fontStyle: "italic",
+                color: COLORS.textSecondary,
+                lineHeight: 15,
+              }}
+            >
+              {t("parada.textOriginal")}
+            </Text>
+          )}
 
           <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
             <TouchableOpacity

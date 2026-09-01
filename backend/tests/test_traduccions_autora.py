@@ -1,8 +1,8 @@
 """Biografies multiidioma.
 
-Nomes la biografia es tradueix. Els textos literaris no: el projecte els
-reprodueix sota un permis implicit que no arriba a l'obra derivada, i una
-traduccio ho es.
+La biografia s'edita al panell perque es text propi. Els textos literaris tenen
+el seu propi cami -veure test_traduccions_text.py-: les versions en angles son
+les que publica el web del projecte i no s'editen enlloc.
 """
 
 

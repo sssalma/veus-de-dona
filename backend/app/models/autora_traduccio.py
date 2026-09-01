@@ -11,9 +11,10 @@ class AutoraTraduccio(Base):
     A table rather than one column per language, so that adding a language is
     not a migration.
 
-    Only the biography lives here. The literary texts are not translated: the
-    project reproduces them under an implicit permission that does not extend
-    to derivative works, and a translation is one.
+    Only the biography lives here. The literary texts have a table of their
+    own, `text_traduccio`, filled from the project's website: their English
+    versions are the entity's, not ours. Writing them here -where the editing
+    panel writes- would make them look like something this project may change.
     """
 
     __tablename__ = "autora_traduccio"

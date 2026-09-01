@@ -71,7 +71,7 @@ export default function ParadaScreen() {
       .finally(() => setCarregant(false));
     // tots els textos arrenquen plegats, també quan la parada només en té un:
     // així la fitxa sempre s'obre igual i el primer que es veu és la parada
-    getTextosByParada(pid).then(setTextos).catch(() => setTextos([]));
+    getTextosByParada(pid, idioma).then(setTextos).catch(() => setTextos([]));
     getParades().then(setTotes).catch(() => setTotes([]));
     getComentaris(pid).then(setComentaris).catch(() => setComentaris([]));
     getParadaFoto(pid).then((url) => {
@@ -82,7 +82,7 @@ export default function ParadaScreen() {
         setFotoHeight(Math.max(HERO_MIN, Math.min(HERO_MAX, alcada)));
       }, () => setFotoHeight(HERO_MIN));
     }).catch(() => setFotoUrl(null));
-  }, [id]);
+  }, [id, idioma]);
 
   // quins textos tenen àudio: es consulta un cop aquí i es passa a cada text,
   // en lloc de fer que cada reproductor s'ho pregunti pel seu compte

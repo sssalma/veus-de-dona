@@ -21,6 +21,11 @@ class Text(Base):
     parada = relationship("Parada", back_populates="textos")
     autora = relationship("Autora", back_populates="textos")
 
+    # the same text in another language, when the project's website publishes one
+    traduccions = relationship(
+        "TextTraduccio", back_populates="text", cascade="all, delete-orphan"
+    )
+
     # composition: recursos belong to this text, if text is deleted, recursos are deleted too
     recursos = relationship("Recurs", back_populates="text", cascade="all, delete-orphan")
 

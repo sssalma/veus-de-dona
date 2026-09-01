@@ -3,6 +3,7 @@ from app.models.parada import Parada, CoordenadesParada
 from app.models.autora import Autora
 from app.models.autora_traduccio import AutoraTraduccio
 from app.models.text import Text
+from app.models.text_traduccio import TextTraduccio
 from app.models.recurs import Recurs, TipusRecurs
 from app.models.visita import Visita, Mode
 from app.models.like import Like

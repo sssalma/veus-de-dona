@@ -32,6 +32,10 @@ export interface TextDto {
   titol: string;
   obra_origen: string | null;
   contingut: string;
+  // En quin idioma van el `titol` i el `contingut`. El web del projecte no
+  // publica totes les obres traduïdes: quan en falta una arriba en català i
+  // ho diu aquí, perquè la targeta ho pugui advertir.
+  contingut_idioma: "CA" | "ES" | "EN";
   youtube_url: string | null;
   parada_id: string;
   autora_id: string;

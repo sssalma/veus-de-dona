@@ -320,8 +320,9 @@ export const ca = {
   "sobre.openError": "No s'ha pogut obrir l'enllaç.",
 
   "autora.bioOriginal": "Aquesta biografia encara no està traduïda. Es mostra l'original en català.",
+  "parada.textOriginal": "Aquesta obra no està traduïda al web del projecte. Es mostra l'original en català.",
   "admin.translations": "Traduccions de la biografia",
-  "admin.translationsDesc": "El català s'edita a dalt. Els textos literaris no es tradueixen: reproduir-los està permès, traduir-los no.",
+  "admin.translationsDesc": "El català s'edita a dalt. Els textos literaris no s'editen aquí: les versions en anglès venen del web del projecte.",
   "admin.translationMissing": "Sense traduir",
   "admin.translationSaved": "Traducció desada",
   "admin.translationError": "No s'ha pogut desar la traducció.",
@@ -652,8 +653,9 @@ export const es: typeof ca = {
   "sobre.openError": "No se ha podido abrir el enlace.",
 
   "autora.bioOriginal": "Esta biografía todavía no está traducida. Se muestra el original en catalán.",
+  "parada.textOriginal": "Esta obra no está traducida en la web del proyecto. Se muestra el original en catalán.",
   "admin.translations": "Traducciones de la biografía",
-  "admin.translationsDesc": "El catalán se edita arriba. Los textos literarios no se traducen: reproducirlos está permitido, traducirlos no.",
+  "admin.translationsDesc": "El catalán se edita arriba. Los textos literarios no se editan aquí: las versiones en inglés vienen de la web del proyecto.",
   "admin.translationMissing": "Sin traducir",
   "admin.translationSaved": "Traducción guardada",
   "admin.translationError": "No se ha podido guardar la traducción.",
@@ -984,8 +986,9 @@ export const en: typeof ca = {
   "sobre.openError": "The link could not be opened.",
 
   "autora.bioOriginal": "This biography has not been translated yet. The Catalan original is shown.",
+  "parada.textOriginal": "This work is not translated on the project website. The Catalan original is shown.",
   "admin.translations": "Biography translations",
-  "admin.translationsDesc": "Catalan is edited above. The literary texts are not translated: reproducing them is allowed, translating them is not.",
+  "admin.translationsDesc": "Catalan is edited above. The literary texts are not edited here: their English versions come from the project website.",
   "admin.translationMissing": "Not translated",
   "admin.translationSaved": "Translation saved",
   "admin.translationError": "The translation could not be saved.",

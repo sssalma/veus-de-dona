@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
 from app.models.text import Text
 from app.models.parada import Parada
+from app.models.usuari import Idioma
 
 def get_all_textos(db: Session):
     """Returns every text, ordered by route order then title.
@@ -37,4 +38,26 @@ def update_text(db: Session, text_id: str, dades: dict) -> Text | None:
         setattr(text, camp, valor)
     db.commit()
     db.refresh(text)
+    return text
+
+def aplica_idioma(text: Text, idioma: Idioma) -> Text:
+    """Deixa a `titol` i `contingut` la versio en l'idioma demanat, si n'hi ha.
+
+    No es desa: nomes es toca l'objecte que ja s'esta a punt de serialitzar.
+    `contingut_idioma` diu en quin idioma ha quedat, perque el client pugui
+    advertir quan ensenya el catala perque l'obra no esta traduida al web del
+    projecte.
+
+    `obra_origen` no es toca: anomena el llibre publicat, que va sortir en
+    catala i es cita pel seu titol.
+    """
+    text.contingut_idioma = Idioma.CA
+    if idioma == Idioma.CA:
+        return text
+    for traduccio in text.traduccions:
+        if traduccio.idioma == idioma:
+            text.titol = traduccio.titol
+            text.contingut = traduccio.contingut
+            text.contingut_idioma = idioma
+            break
     return text

@@ -79,8 +79,9 @@ def update_autora(
 # ---- traduccions de la biografia: nomes edicio ----
 #
 # El catala no te endpoint propi: viu a autora.bio i s'edita amb la resta de la
-# fitxa. Els textos literaris queden fora del multiidioma perque traduir-los
-# seria crear obra derivada sense tenir-ne el dret.
+# fitxa. Les biografies s'editen aqui perque son text propi; les versions dels
+# textos literaris, no: venen del web del projecte i nomes s'hi tornen a llegir
+# (`scripts/scraper_traduccions_textos.py`).
 
 @router.get("/{autora_id}/traduccions", response_model=List[TraduccioAutora])
 def get_traduccions(
