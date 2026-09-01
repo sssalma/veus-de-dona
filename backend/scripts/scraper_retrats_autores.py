@@ -1,34 +1,29 @@
 """
 Retrats de les autores, extrets del web del projecte.
 
-Va en dues fases perque no hi ha manera fiable d'endevinar quina imatge d'una
-pagina es el retrat: n'hi ha de portades de llibre i d'altres coses. La primera
-fase baixa les candidates i la segona puja les que hagin quedat, de manera que
-entremig hi ha una persona mirant-les.
-
-    python -m scripts.scraper_retrats_autores --descarrega
-    (esborrar a ma tot el que no sigui el retrat)
-    python -m scripts.scraper_retrats_autores --puja
+Sense arguments agafa la primera imatge propia de cada pagina i la puja. La
+primera es sempre el retrat: comprovat contra el web l'1-09-2026, i verificat
+imatge a imatge en tres autores, inclos el retrat pintat de la Massanes, que es
+del segle XIX. Es aquesta regla la que permet encadenar-ho amb la resta de la
+carrega, a `scripts/poblar.py`.
 
 Es descarten soles les imatges que surten a mes d'una pagina: son el cromo del
-lloc, no el retrat de ningu. Les que queden van numerades per ordre d'aparicio.
-Comprovat contra el web l'1-09-2026: la primera imatge propia d'una pagina es
-sempre el retrat, de manera que la revisio consisteix a deixar-hi el 01 i
-esborrar la resta. Val la pena mirar-les igualment: son fotografies de persones
-i el web les pot reordenar.
+lloc, no el retrat de ningu.
 
-Aixo s'executa des de la maquina i no dins del contenidor, perque les imatges
-van al disc local. Necessita `backend/.env` apuntant a localhost.
+Si el web es reordena, la regla deixa de valer i el guio pujaria una portada de
+llibre sense dir res. Per aixo hi ha un cami de revisio, en dues fases, que
+baixa totes les candidates al disc perque algu les miri i puja despres la que
+hagi quedat:
 
-Google limita el ritme de descarrega i respon 403 si se li demanen moltes
-imatges seguides, de manera que van d'una en una amb una pausa i amb un parell
-de reintents. Per aixo mateix la descarrega salta les autores que ja tenen
-candidates baixades: si una passada es queda a mitges, la seguent nomes va a
-buscar el que falta.
+    python -m scripts.scraper_retrats_autores              # primera imatge, directe
+    python -m scripts.scraper_retrats_autores --descarrega # totes, a backend/retrats/
+    python -m scripts.scraper_retrats_autores --puja       # la que hagi quedat a cada carpeta
 
-La pujada passa per `autores_service.update_autora_foto()`, el mateix cami que
-fa servir el panell d'edicio, que esborra l'objecte anterior i per tant no
-deixa orfes a MinIO.
+Les dues fases de revisio treballen amb fitxers del disc local i per tant
+s'executen des de la maquina; el cami directe corre igual de be dins del
+contenidor. La pujada sempre passa per `autores_service.update_autora_foto()`,
+el mateix cami que fa servir el panell d'edicio, que esborra l'objecte anterior
+i per tant no deixa orfes a MinIO.
 """
 import argparse
 import os
@@ -123,20 +118,78 @@ def baixa_imatge(url: str, referent: str) -> tuple[bytes, str] | None:
     return None
 
 
-def descarrega() -> int:
+def candidates() -> dict[str, list[str]]:
+    """Les imatges propies de cada pagina, en ordre d'aparicio.
+
+    El cromo del lloc no s'identifica per cap llista fixa: es el que surt a mes
+    d'una pagina. Per aixo cal llegir-les totes abans de decidir res."""
     print(f"Llegint les {len(AUTORES_SLUGS)} pagines...")
     per_pagina = {}
     for slug in AUTORES_SLUGS:
         per_pagina[slug] = imatges_de(slug)
         print(f"  {slug}: {len(per_pagina[slug])} imatges")
 
-    # El que surt a mes d'una pagina es el cromo del lloc, no el retrat.
     aparicions = Counter(url for imatges in per_pagina.values() for url in imatges)
+    return {
+        slug: [url for url in imatges if aparicions[url] == 1]
+        for slug, imatges in per_pagina.items()
+    }
+
+
+def autores_per_slug(db) -> dict:
+    return {normalitza(f"{a.nom} {a.cognom}"): a for a in db.query(Autora).all()}
+
+
+def puja_directe() -> int:
+    """La primera imatge propia de cada pagina, pujada sense passar pel disc."""
+    propies_per_slug = candidates()
+
+    db = SessionLocal()
+    per_nom = autores_per_slug(db)
+
+    pujats = 0
+    avisos = []
+    print()
+    for slug, propies in propies_per_slug.items():
+        if not propies:
+            avisos.append(f"{slug}: cap imatge propia, es queda sense retrat")
+            continue
+
+        autora = per_nom.get(normalitza(slug))
+        if not autora:
+            avisos.append(f"{slug}: no hi ha cap autora que hi correspongui")
+            continue
+
+        imatge = baixa_imatge(propies[0], f"{BASE_URL}/{slug}")
+        if not imatge:
+            avisos.append(f"{slug}: el retrat no s'ha pogut baixar")
+            continue
+
+        contingut, extensio = imatge
+        tipus = next(t for t, e in EXTENSIONS.items() if e == extensio)
+        if autores_service.update_autora_foto(
+            db, str(autora.id), contingut, f"retrat.{extensio}", tipus
+        ):
+            pujats += 1
+            print(f"  {autora.nom} {autora.cognom}: retrat pujat")
+        else:
+            avisos.append(f"{slug}: la pujada ha fallat")
+        time.sleep(1)
+
+    db.close()
+    print()
+    print(f"{pujats} retrats pujats")
+    for avis in avisos:
+        print(f"  AVIS: {avis}")
+    return 0
+
+
+def descarrega() -> int:
+    propies_per_slug = candidates()
 
     total = 0
     print()
-    for slug, imatges in per_pagina.items():
-        propies = [url for url in imatges if aparicions[url] == 1]
+    for slug, propies in propies_per_slug.items():
         desti = os.path.join(CARPETA, slug)
         os.makedirs(desti, exist_ok=True)
 
@@ -171,8 +224,7 @@ def puja() -> int:
         return 1
 
     db = SessionLocal()
-    autores = db.query(Autora).all()
-    per_nom = {normalitza(f"{a.nom} {a.cognom}"): a for a in autores}
+    per_nom = autores_per_slug(db)
 
     pujades = 0
     avisos = []
@@ -223,13 +275,17 @@ def puja() -> int:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[1])
-    grup = parser.add_mutually_exclusive_group(required=True)
+    grup = parser.add_mutually_exclusive_group()
     grup.add_argument("--descarrega", action="store_true",
-                      help="baixa les candidates de cada autora a backend/retrats/")
+                      help="revisio: baixa totes les candidates a backend/retrats/")
     grup.add_argument("--puja", action="store_true",
-                      help="puja la imatge que hagi quedat a cada carpeta")
+                      help="revisio: puja la imatge que hagi quedat a cada carpeta")
     arguments = parser.parse_args()
-    return descarrega() if arguments.descarrega else puja()
+    if arguments.descarrega:
+        return descarrega()
+    if arguments.puja:
+        return puja()
+    return puja_directe()
 
 
 if __name__ == "__main__":
