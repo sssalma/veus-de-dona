@@ -23,7 +23,7 @@ async def pujar_recurs(
         require_rol(RolUsuari.EDITOR, RolUsuari.ADMINISTRADOR)
     )
 ):
-    """Uploads a multimedia file to MinIO - editor/admin only"""
+    """Puja un fitxer a MinIO. Només editor i administració."""
     file_bytes = await file.read()
     recurs = recursos_service.pujar_recurs(
         db,
@@ -45,14 +45,14 @@ def esborrar_recurs(
         require_rol(RolUsuari.EDITOR, RolUsuari.ADMINISTRADOR)
     )
 ):
-    """Deletes a resource from MinIO and PostgreSQL - editor/admin only"""
+    """Esborra un recurs de MinIO i de PostgreSQL. Només editor i administració."""
     deleted = recursos_service.esborrar_recurs(db, recurs_id)
     if not deleted:
         raise HTTPException(status_code=404, detail="Recurs no trobat")
 
 @router.get("/{recurs_id}/url")
 def get_recurs_url(recurs_id: str, db: Session = Depends(get_db)):
-    """Returns a presigned streaming URL for a resource"""
+    """Torna una URL pre-signada per reproduir el recurs."""
     url = recursos_service.get_recurs_url(db, recurs_id)
     if not url:
         raise HTTPException(status_code=404, detail="Recurs no trobat")
@@ -60,5 +60,5 @@ def get_recurs_url(recurs_id: str, db: Session = Depends(get_db)):
 
 @router.get("/text/{text_id}", response_model=List[RecursResponse])
 def get_recursos_by_text(text_id: str, db: Session = Depends(get_db)):
-    """Returns all resources for a given text"""
+    """Torna els recursos d'un text."""
     return recursos_service.get_recursos_by_text(db, text_id)

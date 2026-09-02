@@ -5,7 +5,7 @@ from sqlalchemy.orm import relationship
 from app.database import Base
 import enum
 
-# Python enum for multimedia resource types
+# tipus de recurs multimèdia
 class TipusRecurs(str, enum.Enum):
     AUDIO = "AUDIO"
     VIDEO = "VIDEO"
@@ -15,12 +15,11 @@ class Recurs(Base):
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     tipus = Column(SAEnum(TipusRecurs), nullable=False)
-    # minio_key stores the object key within the bucket
-    # URL is constructed at runtime: MINIO_URL/MINIO_BUCKET/minio_key
+    # clau de l'objecte dins del bucket; la URL es construeix en cada petició
     minio_key = Column(String, nullable=False)
 
-    # foreign key - recurs belongs to one text (composition)
+    # clau forana: el recurs pertany a un text (composició)
     text_id = Column(UUID(as_uuid=True), ForeignKey("text.id"), nullable=False)
 
-    # relationship
+    # relació
     text = relationship("Text", back_populates="recursos")

@@ -3,10 +3,6 @@ import { Ionicons } from "@expo/vector-icons";
 import { COLORS, FONTS } from "../../constants";
 import { useLanguage } from "../../contexts/LanguageContext";
 
-/**
- * Icones d'Ionicons, la família que fa servir la resta de l'app. Agafen el
- * color que dona la barra, de manera que la pestanya activa es distingeix.
- */
 export default function TabsLayout() {
   const { t } = useLanguage();
 

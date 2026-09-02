@@ -9,10 +9,8 @@ class ComentariCreate(BaseModel):
 class ComentariResponse(BaseModel):
     """Un comentari tal com el retorna l'API.
 
-    `usuari_cognom` i `usuari_id` només s'omplen per a qui té rol d'editor o
-    d'administrador. Per a un visitant anònim arriben buits: el llistat de
-    comentaris d'una parada és públic i no cal exposar-hi el cognom ni
-    l'identificador de qui hi ha escrit. Els comentaris queden signats amb el
+    `usuari_cognom` i `usuari_id` només s'omplen per a editors i administració.
+    El llistat d'una parada és públic i els comentaris hi van signats amb el
     nom de pila.
     """
     id: UUID

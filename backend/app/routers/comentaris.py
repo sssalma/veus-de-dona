@@ -26,7 +26,7 @@ def get_tots_els_comentaris(
         require_rol(RolUsuari.EDITOR, RolUsuari.ADMINISTRADOR)
     )
 ):
-    """Lists all comments across all stops, for moderation - editor/admin only"""
+    """Tots els comentaris de totes les parades, per moderar-los. Només editor i administració."""
     return comentaris_service.get_all_comentaris(db)
 
 @router.post("/", response_model=ComentariResponse, status_code=201)
@@ -35,7 +35,7 @@ def afegir_comentari(
     db: Session = Depends(get_db),
     current_user: Usuari = Depends(get_current_user)
 ):
-    """Adds a comment to a stop"""
+    """Afegeix un comentari a una parada."""
     comentari = comentaris_service.afegir_comentari(
         db,
         current_user,
@@ -45,8 +45,8 @@ def afegir_comentari(
     if not comentari:
         raise HTTPException(status_code=404, detail="Parada no trobada")
 
-    # es retorna amb la mateixa forma amb què el visitant el veurà al llistat,
-    # perquè el comentari acabat d'escriure no aparegui signat diferent
+    # amb la mateixa forma que tindrà al llistat, perquè no aparegui signat
+    # diferent del que s'acaba d'escriure
     if current_user.rol in (RolUsuari.EDITOR, RolUsuari.ADMINISTRADOR):
         return comentari
     return _amaga_dades_personals(comentari)
@@ -59,7 +59,7 @@ def eliminar_comentari(
         require_rol(RolUsuari.EDITOR, RolUsuari.ADMINISTRADOR)
     )
 ):
-    """Deletes a comment - editor/admin only"""
+    """Esborra un comentari. Només editor i administració."""
     deleted = comentaris_service.eliminar_comentari(db, comentari_id)
     if not deleted:
         raise HTTPException(status_code=404, detail="Comentari no trobat")
@@ -73,7 +73,7 @@ def respondre_comentari(
         require_rol(RolUsuari.EDITOR, RolUsuari.ADMINISTRADOR)
     )
 ):
-    """Replies to a comment - editor/admin only"""
+    """Respon un comentari. Només editor i administració."""
     comentari = comentaris_service.respondre_comentari(
         db, comentari_id, resposta_data.resposta_editor
     )
@@ -87,10 +87,9 @@ def get_comentaris(
     db: Session = Depends(get_db),
     current_user: Usuari | None = Depends(get_current_user_optional)
 ):
-    """Returns all comments for a stop. Public, so anyone can read them without
-    an account - but the author's surname and id are only included for editors
-    and administrators, who need them to moderate. For everyone else the
-    comments are signed with the first name only."""
+    """Torna els comentaris d'una parada. És públic, però el cognom i
+    l'identificador de qui escriu només s'inclouen per a editors i
+    administració, que els necessiten per moderar."""
     comentaris = comentaris_service.get_comentaris_by_parada(db, parada_id)
 
     pot_moderar = current_user is not None and current_user.rol in (

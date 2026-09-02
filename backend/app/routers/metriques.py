@@ -15,7 +15,7 @@ def get_metriques_global(
     db: Session = Depends(get_db),
     current_user: Usuari = Depends(require_rol(RolUsuari.EDITOR, RolUsuari.ADMINISTRADOR))
 ):
-    """Global aggregate metrics - editor/admin only"""
+    """Xifres globals d'ús. Només editor i administració."""
     return metriques_service.get_metriques_global(db)
 
 @router.get("/parades")
@@ -23,5 +23,5 @@ def get_metriques_parades(
     db: Session = Depends(get_db),
     current_user: Usuari = Depends(require_rol(RolUsuari.EDITOR, RolUsuari.ADMINISTRADOR))
 ):
-    """Per-stop breakdown metrics - editor/admin only"""
+    """Desglossament parada per parada. Només editor i administració."""
     return metriques_service.get_metriques_parades(db)

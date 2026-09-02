@@ -77,7 +77,7 @@ def test_me_amb_token_invalid_falla(client):
     assert resp.status_code == 401
 
 
-# ---- password policy (enforced server-side, not only in the app) ----
+# ---- política de contrasenya (la imposa el servidor, no només l'app) ----
 
 def test_registre_amb_contrasenya_curta_falla(client):
     resp = client.post("/auth/register", json={
@@ -99,7 +99,7 @@ def test_registre_amb_nom_buit_falla(client):
     assert resp.status_code == 422
 
 
-# ---- self-service profile ----
+# ---- perfil, autoservei ----
 
 def test_usuari_pot_actualitzar_el_seu_perfil(client, auth_headers, visitant):
     resp = client.patch(
@@ -110,7 +110,7 @@ def test_usuari_pot_actualitzar_el_seu_perfil(client, auth_headers, visitant):
     assert resp.status_code == 200
     assert resp.json()["nom"] == "Nom Nou"
     assert resp.json()["procedencia"] == "Reus"
-    # unchanged fields stay as they were
+    # els camps que no s'envien es queden com estaven
     assert resp.json()["cognom"] == visitant.cognom
 
 
@@ -121,7 +121,7 @@ def test_actualitzar_perfil_no_permet_canviar_el_rol(client, auth_headers, visit
         headers=auth_headers(visitant),
     )
     assert resp.status_code == 200
-    # the field is simply not part of the schema, so it is ignored
+    # el camp no forma part de l'esquema i s'ignora
     assert resp.json()["rol"] == "VISITANT"
 
 
@@ -130,7 +130,7 @@ def test_actualitzar_perfil_sense_token_falla(client):
     assert resp.status_code == 401
 
 
-# ---- password change ----
+# ---- canvi de contrasenya ----
 
 def test_canvi_de_contrasenya_correcte(client, auth_headers, visitant):
     resp = client.post(
@@ -140,7 +140,7 @@ def test_canvi_de_contrasenya_correcte(client, auth_headers, visitant):
     )
     assert resp.status_code == 204
 
-    # the old password no longer works and the new one does
+    # l'antiga ja no serveix i la nova sí
     assert client.post("/auth/login", json={
         "email": visitant.email, "password": "Testpass123!",
     }).status_code == 401
@@ -156,7 +156,7 @@ def test_canvi_de_contrasenya_amb_actual_incorrecta_falla(client, auth_headers, 
         headers=auth_headers(visitant),
     )
     assert resp.status_code == 401
-    # the original password still works
+    # l'original segueix servint
     assert client.post("/auth/login", json={
         "email": visitant.email, "password": "Testpass123!",
     }).status_code == 200

@@ -5,7 +5,7 @@ from sqlalchemy.orm import relationship
 from app.database import Base
 import enum
 
-# Python enum for GPS coordinates of the 10 fixed route stops
+# les 10 parades fixes de la ruta
 class CoordenadesParada(str, enum.Enum):
     BALCO_MEDITERRANI  = "BALCO_MEDITERRANI"
     AMFITEATRE         = "AMFITEATRE"
@@ -18,10 +18,8 @@ class CoordenadesParada(str, enum.Enum):
     CARRER_MAJOR       = "CARRER_MAJOR"
     PLACA_FONT         = "PLACA_FONT"
 
-# GPS coordinates for each stop - immutable at application level
-# Verified against real-world locations (Google Maps/Wikidata), 2026-07-25.
-# Previous values here were ~1.2-1.5km off (drifted west); frontend's data/parades.ts
-# had the accurate values, which have been adopted as the single source of truth.
+# Coordenades de cada parada, fixes a l'aplicació. Contrastades amb la
+# ubicació real de cada espai.
 COORDENADES_GPS = {
     CoordenadesParada.BALCO_MEDITERRANI:  (41.1138851, 1.256671),
     CoordenadesParada.AMFITEATRE:         (41.1153354, 1.25851),
@@ -45,7 +43,7 @@ class Parada(Base):
     foto_minio_key = Column(String, nullable=True)
     activa = Column(Boolean, default=True, nullable=False)
 
-    # composition: texts and visits belong to this stop
+    # composició: els textos i les visites pertanyen a la parada
     textos = relationship("Text", back_populates="parada", cascade="all, delete-orphan")
     visites = relationship("Visita", back_populates="parada")
     comentaris = relationship("Comentari", back_populates="parada")

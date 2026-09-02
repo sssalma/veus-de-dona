@@ -14,9 +14,8 @@ export default function AutoresScreen() {
   const [autores, setAutores] = useState<Autora[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // La targeta ensenya les dues primeres linies de la biografia, de manera que
-  // la llista tambe ha de demanar-la en l'idioma de la interficie. Amb l'idioma
-  // a les dependencies es torna a demanar sola quan es canvia.
+  // La targeta ensenya les primeres línies de la biografia: cal demanar-la en
+  // l'idioma de la interfície i tornar-hi quan canvia.
   useEffect(() => {
     getAutores(idioma)
       .then(setAutores)

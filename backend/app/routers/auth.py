@@ -16,8 +16,8 @@ router = APIRouter(
 
 @router.post("/register", response_model=UsuariResponse, status_code=201)
 def register(usuari_data: UsuariCreate, db: Session = Depends(get_db)):
-    """Registers a new user with VISITANT role"""
-    # check if email already exists
+    """Registra un compte nou amb rol VISITANT."""
+    # el correu ja existeix?
     if auth_service.get_usuari_by_email(db, usuari_data.email):
         raise HTTPException(
             status_code=400,
@@ -27,7 +27,7 @@ def register(usuari_data: UsuariCreate, db: Session = Depends(get_db)):
 
 @router.post("/login", response_model=Token)
 def login(credentials: UsuariLogin, db: Session = Depends(get_db)):
-    """Validates credentials and returns JWT token"""
+    """Valida les credencials i torna un testimoni JWT."""
     token = auth_service.login_usuari(db, credentials.email, credentials.password)
     if not token:
         raise HTTPException(
@@ -39,7 +39,7 @@ def login(credentials: UsuariLogin, db: Session = Depends(get_db)):
 
 @router.get("/me", response_model=UsuariResponse)
 def get_me(current_user: Usuari = Depends(auth_service.get_current_user)):
-    """Returns the authenticated user's data"""
+    """Torna les dades de qui té la sessió oberta."""
     return current_user
 
 @router.patch("/me", response_model=UsuariResponse)
@@ -48,7 +48,7 @@ def update_me(
     db: Session = Depends(get_db),
     current_user: Usuari = Depends(auth_service.get_current_user)
 ):
-    """Updates the authenticated user's own profile fields"""
+    """Actualitza el perfil de qui té la sessió oberta."""
     return usuaris_service.update_perfil(
         db, current_user, dades.model_dump(exclude_unset=True)
     )
@@ -59,7 +59,7 @@ def canvi_contrasenya(
     db: Session = Depends(get_db),
     current_user: Usuari = Depends(auth_service.get_current_user)
 ):
-    """Changes the authenticated user's own password"""
+    """Canvia la contrasenya de qui té la sessió oberta."""
     ok = auth_service.canviar_password(
         db, current_user, dades.password_actual, dades.password_nova
     )

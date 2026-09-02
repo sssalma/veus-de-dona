@@ -1,4 +1,4 @@
-"""Upload MP3 audio files to MinIO and create Recurs records in PostgreSQL."""
+"""Puja els MP3 de les lectures a MinIO i en desa els Recursos."""
 import sys
 import os
 import uuid
@@ -16,7 +16,7 @@ AUDIO_DIR = os.path.join(
     "AUDIOS_TFG",
 )
 
-# Map each MP3 filename -> (author full name, text title)
+# nom del fitxer -> (nom complet de l'autora, títol del text)
 MAPPING = {
     "Retorn.mp3": ("Montserrat Abelló i Soler", "Retorn"),
     "Fragment de Música de cambra - Olga Xirinacs.mp3": (

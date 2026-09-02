@@ -25,9 +25,7 @@ export default function EditarText() {
   const [obraOrigen, setObraOrigen] = useState("");
   const [contingut, setContingut] = useState("");
   const [youtubeUrl, setYoutubeUrl] = useState("");
-  // Recursos d'àudio vinculats al text. L'API ja ho permetia (POST i DELETE
-  // /recursos) però no hi havia cap pantalla: els àudios de la ruta només es
-  // podien carregar amb l'script seed_audios.py.
+  // Recursos d'àudio vinculats al text.
   const [recursos, setRecursos] = useState<Recurs[]>([]);
   const [pujantAudio, setPujantAudio] = useState(false);
 

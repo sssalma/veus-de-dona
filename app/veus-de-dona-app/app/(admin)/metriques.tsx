@@ -16,13 +16,8 @@ import { getMetriquesGlobal, getMetriquesParades } from "../../services/metrique
 import { MetriquesGlobal, MetriquesParada } from "../../types";
 
 /**
- * Pantalla de mètriques.
- *
- * Recull tot el que es pot saber de l'ús de la ruta: primer les xifres
- * globals i després el desglossament parada per parada.
- *
- * Els noms dels modes i dels rols es tradueixen; no s'ensenya mai el valor de
- * l'enum tal com arriba del servidor.
+ * Mètriques d'ús de la ruta: primer les xifres globals i després el
+ * desglossament parada per parada.
  */
 export default function Metriques() {
   const router = useRouter();
@@ -54,8 +49,7 @@ export default function Metriques() {
     Object.values(p.visites_per_mode).reduce((a, b) => a + b, 0);
 
   const totalVisites = parades.reduce((acc, p) => acc + visitesDeParada(p), 0);
-  // Referència per a l'amplada de les barres. El mínim d'1 evita dividir per
-  // zero quan encara no hi ha cap visita registrada.
+  // Referència per a l'amplada de les barres. El mínim d'1 evita dividir per zero.
   const maxVisites = Math.max(1, ...parades.map(visitesDeParada));
 
   return (
@@ -161,20 +155,15 @@ export default function Metriques() {
                   <View style={{ gap: 10, marginTop: 12 }}>
                     {parades.map((p) => {
                       const visites = visitesDeParada(p);
-                      // La targeta es llegeix com un sol element: agrupar-ho
-                      // evita que un lector de pantalla hagi de recórrer les
-                      // xifres soltes una per una.
+                      // La targeta es llegeix com un sol element, per no fer
+                      // recórrer les xifres soltes al lector de pantalla.
                       const resum =
                         `${p.ordre}. ${p.nom_espai}: ` +
                         `${visites} ${t("admin.visits")}, ` +
                         `${p.likes} ${t("admin.likes")}, ${p.comentaris} ${t("admin.comments")}`;
                       return (
-                        // Mirar una xifra fluixa i voler obrir la parada és el
-                        // moviment natural des d'aquí. Porta a la pantalla
-                        // d'edició -no a la fitxa pública- perquè és on es pot
-                        // fer alguna cosa amb el que acabes de veure, i perquè
-                        // editar parades ja el poden fer els dos rols que
-                        // arriben a aquesta pantalla.
+                        // Porta a la pantalla d'edició de la parada, que és
+                        // on es pot actuar sobre el que s'acaba de veure.
                         <TouchableOpacity
                           key={p.parada_id}
                           accessibilityRole="button"

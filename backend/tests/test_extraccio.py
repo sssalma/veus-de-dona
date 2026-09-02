@@ -1,7 +1,7 @@
-"""Unit tests for the two extraction criteria used when loading the authors.
+"""Proves unitàries dels dos criteris d'extracció de la càrrega d'autores.
 
-Both functions are pure - a string in, a string out - so they are tested
-directly, without the network, the scraper or the database.
+Les dues funcions són pures -entra una cadena i en surt una altra-, de manera
+que es proven directament, sense xarxa, sense el scraper i sense base de dades.
 """
 from scripts.scraper_autores import extreure_anys_vida, partir_nom
 
@@ -9,7 +9,7 @@ from scripts.scraper_autores import extreure_anys_vida, partir_nom
 # --------------------------------------------------------------- partir_nom
 
 def test_cognom_compost_amb_nom_compost():
-    # taking the first word as the given name would file her under "A"
+    # agafant la primera paraula com a nom, quedaria arxivada per la "A"
     assert partir_nom("Maria Aurèlia Capmany i Farnés") == (
         "Maria Aurèlia",
         "Capmany i Farnés",
@@ -31,12 +31,12 @@ def test_nom_dun_sol_mot_deixa_el_cognom_buit():
 # -------------------------------------------------------- extreure_anys_vida
 
 def test_parentesi_que_obre_la_biografia():
-    # the name has already been stripped, so the parenthesis opens the text
+    # el nom ja s'ha tret, així que el parèntesi obre el text
     assert extreure_anys_vida("(1918-2014) Poetessa i traductora.") == "1918-2014"
 
 
 def test_ignora_els_parentesis_enmig_de_la_prosa():
-    # "Ed. Empúries, 2006" is an edition footer, not a life span
+    # "Ed. Empúries, 2006" és el peu d'edició, no uns anys de vida
     bio = "Va publicar diversos reculls de poemes (Ed. Empúries, 2006)."
     assert extreure_anys_vida(bio) == ""
 

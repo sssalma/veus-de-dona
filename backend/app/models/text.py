@@ -13,21 +13,21 @@ class Text(Base):
     contingut = Column(String, nullable=False)
     youtube_url = Column(String, nullable=True)
 
-    # foreign keys - text belongs to one parada and one autora
+    # claus foranes: el text pertany a una parada i a una autora
     parada_id = Column(UUID(as_uuid=True), ForeignKey("parada.id"), nullable=False)
     autora_id = Column(UUID(as_uuid=True), ForeignKey("autora.id"), nullable=False)
 
-    # relationships
+    # relacions
     parada = relationship("Parada", back_populates="textos")
     autora = relationship("Autora", back_populates="textos")
 
-    # the same text in another language, when the project's website publishes one
+    # el mateix text en un altre idioma, quan el web del projecte el publica
     traduccions = relationship(
         "TextTraduccio", back_populates="text", cascade="all, delete-orphan"
     )
 
-    # composition: recursos belong to this text, if text is deleted, recursos are deleted too
+    # composició: esborrar el text esborra els seus recursos
     recursos = relationship("Recurs", back_populates="text", cascade="all, delete-orphan")
 
-    # associative classes
+    # classes associatives
     likes = relationship("Like", back_populates="text")

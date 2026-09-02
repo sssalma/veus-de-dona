@@ -72,7 +72,7 @@ def test_editor_no_pot_canviar_rol(client, auth_headers, editor, visitant):
     assert resp.status_code == 403
 
 
-# ---- an admin must not be able to lock themselves out ----
+# ---- l'administració no s'ha de poder tancar fora ----
 
 def test_admin_no_pot_desactivar_el_seu_propi_compte(client, auth_headers, admin):
     resp = client.patch(
@@ -104,7 +104,7 @@ def test_admin_si_pot_desactivar_un_altre_compte(client, auth_headers, admin, vi
     assert resp.json()["actiu"] is False
 
 
-# ---- an administrator sets a new password for someone locked out ----
+# ---- l'administració assigna una contrasenya nova a qui ha perdut l'accés ----
 
 def test_admin_pot_assignar_contrasenya_i_l_usuari_hi_entra(
     client, auth_headers, admin, visitant
@@ -116,7 +116,7 @@ def test_admin_pot_assignar_contrasenya_i_l_usuari_hi_entra(
     )
     assert resp.status_code == 204
 
-    # el que importa: amb la nova s'hi entra de debo
+    # el que importa: amb la nova s'hi entra de debò
     login = client.post(
         "/auth/login",
         json={"email": visitant.email, "password": "novaContrasenya1"},

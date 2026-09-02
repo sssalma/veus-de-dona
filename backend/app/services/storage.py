@@ -3,7 +3,7 @@ from botocore.client import Config
 from botocore.exceptions import ClientError
 from app.config import settings
 
-# MinIO client using S3-compatible API
+# client de MinIO, per API compatible amb S3
 def get_minio_client():
     return boto3.client(
         "s3",
@@ -18,7 +18,7 @@ _bucket_ready = False
 
 
 def ensure_bucket(client) -> None:
-    """MinIO starts with no buckets: create ours the first time we need it."""
+    """MinIO arrenca sense cap bucket: es crea el nostre el primer cop que cal."""
     global _bucket_ready
     if _bucket_ready:
         return
@@ -30,7 +30,7 @@ def ensure_bucket(client) -> None:
 
 
 def upload_file(file_bytes: bytes, minio_key: str, content_type: str) -> bool:
-    """Uploads a file to MinIO, returns True if successful"""
+    """Puja un fitxer a MinIO; True si ha anat bé."""
     try:
         client = get_minio_client()
         ensure_bucket(client)
@@ -45,7 +45,7 @@ def upload_file(file_bytes: bytes, minio_key: str, content_type: str) -> bool:
         return False
 
 def delete_file(minio_key: str) -> bool:
-    """Deletes a file from MinIO, returns True if successful"""
+    """Esborra un fitxer de MinIO; True si ha anat bé."""
     try:
         client = get_minio_client()
         client.delete_object(
@@ -57,7 +57,7 @@ def delete_file(minio_key: str) -> bool:
         return False
 
 def get_file_url(minio_key: str, expires_in: int = 3600) -> str | None:
-    """Generates a presigned URL for streaming, valid for 1 hour by default"""
+    """Genera una URL pre-signada, vàlida una hora per defecte."""
     try:
         client = get_minio_client()
         url = client.generate_presigned_url(

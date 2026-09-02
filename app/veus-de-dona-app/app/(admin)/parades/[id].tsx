@@ -87,8 +87,7 @@ export default function EditarParada() {
     }
   };
 
-  // Aquest canvi es desa tot sol, sense passar pel botó de desar: és una
-  // acció sobre la visibilitat de la parada, no una edició del formulari.
+  // Es desa tot sol, sense passar pel botó de desar.
   const handleToggleActiva = async (valor: boolean) => {
     setActiva(valor);
     try {

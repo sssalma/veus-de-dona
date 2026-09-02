@@ -1,8 +1,8 @@
-"""Unit tests for the translation fallback.
+"""Proves unitàries del recurs a l'original quan no hi ha traducció.
 
-`aplica_idioma` takes an author and a language and returns the author with the
-bio in that language, or the original when there is no translation. It touches
-no database: the objects are built in memory.
+`aplica_idioma` rep una autora i un idioma i torna l'autora amb la biografia en
+aquell idioma, o l'original si no n'hi ha. No toca la base de dades: els
+objectes es construeixen en memòria.
 """
 from app.models.autora import Autora
 from app.models.autora_traduccio import AutoraTraduccio
@@ -30,7 +30,7 @@ def test_amb_traduccio_substitueix_la_biografia():
 
 
 def test_sense_traduccio_cau_a_loriginal_i_ho_marca():
-    # the client needs to know it is showing Catalan for want of a translation
+    # el client ha de saber que ensenya el català per manca de traducció
     autora = aplica_idioma(_autora(), Idioma.EN)
     assert autora.bio == "Biografia en català."
     assert autora.bio_idioma == Idioma.CA

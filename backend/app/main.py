@@ -3,17 +3,14 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.routers import parades, autores, textos, auth, visites, likes, comentaris, recursos, usuaris, metriques
 
-# FastAPI instance with API metadata for auto-generated Swagger docs
 app = FastAPI(
     title="Veus de Dona API",
     description="API per a la ruta literària de les 13 escriptores per la Part Alta de Tarragona",
     version="0.1.0"
 )
-# allow requests from any origin (React Native app)
-# allow_credentials=False perquè l'autenticació va per capçalera Bearer, no per
-# cookies: amb credencials activades, allow_origins=["*"] no és una combinació
-# vàlida segons l'especificació CORS i els navegadors la rebutgen.
-# PER CANVIAR EN PRODUCCIÓ: restringir allow_origins a domini específic
+# Origen obert perquè l'app hi arriba des de qualsevol IP de la xarxa local.
+# allow_credentials=False perquè l'autenticació va per capçalera Bearer i no per
+# cookies: amb credencials, allow_origins=["*"] no és vàlid segons la CORS.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -22,7 +19,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# register routers
 app.include_router(parades.router)
 app.include_router(autores.router)
 app.include_router(textos.router)
@@ -35,7 +31,6 @@ app.include_router(usuaris.router)
 app.include_router(metriques.router)
 
 
-# health check endpoint
 @app.get("/")
 def root():
     return {"missatge": "Veus de Dona API funcionant"}

@@ -10,20 +10,9 @@ import { getParades } from "../services/parades";
 import { Parada, TextDto } from "../types";
 
 /**
- * Els textos que a algú li han agradat, reunits.
- *
- * El "m'agrada" es desava des del primer dia però no es podia recuperar: es
- * marcava un poema i no es tornava a trobar si no es recordava a quina parada
- * era. Aquesta pantalla el converteix en una antologia que es va fent sola, i
- * és el que un compte afegeix a qui només consulta.
- *
- * Van del més recent al més antic, que és l'ordre en què es va construint una
- * antologia, i no per ordre de ruta: aquí no es recorre res.
- *
- * Cada entrada porta a la parada del text i no al text sol, perquè un poema
- * d'aquesta ruta es llegeix al lloc que li pertoca. El nom de la parada no ve
- * amb el text -la resposta només en porta l'identificador-, de manera que es
- * creua amb les parades igual com fa la fitxa de l'autora.
+ * Els textos marcats amb "m'agrada", del més recent al més antic. Cada entrada
+ * porta a la parada del text; el nom de la parada no ve amb el text, així que
+ * es creua amb la llista de parades.
  */
 export default function PreferitsScreen() {
   const router = useRouter();

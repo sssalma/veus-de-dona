@@ -19,24 +19,12 @@ interface TextCardProps {
 }
 
 /**
- * Un text de la ruta, amb tot el que li pertany.
+ * Un text de la ruta amb el seu àudio, el vídeo i el "m'agrada". Tota la
+ * targeta obre i tanca, i per això l'enllaç a l'autora viu al peu del text
+ * obert i no a la capçalera.
  *
- * L'àudio, el vídeo i el "m'agrada" són característiques del text concret, no
- * de la parada, i per això viuen aquí dins i es pleguen amb ell. Quan el text
- * està plegat només se n'anuncia l'existència amb indicadors passius.
- *
- * Repartiment dins del text obert:
- *   - a dalt, l'àudio: s'engega i s'acompanya la lectura
- *   - a baix, les reaccions: ja s'ha llegit el text
- *
- * Tota la targeta obre i tanca. Com que la capçalera és el disparador, el nom
- * de l'autora no pot ser alhora l'enllaç a la seva fitxa: l'enllaç viu al peu
- * del text obert.
- *
- * Accessibilitat: el contenidor tàctil es marca com a no accessible perquè no
- * absorbeixi els fills -si fos un sol element, el lector de pantalla no
- * arribaria ni al poema ni als botons-. Qui fa de botó anunciat és la
- * capçalera, que porta el rol, l'estat i el resum del que conté el text.
+ * El contenidor tàctil es marca com a no accessible perquè no absorbeixi els
+ * fills: qui fa de botó anunciat és la capçalera, amb el rol i l'estat.
  */
 export default function TextCard({
   text,

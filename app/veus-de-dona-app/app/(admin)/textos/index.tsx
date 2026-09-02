@@ -21,9 +21,8 @@ export default function AdminTextos() {
   useFocusEffect(
     useCallback(() => {
       setLoading(true);
-      // El servidor ja retorna els textos ordenats per ordre de ruta, però
-      // `TextResponse` només porta el `parada_id`: per posar-hi el nom de la
-      // parada al capdamunt de cada grup cal creuar-ho amb les parades.
+      // El text només porta el `parada_id`: cal creuar-ho amb les parades per
+      // posar el nom de la parada al capdamunt de cada grup.
       Promise.all([getAllTextos(), getTotesLesParades()])
         .then(([t, p]) => {
           setTextos(t);
@@ -42,9 +41,7 @@ export default function AdminTextos() {
   const grups = useMemo(() => {
     const perId = new Map(parades.map((p) => [p.id, p]));
 
-    // Es respecta l'ordre en què arriben els textos -que ja és el de la ruta-
-    // en comptes de reordenar aquí: així la pantalla no pot discrepar del
-    // criteri del servidor si algun dia canvia.
+    // Es respecta l'ordre en què arriben els textos, que ja és el de la ruta.
     const ordre: string[] = [];
     const perParada = new Map<string, TextDto[]>();
 

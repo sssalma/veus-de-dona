@@ -15,8 +15,7 @@ export async function getTextosByAutora(autoraId: string, idioma?: string): Prom
   return data;
 }
 
-// Sense idioma: aquestes dues serveixen el panell d'edició, on s'edita
-// l'original en català. Rebre-hi una traducció seria desar-la a sobre.
+// Sense idioma: serveixen el panell d'edició, que edita l'original en català.
 export async function getText(id: string): Promise<TextDto> {
   const { data } = await api.get(`/textos/${id}`);
   return data;

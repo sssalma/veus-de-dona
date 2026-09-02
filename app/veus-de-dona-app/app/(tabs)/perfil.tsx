@@ -22,17 +22,13 @@ const LOCALE_PER_IDIOMA: Record<string, string> = {
 };
 
 /**
- * El perfil com a diari de la ruta.
- *
- * En lloc d'una llista de preferències, la pantalla explica el recorregut de
- * qui la mira: quantes parades porta, de quina manera les ha fet, quina li toca
- * ara i quan va passar per cadascuna. Les preferències hi són, però al final,
- * perquè no són el motiu pel qual s'obre aquesta pantalla.
+ * El perfil: el recorregut de qui el mira -quantes parades porta, de quina
+ * manera i quan- i, al final, les preferències i el compte.
  */
 export default function PerfilScreen() {
   const router = useRouter();
-  // Tots els hooks abans de qualsevol return condicional: si un queda per sota,
-  // el nombre de hooks canvia entre renders i React llança un error.
+  // Tots els hooks abans de qualsevol return condicional: si no, el nombre de
+  // hooks canvia entre renders i React llança un error.
   const insets = useSafeAreaInsets();
   const { user, isAuthenticated, isLoading, logout } = useAuth();
   const { t, idioma, canviarIdioma } = useLanguage();
@@ -161,7 +157,7 @@ export default function PerfilScreen() {
         </View>
 
         {!isAuthenticated ? (
-          /* ---------- convidada: una invitació, no un perfil buit ---------- */
+          /* ---------- sense sessió: invitació a registrar-se ---------- */
           <View style={{ paddingHorizontal: 18, gap: 14 }}>
             <View
               style={{

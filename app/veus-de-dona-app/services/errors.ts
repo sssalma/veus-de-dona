@@ -1,15 +1,7 @@
 /**
- * Extreu un missatge llegible d'un error de l'API.
- *
- * El `detail` que retorna FastAPI no sempre té la mateixa forma:
- *
- *   - Els errors que llancem nosaltres amb `HTTPException` porten un text:
- *     `{"detail": "Credencials incorrectes"}`
- *   - Els errors de validació de Pydantic (422) porten una llista d'objectes:
- *     `{"detail": [{"loc": [...], "msg": "value is not a valid email address"}]}`
- *
- * Passar la segona forma a `Alert.alert()` fa caure l'aplicació, perquè espera
- * una cadena. Aquesta funció normalitza els dos casos i retorna sempre text.
+ * Extreu un missatge llegible d'un error de l'API. El `detail` de FastAPI és
+ * un text als errors propis i una llista d'objectes als 422 de Pydantic;
+ * `Alert.alert()` cau si li arriba la llista, així que aquí sempre surt text.
  */
 export function missatgeError(err: any, perDefecte: string): string {
   const detail = err?.response?.data?.detail;
@@ -32,12 +24,8 @@ export function missatgeError(err: any, perDefecte: string): string {
 }
 
 /**
- * Comprovació de format mínima abans d'enviar el correu al servidor.
- *
- * El servidor el torna a validar amb `EmailStr` -aquesta funció no el
- * substitueix-, però si deixem que hi arribi un correu mal escrit, la resposta
- * és un 422 amb el text de validació de Pydantic en anglès. Comprovant-ho aquí
- * l'usuari rep el missatge en el seu idioma.
+ * Comprovació de format del correu abans d'enviar-lo. El servidor el torna a
+ * validar amb `EmailStr`; comprovar-ho aquí evita un 422 amb text en anglès.
  */
 export function correuSemblaValid(correu: string): boolean {
   return /^[^\s@]+@[^\s@.]+(\.[^\s@.]+)+$/.test(correu.trim());

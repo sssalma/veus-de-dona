@@ -4,8 +4,8 @@ import uuid
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-# must be set before any `app.*` module is imported, since app/config.py
-# reads them at import time
+# cal definir-les abans d'importar cap mòdul d'`app`: app/config.py les llegeix
+# en importar-se
 os.environ["DATABASE_URL"] = "postgresql://admin:admin1234@localhost:5432/veusdedona_test"
 os.environ.setdefault("MINIO_URL", "http://localhost:9000")
 os.environ.setdefault("MINIO_ACCESS_KEY", "minioadmin")
@@ -19,7 +19,7 @@ from sqlalchemy.orm import sessionmaker
 from fastapi.testclient import TestClient
 
 from app.database import Base, get_db
-import app.models  # noqa: F401 - registers every model on Base.metadata
+import app.models  # noqa: F401 - registra tots els models a Base.metadata
 from app.main import app
 from app.models.usuari import Usuari, RolUsuari, Idioma
 from app.models.parada import Parada, CoordenadesParada
@@ -31,18 +31,18 @@ TEST_DATABASE_URL = os.environ["DATABASE_URL"]
 engine = create_engine(TEST_DATABASE_URL)
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-# bcrypt hashing is slow (~200ms) - compute the one password hash tests need
-# a single time for the whole run instead of once per user fixture
+# bcrypt és lent (~200 ms): el hash es calcula un sol cop per a tota la
+# passada, no un per cada compte de prova
 TEST_PASSWORD = "Testpass123!"
 TEST_PASSWORD_HASH = hash_password(TEST_PASSWORD)
 
 
 @pytest.fixture(scope="session")
 def setup_database():
-    """Creates all tables once for the test DB, drops them at the end of the run.
+    """Crea les taules de la BD de proves i les esborra en acabar.
 
-    Not autouse: the unit tests for the pure functions (distance, name and
-    life-span extraction) must run without a database at all."""
+    No és autouse: les proves de les funcions pures (distància, extracció del
+    nom i dels anys de vida) han de poder passar sense cap base de dades."""
     Base.metadata.create_all(bind=engine)
     yield
     Base.metadata.drop_all(bind=engine)
@@ -50,8 +50,8 @@ def setup_database():
 
 @pytest.fixture()
 def db_session(setup_database):
-    """Each test runs inside a transaction that's rolled back at the end,
-    so tests never see each other's data regardless of execution order"""
+    """Cada prova va dins d'una transacció que es desfa en acabar, de manera
+    que cap prova no veu les dades d'una altra."""
     connection = engine.connect()
     transaction = connection.begin()
     session = TestingSessionLocal(bind=connection)
@@ -73,7 +73,7 @@ def db_session(setup_database):
 
 @pytest.fixture()
 def client(db_session):
-    """TestClient wired to the per-test transactional session"""
+    """TestClient lligat a la sessió transaccional de cada prova."""
     def override_get_db():
         yield db_session
 
@@ -123,7 +123,7 @@ def _token_for(usuari: Usuari) -> str:
 
 @pytest.fixture()
 def auth_headers():
-    """Usage: client.get(url, headers=auth_headers(some_user))"""
+    """Ús: client.get(url, headers=auth_headers(un_usuari))"""
     def _make(usuari: Usuari) -> dict:
         return {"Authorization": f"Bearer {_token_for(usuari)}"}
     return _make

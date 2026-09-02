@@ -88,7 +88,7 @@ def test_get_foto_sense_foto_dona_404(client, parada):
 # ---- pujar foto (editor) ----
 
 def _fake_image_bytes() -> bytes:
-    # 1x1 px transparent PNG - real, valid image bytes
+    # PNG transparent d'1x1 px: bytes d'imatge reals i vàlids
     return bytes.fromhex(
         "89504e470d0a1a0a0000000d4948445200000001000000010802000000907753"
         "de0000000c4944415478da6360000002000155020e2c0000000049454e44ae42"
@@ -122,7 +122,7 @@ def test_editor_pot_pujar_foto_i_reemplaça_lantiga(client, auth_headers, editor
     assert uploaded_keys == [primera_key]
     assert deleted_keys == []  # no old photo to delete yet
 
-    # upload a second photo - the first one should now get deleted
+    # en pujar la segona foto, la primera s'ha d'esborrar
     resp2 = client.post(
         f"/parades/{parada.id}/foto",
         files={"file": ("foto2.png", io.BytesIO(_fake_image_bytes()), "image/png")},

@@ -14,10 +14,8 @@ class TextBase(BaseModel):
 class TextResponse(TextBase):
     id: UUID
     autora: AutoraResponse
-    # En quin idioma van el `titol` i el `contingut` que s'entreguen. Quan el
-    # web del projecte no publica l'obra traduida es torna el catala, i el
-    # client ho ha de poder dir en comptes de fer passar l'original per
-    # traduccio.
+    # En quin idioma van el `titol` i el `contingut`: si el web del projecte no
+    # publica l'obra traduïda torna el català, i el client ho ha d'advertir.
     contingut_idioma: Idioma = Idioma.CA
 
     class Config:

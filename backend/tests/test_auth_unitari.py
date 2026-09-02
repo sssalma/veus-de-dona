@@ -1,6 +1,6 @@
-"""Unit tests for the password and token helpers.
+"""Proves unitàries de les funcions de contrasenya i de testimoni.
 
-Pure functions: a value in, a value out. No database, no HTTP client.
+Funcions pures: un valor entra i un valor surt. Sense base de dades ni client.
 """
 from datetime import datetime, timezone
 
@@ -31,8 +31,8 @@ def test_verify_rebutja_una_contrasenya_incorrecta():
 
 
 def test_dos_hash_de_la_mateixa_contrasenya_son_diferents():
-    # bcrypt salts every hash: two identical passwords must not produce the
-    # same string, or the hashes would leak which accounts share a password
+    # bcrypt sala cada hash: dues contrasenyes iguals no han de donar la
+    # mateixa cadena, o els hashos dirien quins comptes la comparteixen
     assert hash_password("Testpass123!") != hash_password("Testpass123!")
 
 

@@ -4,26 +4,26 @@ from app.models.parada import Parada
 from app.services.storage import upload_file, delete_file
 
 def get_all_parades(db: Session):
-    """Returns all active stops ordered by route order"""
+    """Torna les parades actives, per ordre de ruta."""
     return db.query(Parada)\
         .filter(Parada.activa == True)\
         .order_by(Parada.ordre)\
         .all()
 
 def get_totes_les_parades(db: Session):
-    """Returns every stop, active or not, ordered by route order - editor/admin only"""
+    """Totes les parades, actives o no, per ordre de ruta."""
     return db.query(Parada)\
         .order_by(Parada.ordre)\
         .all()
 
 def get_parada_by_id(db: Session, parada_id: str):
-    """Returns a single stop by ID or None if not found"""
+    """Torna una parada, o None si no hi és."""
     return db.query(Parada)\
         .filter(Parada.id == parada_id)\
         .first()
 
 def toggle_parada_activa(db: Session, parada_id: str, activa: bool) -> Parada | None:
-    """Enables or disables a stop, returns None if not found"""
+    """Activa o desactiva una parada; None si no hi és."""
     parada = get_parada_by_id(db, parada_id)
     if not parada:
         return None
@@ -33,7 +33,7 @@ def toggle_parada_activa(db: Session, parada_id: str, activa: bool) -> Parada | 
     return parada
 
 def update_parada(db: Session, parada_id: str, dades: dict) -> Parada | None:
-    """Updates the given fields of a stop, returns None if not found"""
+    """Actualitza els camps donats d'una parada; None si no hi és."""
     parada = get_parada_by_id(db, parada_id)
     if not parada:
         return None
@@ -44,7 +44,7 @@ def update_parada(db: Session, parada_id: str, dades: dict) -> Parada | None:
     return parada
 
 def update_parada_foto(db: Session, parada_id: str, file_bytes: bytes, filename: str, content_type: str) -> Parada | None:
-    """Uploads a new photo to MinIO, updates foto_minio_key and deletes the old photo"""
+    """Puja una foto a MinIO, actualitza foto_minio_key i esborra l'anterior."""
     parada = get_parada_by_id(db, parada_id)
     if not parada:
         return None

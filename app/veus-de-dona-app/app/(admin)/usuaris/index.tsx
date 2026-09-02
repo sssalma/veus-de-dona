@@ -31,7 +31,7 @@ export default function AdminUsuaris() {
   const [cerca, setCerca] = useState("");
   const [filtreRol, setFiltreRol] = useState<string>(SENSE_FILTRE);
   const [avis, setAvis] = useState<string | null>(null);
-  // Compte al qual s'esta assignant una contrasenya nova, si n'hi ha cap.
+  // Compte al qual s'està assignant una contrasenya nova, si n'hi ha cap.
   const [reset, setReset] = useState<Usuari | null>(null);
   const [novaContrasenya, setNovaContrasenya] = useState("");
   const [assignant, setAssignant] = useState(false);
@@ -69,8 +69,7 @@ export default function AdminUsuaris() {
     return <Redirect href="/(admin)" />;
   }
 
-  // Les dues accions són optimistes: es pinten sense esperar el servidor.
-  // Si el rebutja, es desfan i es diu en pantalla.
+  // Les dues accions són optimistes: si el servidor les rebutja, es desfan.
   const handleToggleActiu = async (u: Usuari, valor: boolean) => {
     setAvis(null);
     setUsuaris((prev) => prev.map((x) => (x.id === u.id ? { ...x, actiu: valor } : x)));
@@ -192,10 +191,8 @@ export default function AdminUsuaris() {
           <View style={{ paddingHorizontal: 18, paddingTop: 18, gap: 10 }}>
             {usuarisFiltrats.map((u) => {
               const resaltat = u.id === resaltar;
-              // El servidor rebutja amb un 400 que una administradora es canviï
-              // el rol o es desactivi: amb un sol compte d'administració això
-              // deixaria el sistema sense manera de tornar a entrar. Aquí es
-              // desactiven els controls perquè no s'arribi a intentar.
+              // El servidor rebutja amb un 400 que una administradora es
+              // canviï el rol o es desactivi. Aquí es desactiven els controls.
               const esJo = u.id === user?.id;
 
               return (
@@ -302,9 +299,8 @@ export default function AdminUsuaris() {
                       {t("admin.cannotEditSelf")}
                     </Text>
                   ) : (
-                    /* L'unic cami de tornada per a qui ha oblidat la seva: no
-                       hi ha recuperacio per correu. Sobre el propi compte no
-                       surt, que ha de passar pel canvi del perfil. */
+                    /* No hi ha recuperació per correu. Sobre el propi compte
+                       no surt: ha de passar pel canvi del perfil. */
                     <TouchableOpacity
                       accessibilityRole="button"
                       accessibilityLabel={`${t("admin.setPassword")}: ${u.nom} ${u.cognom}`}
@@ -334,7 +330,7 @@ export default function AdminUsuaris() {
         )}
       </ScrollView>
 
-      {/* Alert.prompt nomes existeix a iOS, de manera que el dialeg es propi */}
+      {/* Alert.prompt només existeix a iOS, de manera que el diàleg és propi */}
       <Modal
         visible={reset !== null}
         transparent
@@ -367,7 +363,7 @@ export default function AdminUsuaris() {
               </Text>
             )}
 
-            {/* revelable: qui assigna la contrasenya l'ha de comunicar despres,
+            {/* revelable: qui assigna la contrasenya l'ha de comunicar després,
                 i tapada no hi ha manera de comprovar que s'ha escrit be */}
             <FormField
               label={t("admin.newPasswordLabel")}

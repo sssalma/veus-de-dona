@@ -6,20 +6,15 @@ from app.models.usuari import Idioma
 
 
 class AutoraTraduccio(Base):
-    """A biography in a language other than Catalan.
+    """La biografia d'una autora en un idioma que no és el català.
 
-    A table rather than one column per language, so that adding a language is
-    not a migration.
-
-    Only the biography lives here. The literary texts have a table of their
-    own, `text_traduccio`, filled from the project's website: their English
-    versions are the entity's, not ours. Writing them here -where the editing
-    panel writes- would make them look like something this project may change.
+    Una taula i no una columna per idioma, perquè afegir un idioma no sigui una
+    migració. Els textos literaris tenen la seva pròpia taula, `text_traduccio`.
     """
 
     __tablename__ = "autora_traduccio"
 
-    # composite key: one biography per author and language, no duplicates
+    # clau composta: una biografia per autora i idioma
     autora_id = Column(
         UUID(as_uuid=True),
         ForeignKey("autora.id", ondelete="CASCADE"),

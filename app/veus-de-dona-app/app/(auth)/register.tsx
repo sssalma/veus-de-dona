@@ -17,8 +17,7 @@ export default function RegisterScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [passwordRepetida, setPasswordRepetida] = useState("");
-  // Camps opcionals: alimenten les mètriques d'ús de la ruta (procedència i
-  // visites escolars). Cap d'ells bloqueja la creació del compte.
+  // Camps opcionals: alimenten les mètriques d'ús de la ruta.
   const [procedencia, setProcedencia] = useState("");
   const [esAlumne, setEsAlumne] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -29,9 +28,6 @@ export default function RegisterScreen() {
       return;
     }
     // L'ordre de les comprovacions segueix l'ordre dels camps a la pantalla.
-    // Amb la contrasenya primer, qui s'equivocava de correu rebia l'avís de la
-    // contrasenya i no arribava mai al del correu: al registre s'escriu una
-    // contrasenya nova, i mentre no arriba als 8 caràcters tapava l'altre.
     if (!correuSemblaValid(email)) {
       Alert.alert(t("common.error"), t("auth.invalidEmail"));
       return;

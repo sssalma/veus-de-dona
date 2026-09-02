@@ -14,10 +14,10 @@ class Autora(Base):
     anys_vida = Column(String, nullable=True)
     foto_minio_key = Column(String, nullable=True)
 
-    # one autora has one or more texts in the route
+    # una autora té un o més textos a la ruta
     textos = relationship("Text", back_populates="autora")
 
-    # the Catalan biography lives in `bio`; the rest, one row per language
+    # el català viu a `bio`; la resta, una fila per idioma
     traduccions = relationship(
         "AutoraTraduccio",
         back_populates="autora",

@@ -2,17 +2,15 @@ import { View, Text } from "react-native";
 import { APP, COLORS, FONTS } from "../constants";
 
 /**
- * El logotip: el nom en cursiva i, a sota i més petit, «Literària».
- *
- * Es llegeix com un sol element, perquè un lector de pantalla digui el nom
- * sencer d'una tirada i no partit en dues línies.
+ * El logotip: el nom en cursiva i, a sota i més petit, el subtítol. Es marca
+ * com un sol element perquè el lector de pantalla el digui sencer.
  */
 export function Logotip({
   mida = 22,
   sobreFosc = false,
 }: {
   mida?: number;
-  /** A la pantalla d'entrada el logotip va sobre la tinta, no sobre el paper. */
+  /** A la pantalla d'entrada el logotip va sobre fons fosc. */
   sobreFosc?: boolean;
 }) {
   return (
@@ -37,7 +35,7 @@ export function Logotip({
           fontWeight: "600",
           letterSpacing: Math.max(1.5, mida * 0.14),
           textTransform: "uppercase",
-          // sobre la tinta, el cru pur cridaria mes que el nom: es baixa un pas
+          // sobre fons fosc, el blanc pur cridaria més que el nom
           color: sobreFosc ? "rgba(250,248,244,0.62)" : COLORS.textSecondary,
           textAlign: "center",
           // compensa l'espaiat, que empeny el text cap a l'esquerra

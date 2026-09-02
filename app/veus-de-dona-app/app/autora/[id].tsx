@@ -34,8 +34,7 @@ export default function AutoraScreen() {
     getAutoraFoto(aid).then(setFotoUrl).catch(() => setFotoUrl(null));
   }, [id, idioma]);
 
-  // mentre la peticio no ha tornat encara no se sap si l'autora existeix:
-  // dir "no trobada" abans d'hora era un fals negatiu a cada obertura
+  // mentre la petició no ha tornat encara no se sap si l'autora existeix
   if (carregant) {
     return (
       <View

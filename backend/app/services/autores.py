@@ -6,19 +6,19 @@ from app.models.usuari import Idioma
 from app.services.storage import upload_file, delete_file
 
 def get_all_autores(db: Session):
-    """Returns all authors ordered by surname"""
+    """Torna les autores per cognom."""
     return db.query(Autora)\
         .order_by(Autora.cognom)\
         .all()
 
 def get_autora_by_id(db: Session, autora_id: str):
-    """Returns a single author by ID or None if not found"""
+    """Torna una autora, o None si no hi és."""
     return db.query(Autora)\
         .filter(Autora.id == autora_id)\
         .first()
 
 def update_autora(db: Session, autora_id: str, dades: dict) -> Autora | None:
-    """Updates the given fields of an author, returns None if not found"""
+    """Actualitza els camps donats d'una autora; None si no hi és."""
     autora = get_autora_by_id(db, autora_id)
     if not autora:
         return None
@@ -29,10 +29,10 @@ def update_autora(db: Session, autora_id: str, dades: dict) -> Autora | None:
     return autora
 
 def update_autora_foto(db: Session, autora_id: str, file_bytes: bytes, filename: str, content_type: str) -> Autora | None:
-    """Uploads a new portrait to MinIO, updates foto_minio_key and deletes the old one.
-    Same order of operations as the parada photo: upload first, update the row,
-    and only then remove the previous object, so the author never points at a
-    file that does not exist."""
+    """Puja un retrat nou, actualitza foto_minio_key i esborra l'anterior.
+    El mateix ordre que la foto de parada: primer es puja, després s'actualitza
+    la fila i només llavors es treu l'objecte vell, de manera que l'autora no
+    apunti mai a un fitxer que no hi és."""
     autora = get_autora_by_id(db, autora_id)
     if not autora:
         return None
@@ -58,9 +58,9 @@ def update_autora_foto(db: Session, autora_id: str, file_bytes: bytes, filename:
 def aplica_idioma(autora: Autora, idioma: Idioma) -> Autora:
     """Deixa a `bio` la biografia en l'idioma demanat, si n'hi ha.
 
-    No es desa: nomes es toca l'objecte que ja s'esta a punt de serialitzar.
-    `bio_idioma` diu en quin idioma ha quedat, perque el client pugui avisar
-    quan ensenya el catala per manca de traduccio.
+    No es desa: només es toca l'objecte que ja s'està a punt de serialitzar.
+    `bio_idioma` diu en quin idioma ha quedat, perquè el client pugui avisar
+    quan ensenya el català per manca de traducció.
     """
     autora.bio_idioma = Idioma.CA
     if idioma == Idioma.CA:
@@ -74,14 +74,14 @@ def aplica_idioma(autora: Autora, idioma: Idioma) -> Autora:
 
 
 def get_traduccions(db: Session, autora_id: str):
-    """Totes les traduccions d'una autora. Per al panell d'edicio."""
+    """Totes les traduccions d'una autora. Per al panell d'edició."""
     return db.query(AutoraTraduccio)        .filter(AutoraTraduccio.autora_id == autora_id)        .all()
 
 
 def set_traduccio(db: Session, autora_id: str, idioma: Idioma, bio: str):
     """Crea o reescriu la biografia d'una autora en un idioma.
 
-    El catala no passa per aqui: viu a `autora.bio` i s'edita amb la resta de
+    El català no passa per aquí: viu a `autora.bio` i s'edita amb la resta de
     la fitxa. Tenir-lo als dos llocs seria tenir dues veritats."""
     autora = get_autora_by_id(db, autora_id)
     if not autora:
@@ -104,7 +104,7 @@ def set_traduccio(db: Session, autora_id: str, idioma: Idioma, bio: str):
 
 
 def esborra_traduccio(db: Session, autora_id: str, idioma: Idioma) -> bool:
-    """Treu una traduccio. La fitxa torna a ensenyar el catala."""
+    """Treu una traducció. La fitxa torna a ensenyar el català."""
     traduccio = db.query(AutoraTraduccio).filter(
         AutoraTraduccio.autora_id == autora_id,
         AutoraTraduccio.idioma == idioma,

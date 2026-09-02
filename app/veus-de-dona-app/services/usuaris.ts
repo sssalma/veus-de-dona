@@ -38,11 +38,7 @@ export async function canviarContrasenya(
   await api.post("/auth/canvi-contrasenya", { password_actual, password_nova });
 }
 
-/**
- * Assigna una contrasenya nova al compte d'una altra persona. Nomes
- * administracio. No hi ha recuperacio autoservei: aquest es l'unic cami de
- * tornada per a qui ha oblidat la seva.
- */
+/** Assigna una contrasenya nova a un altre compte. Només administració. */
 export async function assignarContrasenya(id: string, password_nova: string): Promise<void> {
   await api.patch(`/usuaris/${id}/contrasenya`, { password_nova });
 }

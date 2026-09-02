@@ -9,18 +9,18 @@ from app.models.text import Text
 
 
 def get_metriques_global(db: Session) -> dict:
-    """Aggregate counts across the whole app: users by role, visits by mode,
-    and the most-liked texts."""
+    """Xifres globals: comptes per rol, visites per mode i els textos més
+    marcats."""
     usuaris_per_rol = dict(
         db.query(Usuari.rol, func.count(Usuari.id)).group_by(Usuari.rol).all()
     )
     visites_per_mode = dict(
         db.query(Visita.mode, func.count(Visita.id)).group_by(Visita.mode).all()
     )
-    # ensure all modes are present even with zero visits
+    # tots els modes hi han de sortir, encara que no tinguin cap visita
     visites_per_mode = {mode.value: visites_per_mode.get(mode, 0) for mode in Mode}
 
-    # es_alumne es opcional al registre: nomes es compten els que han dit que si
+    # es_alumne és opcional al registre: només es compten els que han dit que sí
     usuaris_grup_escolar = (
         db.query(func.count(Usuari.id)).filter(Usuari.es_alumne.is_(True)).scalar()
     )
@@ -46,7 +46,7 @@ def get_metriques_global(db: Session) -> dict:
 
 
 def get_metriques_parades(db: Session) -> list[dict]:
-    """Per-stop breakdown: visit count by mode, like count, comment count."""
+    """Desglossament per parada: visites per mode, marques i comentaris."""
     parades = db.query(Parada).order_by(Parada.ordre).all()
 
     resultat = []

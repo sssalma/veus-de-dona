@@ -3,9 +3,8 @@ import { COLORS, FONTS } from "../../constants";
 import { useLanguage } from "../../contexts/LanguageContext";
 
 /**
- * Peces compartides pels llistats del panell. `EstatLlista` cobreix els tres
- * estats en què es pot trobar un llistat -carregant, error, buit- i
- * `FilaLlista` dibuixa la fila.
+ * Peces compartides pels llistats del panell: `EstatLlista` cobreix els estats
+ * de càrrega, error i buit, i `FilaLlista` dibuixa la fila.
  */
 
 export function EstatLlista({

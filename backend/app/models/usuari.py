@@ -6,13 +6,13 @@ from sqlalchemy.sql import func
 from app.database import Base
 import enum
 
-# Python enum for user roles - maps to PostgreSQL enum type
+# rols d'usuari
 class RolUsuari(str, enum.Enum):
     VISITANT = "VISITANT"
     EDITOR = "EDITOR"
     ADMINISTRADOR = "ADMINISTRADOR"
 
-# Python enum for supported languages
+# idiomes de la interfície
 class Idioma(str, enum.Enum):
     CA = "CA"
     ES = "ES"
@@ -21,7 +21,7 @@ class Idioma(str, enum.Enum):
 class Usuari(Base):
     __tablename__ = "usuari"
 
-    # primary key as UUID - avoids enumerable IDs and supports distributed systems
+    # UUID en comptes d'un enter, per no tenir identificadors enumerables
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     email = Column(String, unique=True, nullable=False, index=True)
     nom = Column(String, nullable=False)
@@ -32,11 +32,11 @@ class Usuari(Base):
     data_registre = Column(DateTime(timezone=True), server_default=func.now())
     actiu = Column(Boolean, default=True, nullable=False)
 
-    # visitor-specific attributes (null for editor and admin)
+    # només de qui visita; buits per a editors i administració
     procedencia = Column(String, nullable=True)
     es_alumne = Column(Boolean, nullable=True)
 
-    # relationships
+    # relacions
     visites = relationship("Visita", back_populates="usuari")
     likes = relationship("Like", back_populates="usuari")
     comentaris = relationship("Comentari", back_populates="usuari")

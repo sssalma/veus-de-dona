@@ -46,7 +46,7 @@ export default function ParadaScreen() {
   const [parada, setParada] = useState<Parada | null>(null);
   const [textos, setTextos] = useState<TextDto[]>([]);
   const [totes, setTotes] = useState<Parada[]>([]);
-  // quins textos estan oberts, i què té cadascun: són dades per text, no per parada
+  // quins textos estan oberts: són dades per text, no per parada
   const [expandits, setExpandits] = useState<Set<string>>(new Set());
   const [audioPerText, setAudioPerText] = useState<Record<string, string | null>>({});
   const [likes, setLikes] = useState<Record<string, EstatLike>>({});
@@ -69,8 +69,7 @@ export default function ParadaScreen() {
       .then(setParada)
       .catch(() => setParada(null))
       .finally(() => setCarregant(false));
-    // tots els textos arrenquen plegats, també quan la parada només en té un:
-    // així la fitxa sempre s'obre igual i el primer que es veu és la parada
+    // tots els textos arrenquen plegats, també quan la parada només en té un
     getTextosByParada(pid, idioma).then(setTextos).catch(() => setTextos([]));
     getParades().then(setTotes).catch(() => setTotes([]));
     getComentaris(pid).then(setComentaris).catch(() => setComentaris([]));
@@ -84,8 +83,7 @@ export default function ParadaScreen() {
     }).catch(() => setFotoUrl(null));
   }, [id, idioma]);
 
-  // quins textos tenen àudio: es consulta un cop aquí i es passa a cada text,
-  // en lloc de fer que cada reproductor s'ho pregunti pel seu compte
+  // quins textos tenen àudio: es consulta un cop aquí i es passa a cada text
   useEffect(() => {
     if (textos.length === 0) return;
     Promise.all(
@@ -116,8 +114,7 @@ export default function ParadaScreen() {
     if (!isAuthenticated) return;
     const pid = id as string;
     getMevesVisites().then((visites) => {
-      // nomes cal saber si s'ha visitat: el mode de cada visita s'explica al
-      // perfil, on es veu el recorregut sencer, no parada a parada
+      // només cal saber si s'ha visitat; el mode s'ensenya al perfil
       if (visites.some((v) => v.parada_id === pid)) setVisitant(true);
     }).catch(() => {});
   }, [id, isAuthenticated]);
@@ -242,8 +239,7 @@ export default function ParadaScreen() {
     }
   };
 
-  // mentre la peticio no ha tornat encara no se sap si la parada existeix:
-  // dir "no trobada" abans d'hora era un fals negatiu a cada obertura
+  // mentre la petició no ha tornat encara no se sap si la parada existeix
   if (carregant) {
     return (
       <View

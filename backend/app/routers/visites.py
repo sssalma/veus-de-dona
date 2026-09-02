@@ -19,7 +19,7 @@ def registrar_visita(
     db: Session = Depends(get_db),
     current_user: Usuari = Depends(get_current_user)
 ):
-    """Registers a visit with automatically inferred mode"""
+    """Registra una visita amb el mode deduït."""
     visita = visites_service.registrar_visita(
         db,
         current_user,
@@ -36,5 +36,5 @@ def get_meves_visites(
     db: Session = Depends(get_db),
     current_user: Usuari = Depends(get_current_user)
 ):
-    """Returns all visits for the current user"""
+    """Torna les visites de qui ho demana."""
     return visites_service.get_visites_by_usuari(db, UUID(str(current_user.id)))

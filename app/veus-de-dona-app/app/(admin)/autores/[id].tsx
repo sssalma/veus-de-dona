@@ -20,9 +20,9 @@ import {
 import { missatgeError } from "../../../services/errors";
 import FormField from "../../../components/FormField";
 
-// El catala no hi surt: s'edita al camp de biografia de mes amunt.
+// El català no hi surt: s'edita al camp de biografia de més amunt.
 const IDIOMES_TRADUIBLES = ["ES", "EN"] as const;
-const NOM_IDIOMA: Record<string, string> = { ES: "Castella", EN: "Angles" };
+const NOM_IDIOMA: Record<string, string> = { ES: "Castellà", EN: "Anglès" };
 
 export default function EditarAutora() {
   const router = useRouter();
@@ -37,16 +37,13 @@ export default function EditarAutora() {
   const [bio, setBio] = useState("");
   const [fotoUrl, setFotoUrl] = useState<string | null>(null);
   const [pujantFoto, setPujantFoto] = useState(false);
-  // Biografies en els altres idiomes. El catala no hi es: viu a `bio`.
+  // Biografies en els altres idiomes. El català viu a `bio`.
   const [traduccions, setTraduccions] = useState<Record<string, string>>({});
   const [desantIdioma, setDesantIdioma] = useState<string | null>(null);
 
   useEffect(() => {
-    // Sense idioma a proposit: aquest camp edita la biografia CATALANA, que
-    // viu a autora.bio. Si es demanes en l'idioma de la interficie, una
-    // editora treballant en angles es trobaria el text angles dins del camp
-    // catala i el desaria a sobre de l'original. Les altres versions
-    // s'editen al bloc de traduccions de mes avall.
+    // Sense idioma a propòsit: aquest camp edita la biografia catalana. Si es
+    // demanés en l'idioma de la interfície, s'hi desaria una traducció a sobre.
     getAutora(id)
       .then((a) => {
         setNom(a.nom);
@@ -57,7 +54,7 @@ export default function EditarAutora() {
       })
       .catch(() => setError(true))
       .finally(() => setLoading(false));
-    // Un 404 aquí només vol dir que encara no en té: es queda sense retrat.
+    // Un 404 vol dir que encara no té retrat.
     getAutoraFoto(id)
       .then(setFotoUrl)
       .catch(() => setFotoUrl(null));

@@ -12,23 +12,20 @@ def pujar_recurs(
     content_type: str,
     tipus: TipusRecurs
 ) -> Recurs | None:
-    """Uploads a file to MinIO and creates a Recurs record in PostgreSQL"""
-    # check text exists
+    """Puja un fitxer a MinIO i en desa el Recurs a PostgreSQL."""
     text = db.query(Text).filter(Text.id == text_id).first()
     if not text:
         return None
 
-    # generate unique key for MinIO
-    # format: tipus/text_id/uuid_filename
+    # clau única dins del bucket: tipus/text_id/uuid_nomfitxer
     extension = filename.split('.')[-1]
     minio_key = f"{tipus.value.lower()}/{text_id}/{uuid.uuid4()}.{extension}"
 
-    # upload to MinIO first
+    # primer MinIO: si falla, no es desa cap fila
     success = upload_file(file_bytes, minio_key, content_type)
     if not success:
         return None
 
-    # save record to PostgreSQL
     nou_recurs = Recurs(
         tipus=tipus,
         minio_key=minio_key,
@@ -40,26 +37,26 @@ def pujar_recurs(
     return nou_recurs
 
 def esborrar_recurs(db: Session, recurs_id: str) -> bool:
-    """Deletes file from MinIO first, then removes record from PostgreSQL"""
+    """Esborra el fitxer de MinIO i després la fila de PostgreSQL."""
     recurs = db.query(Recurs).filter(Recurs.id == recurs_id).first()
     if not recurs:
         return False
 
-    # delete from MinIO first
+    # primer MinIO
     delete_file(str(recurs.minio_key))
 
-    # then remove from PostgreSQL
+    # i després la fila
     db.delete(recurs)
     db.commit()
     return True
 
 def get_recurs_url(db: Session, recurs_id: str) -> str | None:
-    """Returns a presigned URL for streaming the resource"""
+    """Torna una URL pre-signada per reproduir el recurs."""
     recurs = db.query(Recurs).filter(Recurs.id == recurs_id).first()
     if not recurs:
         return None
     return get_file_url(str(recurs.minio_key))
 
 def get_recursos_by_text(db: Session, text_id: str):
-    """Returns all resources for a given text"""
+    """Torna els recursos d'un text."""
     return db.query(Recurs).filter(Recurs.text_id == text_id).all()

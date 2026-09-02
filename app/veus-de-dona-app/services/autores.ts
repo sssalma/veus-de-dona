@@ -33,7 +33,7 @@ export async function updateAutoraFoto(
   return data;
 }
 
-// ---- traduccions de la biografia: nomes edicio ----
+// traduccions de la biografia: només edició
 
 export async function getTraduccionsAutora(id: string): Promise<TraduccioAutora[]> {
   const { data } = await api.get(`/autores/${id}/traduccions`);

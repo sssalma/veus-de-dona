@@ -6,8 +6,7 @@ import { useLanguage } from "../contexts/LanguageContext";
 
 /**
  * Camp de formulari amb etiqueta. Amb `revelable` hi apareix un ull que
- * destapa el que s'escriu: en un camp tapat no hi ha manera de saber si
- * t'has equivocat teclejant fins que el sistema et rebutja.
+ * destapa el que s'escriu.
  */
 export default function FormField({
   label,

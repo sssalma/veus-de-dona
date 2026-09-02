@@ -17,7 +17,7 @@ def get_usuaris(
     db: Session = Depends(get_db),
     current_user: Usuari = Depends(require_rol(RolUsuari.ADMINISTRADOR))
 ):
-    """Lists all users - admin only"""
+    """Llista tots els comptes. Només administració."""
     return usuaris_service.get_all_usuaris(db)
 
 @router.patch("/me", response_model=UsuariResponse)
@@ -26,7 +26,7 @@ def update_meu_idioma(
     db: Session = Depends(get_db),
     current_user: Usuari = Depends(get_current_user)
 ):
-    """Lets any authenticated user change their own language preference"""
+    """Canvia l'idioma del propi compte."""
     return usuaris_service.set_idioma(db, current_user, idioma_data.idioma)
 
 @router.patch("/{usuari_id}/actiu", response_model=UsuariResponse)
@@ -36,7 +36,7 @@ def toggle_usuari_actiu(
     db: Session = Depends(get_db),
     current_user: Usuari = Depends(require_rol(RolUsuari.ADMINISTRADOR))
 ):
-    """Activates/deactivates a user account - admin only"""
+    """Activa o desactiva un compte. Només administració."""
     if str(current_user.id) == usuari_id:
         raise HTTPException(
             status_code=400,
@@ -54,9 +54,9 @@ def canviar_rol(
     db: Session = Depends(get_db),
     current_user: Usuari = Depends(require_rol(RolUsuari.ADMINISTRADOR))
 ):
-    """Changes a user's role - admin only.
-    An admin cannot demote themselves: with a single administrator account that
-    would leave the system with no way back into user management."""
+    """Canvia el rol d'un compte. Només administració.
+    No es pot rebaixar el propi rol: amb un sol compte d'administració, el
+    sistema es quedaria sense manera de tornar a la gestió d'usuaris."""
     if str(current_user.id) == usuari_id:
         raise HTTPException(
             status_code=400,
@@ -74,16 +74,14 @@ def assignar_contrasenya(
     db: Session = Depends(get_db),
     current_user: Usuari = Depends(require_rol(RolUsuari.ADMINISTRADOR))
 ):
-    """Sets a new password on someone else's account - admin only.
+    """Assigna una contrasenya nova a un altre compte. Només administració.
 
-    There is no self-service password recovery in this system, so somebody who
-    forgets their password has no way back in on their own. This is the way
-    back: an administrator sets a new one and passes it on.
+    No hi ha recuperació autoservei, així que aquest és el camí de tornada per
+    a qui ha oblidat la seva.
 
-    It refuses to act on the caller's own account on purpose. Changing your own
-    password goes through POST /auth/canvi-contrasenya, which asks for the
-    current one first - that check is what stops a stolen session from locking
-    the real owner out, and this endpoint must not be a way around it."""
+    Refusa actuar sobre el propi compte: la contrasenya pròpia es canvia amb
+    POST /auth/canvi-contrasenya, que demana l'actual, i aquesta comprovació és
+    el que impedeix que una sessió robada en tanqui fora el titular."""
     if str(current_user.id) == usuari_id:
         raise HTTPException(
             status_code=400,

@@ -1,11 +1,11 @@
-"""Bootstrap the first ADMINISTRADOR account.
+"""Crea el primer compte d'ADMINISTRADOR.
 
-Creates the user if it doesn't exist, or promotes it to ADMINISTRADOR if it
-already exists as VISITANT/EDITOR. Needed once so someone can call the
-admin-only PATCH /usuaris/{id}/rol endpoint to create further editors/admins.
+Si el correu no existeix el crea, i si ja hi és amb rol VISITANT o EDITOR el
+puja a ADMINISTRADOR. Cal un cop, perquè a partir d'aquí els altres editors i
+administradors es creen des del panell.
 
-Usage:
-    python scripts/seed_admin.py <email> <password> [nom] [cognom]
+Ús:
+    python scripts/seed_admin.py <correu> <contrasenya> [nom] [cognom]
 """
 import sys
 import os

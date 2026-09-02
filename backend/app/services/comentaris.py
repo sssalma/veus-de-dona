@@ -11,7 +11,7 @@ def afegir_comentari(
     parada_id: str,
     contingut: str
 ) -> Comentari | None:
-    """Adds a comment to a stop, returns None if stop not found"""
+    """Afegeix un comentari a una parada; None si la parada no hi és."""
     parada = db.query(Parada).filter(Parada.id == parada_id).first()
     if not parada:
         return None
@@ -27,7 +27,7 @@ def afegir_comentari(
     return nou_comentari
 
 def eliminar_comentari(db: Session, comentari_id: str) -> bool:
-    """Deletes a comment, returns True if deleted"""
+    """Esborra un comentari; True si l'ha esborrat."""
     comentari = db.query(Comentari).filter(Comentari.id == comentari_id).first()
     if not comentari:
         return False
@@ -36,7 +36,7 @@ def eliminar_comentari(db: Session, comentari_id: str) -> bool:
     return True
 
 def respondre_comentari(db: Session, comentari_id: str, resposta: str) -> Comentari | None:
-    """Sets/updates the editor's reply to a comment, returns None if not found"""
+    """Escriu o reescriu la resposta a un comentari; None si no hi és."""
     comentari = db.query(Comentari).filter(Comentari.id == comentari_id).first()
     if not comentari:
         return None
@@ -47,14 +47,14 @@ def respondre_comentari(db: Session, comentari_id: str, resposta: str) -> Coment
     return comentari
 
 def get_comentaris_by_parada(db: Session, parada_id: str):
-    """Returns all comments for a stop ordered by date"""
+    """Torna els comentaris d'una parada, per data."""
     return db.query(Comentari)\
         .filter(Comentari.parada_id == parada_id)\
         .order_by(Comentari.data_creacio.desc())\
         .all()
 
 def get_all_comentaris(db: Session):
-    """Returns all comments across all stops, newest first - for moderation"""
+    """Tots els comentaris, del més recent al més antic, per moderar-los."""
     return db.query(Comentari)\
         .order_by(Comentari.data_creacio.desc())\
         .all()

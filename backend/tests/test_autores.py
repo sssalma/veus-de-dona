@@ -43,7 +43,7 @@ def test_actualitzar_autora_sense_token_dona_401(client, autora):
     assert resp.status_code == 401
 
 
-# ---- author portrait (same pattern as the parada photo) ----
+# ---- retrat de l'autora (mateix patró que la foto de parada) ----
 
 def test_editor_pot_pujar_foto_autora(client, auth_headers, editor, autora, monkeypatch):
     monkeypatch.setattr("app.services.autores.upload_file", lambda *a, **k: True)

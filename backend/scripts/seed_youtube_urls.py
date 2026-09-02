@@ -1,4 +1,4 @@
-"""Assign YouTube URLs to existing texts from the Veus de Dona Tarragona channel."""
+"""Assigna a cada text el seu vídeo del canal de Veus de Dona a Tarragona."""
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 

@@ -5,12 +5,12 @@ from app.models.usuari import Usuari
 from uuid import UUID
 
 def donar_like(db: Session, usuari: Usuari, text_id: str) -> Like | None:
-    """Adds a like to a text, returns None if text not found"""
+    """Marca un text; None si el text no hi és."""
     text = db.query(Text).filter(Text.id == text_id).first()
     if not text:
         return None
 
-    # check if already liked
+    # ja marcat?
     like_existent = db.query(Like).filter(
         Like.usuari_id == usuari.id,
         Like.text_id == text_id
@@ -28,7 +28,7 @@ def donar_like(db: Session, usuari: Usuari, text_id: str) -> Like | None:
     return nou_like
 
 def treure_like(db: Session, usuari: Usuari, text_id: str) -> bool:
-    """Removes a like from a text, returns True if deleted"""
+    """Desmarca un text; True si l'ha tret."""
     like = db.query(Like).filter(
         Like.usuari_id == usuari.id,
         Like.text_id == text_id
@@ -40,22 +40,22 @@ def treure_like(db: Session, usuari: Usuari, text_id: str) -> bool:
     return True
 
 def get_likes_by_text(db: Session, text_id: str) -> int:
-    """Returns the number of likes for a text"""
+    """Torna quantes vegades s'ha marcat un text."""
     return db.query(Like).filter(Like.text_id == text_id).count()
 
 def has_liked(db: Session, usuari: Usuari, text_id: str) -> bool:
-    """Returns True if the user has already liked the text"""
+    """Diu si la persona ja ha marcat el text."""
     return db.query(Like).filter(
         Like.usuari_id == usuari.id,
         Like.text_id == text_id
     ).first() is not None
 
 def get_textos_preferits(db: Session, usuari: Usuari):
-    """Els textos que ha marcat una persona, del mes recent al mes antic.
+    """Els textos que ha marcat una persona, del més recent al més antic.
 
-    El like es desa amb la seva data des de la migracio inicial, pero fins ara
-    no el llegia ningu: es podia marcar un text i no tornar-lo a trobar mai.
-    Aixo es l'unica consulta que faltava per convertir-los en una antologia.
+    El like es desa amb la seva data des de la migració inicial, però fins ara
+    no el llegia ningú: es podia marcar un text i no tornar-lo a trobar mai.
+    Això és l'única consulta que faltava per convertir-los en una antologia.
     """
     return (
         db.query(Text)

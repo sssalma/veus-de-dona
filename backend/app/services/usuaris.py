@@ -3,14 +3,14 @@ from app.models.usuari import Usuari, RolUsuari, Idioma
 from app.services.auth import hash_password
 
 def get_all_usuaris(db: Session):
-    """Returns all users"""
+    """Torna tots els comptes."""
     return db.query(Usuari).order_by(Usuari.data_registre.desc()).all()
 
 def get_usuari_by_id(db: Session, usuari_id: str) -> Usuari | None:
     return db.query(Usuari).filter(Usuari.id == usuari_id).first()
 
 def set_actiu(db: Session, usuari_id: str, actiu: bool) -> Usuari | None:
-    """Activates/deactivates a user account"""
+    """Activa o desactiva un compte."""
     usuari = get_usuari_by_id(db, usuari_id)
     if not usuari:
         return None
@@ -20,7 +20,7 @@ def set_actiu(db: Session, usuari_id: str, actiu: bool) -> Usuari | None:
     return usuari
 
 def set_rol(db: Session, usuari_id: str, rol: RolUsuari) -> Usuari | None:
-    """Changes a user's role - admin only, caller must enforce that"""
+    """Canvia el rol d'un compte. Qui la crida ha de comprovar que és administració."""
     usuari = get_usuari_by_id(db, usuari_id)
     if not usuari:
         return None
@@ -30,7 +30,7 @@ def set_rol(db: Session, usuari_id: str, rol: RolUsuari) -> Usuari | None:
     return usuari
 
 def update_perfil(db: Session, usuari: Usuari, dades: dict) -> Usuari:
-    """Self-service update of the user's own profile fields"""
+    """Actualitza els camps del propi perfil."""
     for camp, valor in dades.items():
         setattr(usuari, camp, valor)
     db.commit()
@@ -38,19 +38,18 @@ def update_perfil(db: Session, usuari: Usuari, dades: dict) -> Usuari:
     return usuari
 
 def set_idioma(db: Session, usuari: Usuari, idioma: Idioma) -> Usuari:
-    """Self-service language change"""
+    """Canvia l'idioma del propi compte."""
     setattr(usuari, "idioma", idioma)
     db.commit()
     db.refresh(usuari)
     return usuari
 
 def set_password(db: Session, usuari_id: str, password_nova: str) -> Usuari | None:
-    """Overwrites a user's password. Used by an administrator to get someone
-    back into an account they are locked out of: there is no self-service
-    recovery, so without this the account would be unreachable for good.
+    """Reescriu la contrasenya d'un compte. La fa servir l'administració per
+    tornar l'accés a qui l'ha perdut, perquè no hi ha recuperació autoservei.
 
-    Note that any token already issued for that account stays valid until it
-    expires on its own - the API does not keep a revocation list."""
+    Els testimonis ja emesos per a aquell compte segueixen vàlids fins que
+    caduquen: l'API no manté cap llista de revocació."""
     usuari = get_usuari_by_id(db, usuari_id)
     if not usuari:
         return None

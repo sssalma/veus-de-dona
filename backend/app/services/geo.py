@@ -4,7 +4,7 @@ EARTH_RADIUS_M = 6_371_000
 
 
 def haversine(lat1: float, lng1: float, lat2: float, lng2: float) -> float:
-    """Great-circle distance between two points in metres."""
+    """Distància en metres entre dos punts sobre l'esfera."""
     phi1, phi2 = radians(lat1), radians(lat2)
     dphi = radians(lat2 - lat1)
     dlambda = radians(lng2 - lng1)

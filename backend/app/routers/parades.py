@@ -13,10 +13,9 @@ router = APIRouter(
     tags=["parades"]
 )
 
-#public endpoints
 @router.get("/", response_model=List[ParadaResponse])
 def get_parades(db: Session = Depends(get_db)):
-    """Returns all active stops ordered by route order"""
+    """Torna les parades actives, per ordre de ruta."""
     return parades_service.get_all_parades(db)
 
 @router.get("/totes", response_model=List[ParadaResponse])
@@ -24,22 +23,21 @@ def get_totes_les_parades(
     db: Session = Depends(get_db),
     current_user: Usuari = Depends(require_rol(RolUsuari.EDITOR, RolUsuari.ADMINISTRADOR))
 ):
-    """Returns every stop, including inactive ones - editor/admin only"""
+    """Torna totes les parades, també les desactivades. Només editor i administració."""
     return parades_service.get_totes_les_parades(db)
 
 @router.get("/{parada_id}", response_model=ParadaResponse)
 def get_parada(parada_id: str, db: Session = Depends(get_db)):
-    """Returns a single stop by ID"""
+    """Torna una parada per identificador."""
     parada = parades_service.get_parada_by_id(db, parada_id)
     if not parada:
         raise HTTPException(status_code=404, detail="Parada no trobada")
     return parada
 
-# editor/admin only endpoint
 
 @router.get("/{parada_id}/foto")
 def get_parada_foto(parada_id: str, db: Session = Depends(get_db)):
-    """Returns a presigned URL for the parada photo"""
+    """Torna una URL pre-signada de la foto de la parada."""
     parada = parades_service.get_parada_by_id(db, parada_id)
     if not parada:
         raise HTTPException(status_code=404, detail="Parada no trobada")
@@ -57,7 +55,7 @@ def update_parada(
     db: Session = Depends(get_db),
     current_user: Usuari = Depends(require_rol(RolUsuari.EDITOR, RolUsuari.ADMINISTRADOR))
 ):
-    """Updates editable fields of a stop (nom_espai, foto) - editor/admin only"""
+    """Actualitza els camps editables d'una parada. Només editor i administració."""
     parada = parades_service.update_parada(db, parada_id, dades.model_dump(exclude_unset=True))
     if not parada:
         raise HTTPException(status_code=404, detail="Parada no trobada")
@@ -70,7 +68,7 @@ async def pujar_foto_parada(
     db: Session = Depends(get_db),
     current_user: Usuari = Depends(require_rol(RolUsuari.EDITOR, RolUsuari.ADMINISTRADOR))
 ):
-    """Uploads a new photo for a stop, replacing the previous one - editor/admin only"""
+    """Puja una foto nova de la parada i esborra l'anterior. Només editor i administració."""
     file_bytes = await file.read()
     parada = parades_service.update_parada_foto(
         db, parada_id, file_bytes, file.filename or "foto.jpg", file.content_type or "image/jpeg"
@@ -86,7 +84,7 @@ def toggle_parada(
     db: Session = Depends(get_db),
     current_user: Usuari = Depends(require_rol(RolUsuari.EDITOR, RolUsuari.ADMINISTRADOR))
 ):
-    """Enables or disables a stop - editor/admin only"""
+    """Activa o desactiva una parada. Només editor i administració."""
     parada = parades_service.toggle_parada_activa(db, parada_id, activa)
     if not parada:
         raise HTTPException(status_code=404, detail="Parada no trobada")

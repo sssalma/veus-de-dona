@@ -6,8 +6,8 @@ import { Capcalera } from "../components/Capcalera";
 import { Logotip } from "../components/Logotip";
 
 /**
- * Qui hi ha darrere de la ruta, on trobar-ne la resta de material i a qui
- * escriure.
+ * Pantalla d'informació: el projecte, l'aplicació, el web, el contacte i la
+ * llicència.
  */
 export default function SobreScreen() {
   const { t } = useLanguage();
@@ -52,8 +52,6 @@ export default function SobreScreen() {
             />
           </Apartat>
 
-          {/* Sense correu configurat no es dibuixa: val més no tenir apartat de
-              contacte que tenir-ne un que no porta enlloc. */}
           {PROJECTE.correu !== "" && (
             <Apartat titol={t("sobre.contactHeading")} cos={t("sobre.contactBody")}>
               <Enllac

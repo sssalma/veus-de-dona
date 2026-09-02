@@ -5,11 +5,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { COLORS, FONTS, TITOL_PANTALLA } from "../constants";
 import { useLanguage } from "../contexts/LanguageContext";
 
-/**
- * Capçalera de pantalla: fletxa de tornada i títol, a la mateixa filera.
- *
- * La fletxa sola és el que es veu; el nom accessible diu on porta.
- */
+/** Capçalera de pantalla: fletxa de tornada i títol, a la mateixa filera. */
 export function Capcalera({
   titol,
   tornarA = "enrere",

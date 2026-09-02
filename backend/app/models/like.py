@@ -7,8 +7,8 @@ from app.database import Base
 class Like(Base):
     __tablename__ = "like"
 
-    # composite primary key - a visitant can only like a text once
-    # no UUID needed - identity IS the combination of both foreign keys
+    # clau primària composta: no pot haver-hi dos likes de la mateixa persona
+    # sobre el mateix text
     usuari_id = Column(
         UUID(as_uuid=True),
         ForeignKey("usuari.id"),
@@ -19,9 +19,9 @@ class Like(Base):
         ForeignKey("text.id"),
         primary_key=True
     )
-    # only attribute of the associative class
+    # únic atribut de la classe associativa
     data_creacio = Column(DateTime(timezone=True), server_default=func.now())
 
-    # relationships
+    # relacions
     usuari = relationship("Usuari", back_populates="likes")
     text = relationship("Text", back_populates="likes")

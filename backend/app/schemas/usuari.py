@@ -3,8 +3,8 @@ from uuid import UUID
 from datetime import datetime
 from app.models.usuari import RolUsuari, Idioma
 
-# minimum password length, enforced on the server so it cannot be bypassed by
-# calling the API directly. The app applies the same rule before submitting.
+# Longitud mínima de contrasenya. La imposa el servidor, de manera que no es
+# pot evitar cridant l'API directament; l'app aplica la mateixa regla abans.
 PASSWORD_MIN_LENGTH = 8
 
 class UsuariCreate(BaseModel):
@@ -46,11 +46,10 @@ class UsuariActiuUpdate(BaseModel):
     actiu: bool
 
 class UsuariPasswordReset(BaseModel):
-    """A new password set by an administrator for someone else's account.
+    """Contrasenya nova assignada per l'administració a un altre compte.
 
-    Unlike CanviPassword this does not ask for the current one: the whole point
-    is that the account holder no longer knows it. The endpoint that uses it is
-    restricted to administrators and refuses to act on the caller's own account.
+    A diferència de CanviPassword no demana l'actual, perquè qui té el compte ja
+    no la sap. L'endpoint que la fa servir refusa actuar sobre el propi compte.
     """
     password_nova: str = Field(min_length=PASSWORD_MIN_LENGTH)
 
@@ -59,8 +58,8 @@ class UsuariIdiomaUpdate(BaseModel):
     idioma: Idioma
 
 class UsuariPerfilUpdate(BaseModel):
-    """Fields a user may change about themselves. Role, email and active state
-    are deliberately absent: they are not self-service."""
+    """Camps que una persona pot canviar del seu compte. El rol, el correu i
+    l'estat actiu no hi són: no són autoservei."""
     nom: str | None = Field(default=None, min_length=1)
     cognom: str | None = Field(default=None, min_length=1)
     procedencia: str | None = None

@@ -11,11 +11,8 @@ import { getMetriquesGlobal } from "../../services/metriques";
 import { MetriquesGlobal } from "../../types";
 
 /**
- * Pantalla d'entrada del panell d'edició i administració.
- *
- * Només orienta: dues xifres per saber en quin estat és la ruta i un índex
- * agrupat per saber on anar a treballar. El desglossament viu a
- * `metriques.tsx`.
+ * Entrada del panell: dues xifres de l'estat de la ruta i l'índex de seccions.
+ * El desglossament viu a `metriques.tsx`.
  */
 export default function AdminDashboard() {
   const router = useRouter();

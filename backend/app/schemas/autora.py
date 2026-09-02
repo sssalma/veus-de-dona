@@ -11,9 +11,8 @@ class AutoraBase(BaseModel):
 
 class AutoraResponse(AutoraBase):
     id: UUID
-    # En quin idioma va la `bio` que s'entrega. Quan no hi ha traduccio es
-    # torna el catala, i el client ho ha de poder dir a qui llegeix en
-    # comptes de fer veure que la traduccio existeix.
+    # En quin idioma va la `bio` que s'entrega: sense traducció torna el
+    # català, i el client ho ha de poder advertir.
     bio_idioma: Idioma = Idioma.CA
 
     class Config:
@@ -28,7 +27,7 @@ class AutoraUpdate(BaseModel):
 
 
 class TraduccioAutora(BaseModel):
-    """Una biografia en un idioma que no es el catala."""
+    """Una biografia en un idioma que no és el català."""
     idioma: Idioma
     bio: str
 

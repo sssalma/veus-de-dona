@@ -1,7 +1,7 @@
-"""Seed texts linking authors to their corresponding parades.
+"""Carrega els textos i els vincula a la seva autora i a la seva parada.
 
-The texts are literals in this file, transcribed from the project website;
-this script makes no network requests.
+Els textos són literals d'aquest fitxer, transcrits del web del projecte: el
+guió no fa cap petició de xarxa.
 """
 import sys
 import os
@@ -375,14 +375,14 @@ A Tarragona la Laura s'hi sentia millor que en qualsevol altra banda. La seva ti
 ]
 
 def seed():
-    """Deixa els textos tal com son aqui, sense esborrar res.
+    """Deixa els textos tal com són aquí, sense esborrar res.
 
     Abans, si ja n'hi havia, l'esborrava tot i ho tornava a crear. Un esborrat
     massiu no dispara la cascada de l'ORM i la clau forana de `recurs` no porta
-    `ON DELETE`, de manera que una segona passada petava en trobar-hi audios; i
-    si no hi petava, els objectes es quedaven a MinIO sense ningu que els
-    referencies. Actualitzant el que ja hi es, els audios, els likes i les
-    traduccions sobreviuen a tornar a executar el guio.
+    `ON DELETE`, de manera que una segona passada petava en trobar-hi àudios; i
+    si no hi petava, els objectes es quedaven a MinIO sense ningú que els
+    referenciés. Actualitzant el que ja hi és, els àudios, els likes i les
+    traduccions sobreviuen a tornar a executar el guió.
     """
     db = SessionLocal()
 
@@ -411,7 +411,7 @@ def seed():
             errors.append(f"Autora '{item['autora_nom']}' no trobada")
             continue
 
-        # una obra queda identificada per l'autora i el titol
+        # una obra queda identificada per l'autora i el títol
         text = db.query(Text).filter(
             Text.autora_id == autora.id,
             Text.titol == item["titol"],

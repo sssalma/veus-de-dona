@@ -20,14 +20,14 @@ router = APIRouter(
 
 @router.get("/", response_model=List[AutoraResponse])
 def get_autores(idioma: Idioma = Idioma.CA, db: Session = Depends(get_db)):
-    """Returns all authors ordered by surname, with the biography in the
-    requested language when there is a translation for it."""
+    """Torna les autores per cognom, amb la biografia en l'idioma demanat quan
+    n'hi ha traducció."""
     autores = autores_service.get_all_autores(db)
     return [autores_service.aplica_idioma(a, idioma) for a in autores]
 
 @router.get("/{autora_id}", response_model=AutoraResponse)
 def get_autora(autora_id: str, idioma: Idioma = Idioma.CA, db: Session = Depends(get_db)):
-    """Returns a single author by ID, biography in the requested language."""
+    """Torna una autora, amb la biografia en l'idioma demanat."""
     autora = autores_service.get_autora_by_id(db, autora_id)
     if not autora:
         raise HTTPException(status_code=404, detail="Autora no trobada")
@@ -35,7 +35,7 @@ def get_autora(autora_id: str, idioma: Idioma = Idioma.CA, db: Session = Depends
 
 @router.get("/{autora_id}/foto")
 def get_autora_foto(autora_id: str, db: Session = Depends(get_db)):
-    """Returns a presigned URL for the author's portrait"""
+    """Torna una URL pre-signada del retrat de l'autora."""
     autora = autores_service.get_autora_by_id(db, autora_id)
     if not autora:
         raise HTTPException(status_code=404, detail="Autora no trobada")
@@ -53,7 +53,7 @@ async def pujar_foto_autora(
     db: Session = Depends(get_db),
     current_user: Usuari = Depends(require_rol(RolUsuari.EDITOR, RolUsuari.ADMINISTRADOR))
 ):
-    """Uploads a new portrait for an author, replacing the previous one - editor/admin only"""
+    """Puja un retrat nou i esborra l'anterior. Només editor i administració."""
     file_bytes = await file.read()
     autora = autores_service.update_autora_foto(
         db, autora_id, file_bytes, file.filename or "foto.jpg", file.content_type or "image/jpeg"
@@ -69,19 +69,16 @@ def update_autora(
     db: Session = Depends(get_db),
     current_user: Usuari = Depends(require_rol(RolUsuari.EDITOR, RolUsuari.ADMINISTRADOR))
 ):
-    """Updates an author's fields - editor/admin only"""
+    """Actualitza els camps d'una autora. Només editor i administració."""
     autora = autores_service.update_autora(db, autora_id, dades.model_dump(exclude_unset=True))
     if not autora:
         raise HTTPException(status_code=404, detail="Autora no trobada")
     return autora
 
 
-# ---- traduccions de la biografia: nomes edicio ----
-#
-# El catala no te endpoint propi: viu a autora.bio i s'edita amb la resta de la
-# fitxa. Les biografies s'editen aqui perque son text propi; les versions dels
-# textos literaris, no: venen del web del projecte i nomes s'hi tornen a llegir
-# (`scripts/scraper_traduccions_textos.py`).
+# Traduccions de la biografia: només edició. El català no té endpoint propi,
+# viu a autora.bio. Els textos literaris no s'editen: venen del web del
+# projecte amb `scripts/scraper_traduccions_textos.py`.
 
 @router.get("/{autora_id}/traduccions", response_model=List[TraduccioAutora])
 def get_traduccions(
@@ -89,7 +86,7 @@ def get_traduccions(
     db: Session = Depends(get_db),
     current_user: Usuari = Depends(require_rol(RolUsuari.EDITOR, RolUsuari.ADMINISTRADOR))
 ):
-    """Every translated biography of an author - editor/admin only"""
+    """Totes les biografies traduïdes d'una autora. Només editor i administració."""
     if not autores_service.get_autora_by_id(db, autora_id):
         raise HTTPException(status_code=404, detail="Autora no trobada")
     return autores_service.get_traduccions(db, autora_id)
@@ -103,7 +100,7 @@ def set_traduccio(
     db: Session = Depends(get_db),
     current_user: Usuari = Depends(require_rol(RolUsuari.EDITOR, RolUsuari.ADMINISTRADOR))
 ):
-    """Creates or replaces the biography of an author in one language"""
+    """Crea o reescriu la biografia d'una autora en un idioma."""
     if idioma == Idioma.CA:
         raise HTTPException(
             status_code=400,
@@ -122,6 +119,6 @@ def esborra_traduccio(
     db: Session = Depends(get_db),
     current_user: Usuari = Depends(require_rol(RolUsuari.EDITOR, RolUsuari.ADMINISTRADOR))
 ):
-    """Removes a translation; the card falls back to Catalan"""
+    """Treu una traducció; la fitxa torna a ensenyar el català."""
     if not autores_service.esborra_traduccio(db, autora_id, idioma):
         raise HTTPException(status_code=404, detail="Traduccio no trobada")

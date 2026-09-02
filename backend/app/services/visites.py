@@ -5,10 +5,10 @@ from app.models.usuari import Usuari
 from app.services.geo import haversine
 from uuid import UUID
 
-# GPS proximity threshold in metres
+# radi en metres per donar una parada per assolida
 PROXIMITY_THRESHOLD_M = 50
 
-# GPS coordinates for each stop
+# coordenades de cada parada
 from app.models.parada import COORDENADES_GPS, CoordenadesParada
 
 def detectar_mode(
@@ -18,26 +18,25 @@ def detectar_mode(
     lat: float | None,
     lng: float | None
 ) -> Mode:
-    """Infers visit mode automatically from GPS state and visit order"""
+    """Dedueix el mode de la visita a partir del GPS i de l'ordre de la ruta."""
     if lat is None or lng is None:
         return Mode.REMOT
 
-    # check proximity to the stop
+    # distància fins a la parada
     coord = COORDENADES_GPS[parada.coordenades] # type: ignore
     distance_m = haversine(lat, lng, coord[0], coord[1])
 
     if distance_m > PROXIMITY_THRESHOLD_M:
         return Mode.REMOT
 
-    # check if the previous stop was visited (sequential order).
-    # "previous" means the closest *active* stop before this one: if an editor
-    # disables a stop, the ones after it must still be reachable in GUIAT mode.
+    # l'anterior és la parada ACTIVA més propera per davall: si se'n desactiva
+    # una, les de després han de continuar sent assolibles en mode GUIAT
     parada_anterior = db.query(Parada).filter(
         Parada.ordre < parada.ordre,
         Parada.activa == True
     ).order_by(Parada.ordre.desc()).first()
 
-    # nothing before it: it is the start of the route as it stands today
+    # no en té cap al davant: és l'inici de la ruta
     if not parada_anterior:
         return Mode.GUIAT
 
@@ -55,12 +54,12 @@ def registrar_visita(
     lat: float | None,
     lng: float | None
 ) -> Visita | None:
-    """Registers a visit with automatically inferred mode"""
+    """Registra una visita amb el mode deduït."""
     parada = db.query(Parada).filter(Parada.id == parada_id).first()
     if not parada:
         return None
 
-    # check if already visited
+    # ja visitada?
     visita_existent = db.query(Visita).filter(
         Visita.usuari_id == usuari.id,
         Visita.parada_id == parada_id
@@ -81,5 +80,5 @@ def registrar_visita(
     return nova_visita
 
 def get_visites_by_usuari(db: Session, usuari_id: UUID):
-    """Returns all visits for a given user"""
+    """Torna les visites d'una persona."""
     return db.query(Visita).filter(Visita.usuari_id == usuari_id).all()

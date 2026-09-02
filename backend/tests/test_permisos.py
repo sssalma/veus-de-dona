@@ -1,7 +1,7 @@
-"""Unit tests for the role check that guards every editing action.
+"""Proves unitàries de la comprovació de rol que guarda cada acció d'edició.
 
-`require_rol` builds the dependency the routers hang off. The check itself is
-pure: it takes a user and either returns it or raises. No database involved.
+`require_rol` construeix la dependència de la qual pengen els routers. La
+comprovació és pura: rep un compte i el torna o llança. Sense base de dades.
 """
 import pytest
 from fastapi import HTTPException
@@ -35,7 +35,7 @@ def test_una_visitant_no_passa():
 
 
 def test_un_editor_no_passa_on_nomes_shi_admet_administracio():
-    # the role list is not a hierarchy: being an editor is not being an admin
+    # la llista de rols no és una jerarquia: ser editor no és ser administrador
     comprova = require_rol(RolUsuari.ADMINISTRADOR)
     with pytest.raises(HTTPException) as error:
         comprova(current_user=_usuari(RolUsuari.EDITOR))

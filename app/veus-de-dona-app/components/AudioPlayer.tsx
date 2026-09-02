@@ -7,9 +7,8 @@ import { COLORS, FONTS } from "../constants";
 import { useLanguage } from "../contexts/LanguageContext";
 
 interface AudioPlayerProps {
-  /** Recurs d'àudio d'aquest text, o null si no en té. La pantalla de parada
-   *  ja ha consultat quins recursos hi ha, de manera que el reproductor no ha
-   *  de tornar a demanar-ho: només resol la URL quan cal reproduir. */
+  /** Recurs d'àudio del text, o null si no en té. La URL només es resol en
+   *  reproduir; la pantalla de parada ja ha consultat quins recursos hi ha. */
   recursId: string | null;
 }
 
@@ -29,8 +28,7 @@ export default function AudioPlayer({ recursId }: AudioPlayerProps) {
   const [durationMillis, setDurationMillis] = useState(0);
   const soundRef = useRef<Audio.Sound | null>(null);
 
-  // allibera l'àudio en desmuntar o en canviar de recurs, per no deixar-lo
-  // sonant en segon pla en plegar el text
+  // allibera l'àudio en desmuntar o en canviar de recurs
   useEffect(() => {
     return () => {
       if (soundRef.current) {
@@ -54,7 +52,7 @@ export default function AudioPlayer({ recursId }: AudioPlayerProps) {
       return;
     }
 
-    // primera reproducció: la URL pre-signada es demana només ara
+    // primera reproducció: es demana la URL pre-signada
     setIsLoading(true);
     try {
       const url = await getRecursUrl(recursId);

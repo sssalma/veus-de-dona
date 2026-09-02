@@ -14,7 +14,7 @@ router = APIRouter(
     tags=["likes"]
 )
 
-# Va abans de les rutes amb parametre perque "/me" no s'interpreti com un
+# Va abans de les rutes amb paràmetre perquè "/me" no s'interpreti com un
 # identificador de text.
 @router.get("/me", response_model=List[TextResponse])
 def get_textos_preferits(
@@ -22,7 +22,7 @@ def get_textos_preferits(
     db: Session = Depends(get_db),
     current_user: Usuari = Depends(get_current_user)
 ):
-    """Els textos que ha marcat qui ho demana, del mes recent al mes antic."""
+    """Els textos que ha marcat qui ho demana, del més recent al més antic."""
     textos = likes_service.get_textos_preferits(db, current_user)
     return [textos_service.aplica_idioma(text, idioma) for text in textos]
 
@@ -32,7 +32,7 @@ def donar_like(
     db: Session = Depends(get_db),
     current_user: Usuari = Depends(get_current_user)
 ):
-    """Adds a like to a text"""
+    """Marca un text."""
     like = likes_service.donar_like(db, current_user, text_id)
     if not like:
         raise HTTPException(status_code=404, detail="Text no trobat")
@@ -44,14 +44,14 @@ def treure_like(
     db: Session = Depends(get_db),
     current_user: Usuari = Depends(get_current_user)
 ):
-    """Removes a like from a text"""
+    """Desmarca un text."""
     deleted = likes_service.treure_like(db, current_user, text_id)
     if not deleted:
         raise HTTPException(status_code=404, detail="Like no trobat")
 
 @router.get("/{text_id}/count")
 def get_likes_count(text_id: str, db: Session = Depends(get_db)):
-    """Returns the number of likes for a text"""
+    """Torna quantes vegades s'ha marcat un text."""
     return {"text_id": text_id, "likes": likes_service.get_likes_by_text(db, text_id)}
 
 @router.get("/{text_id}/check")
@@ -60,7 +60,7 @@ def check_like(
     db: Session = Depends(get_db),
     current_user: Usuari = Depends(get_current_user)
 ):
-    """Returns whether the current user has liked a text"""
+    """Diu si qui ho demana ja ha marcat el text."""
     liked = likes_service.has_liked(db, current_user, text_id)
     count = likes_service.get_likes_by_text(db, text_id)
     return {"liked": liked, "count": count}

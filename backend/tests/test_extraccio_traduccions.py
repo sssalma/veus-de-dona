@@ -1,7 +1,7 @@
-"""Unit tests for how a translated work is read off the project's website.
+"""Proves unitàries de com es llegeix una obra traduïda del web del projecte.
 
-All four functions are pure - a string or a list in, a string out - so they are
-tested directly, without the network, the scraper or the database.
+Les quatre funcions són pures -entra una cadena o una llista i en surt una
+cadena-, així que es proven directament, sense xarxa i sense base de dades.
 """
 from scripts.scraper_traduccions_textos import clau, es_referencia, neteja, uneix
 
@@ -9,7 +9,7 @@ from scripts.scraper_traduccions_textos import clau, es_referencia, neteja, unei
 # ---------------------------------------------------------------------- clau
 
 def test_el_titol_partit_per_maquetacio_es_el_mateix_titol():
-    # the site lays "RETURN" out letter by letter, and the heading arrives split
+    # el web escriu "RETURN" lletra per lletra i el títol arriba partit
     assert clau("RET U RN") == clau("RETURN")
 
 
@@ -28,7 +28,7 @@ def test_la_referencia_de_ledicio_es_reconeix():
 
 
 def test_lany_partit_pel_mig_tambe():
-    # the site writes it "1 999", so a plain four-digit match would miss it
+    # el web l'escriu "1 999": una cerca de quatre dígits seguits no el trobaria
     assert es_referencia("The friendship of stones , 1 999")
 
 
@@ -37,7 +37,7 @@ def test_un_vers_amb_un_numero_no_es_una_referencia():
 
 
 def test_un_paragraf_llarg_no_es_una_referencia():
-    # a paragraph of prose can well name a year without being the citation
+    # un paràgraf de prosa pot anomenar un any sense ser la referència
     assert not es_referencia(
         "She returned to Barcelona in 1960, after twenty years in Chile, and "
         "found a city that no longer knew her, with streets renamed and shops "
@@ -56,7 +56,7 @@ def test_els_espais_damplada_zero_desapareixen():
 
 
 def test_la_puntuacio_del_web_es_respecta():
-    # the spacing before the comma is the site's own; copying is not editing
+    # l'espai abans de la coma és del web; copiar no és corregir
     assert neteja("in vain , the march") == "in vain , the march"
 
 
@@ -82,7 +82,7 @@ def test_els_paragrafs_de_prosa_van_separats():
 
 
 def test_una_nota_al_peu_llarga_no_converteix_el_poema_en_prosa():
-    # the median, not the mean: one long line among short ones is still verse
+    # la mediana, no la mitjana: un vers llarg entre curts segueix sent vers
     versos = [
         "those who on their honoured brow",
         "sport the typical red barretina*",

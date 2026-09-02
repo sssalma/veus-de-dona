@@ -3,22 +3,14 @@ import { TranslationKey } from "./translations";
 type Traductor = (key: TranslationKey) => string;
 
 /**
- * Els enums del backend (REMOT, GUIAT, VISITANT, ADMINISTRADOR...) arriben al
- * client tal com es desen a la base de dades: en majuscules i en una sola
- * paraula. Son identificadors, no etiquetes, i no s'han de mostrar mai
- * directament a una persona.
- *
- * Centralitzats aqui perque afegir un mode o un rol nou sigui un canvi d'un
- * sol fitxer.
+ * Els enums del backend arriben en majúscules, tal com es desen. Aquí es
+ * tradueixen a etiquetes, perquè no s'ensenyin mai directament.
  */
 
 export const ORDRE_MODES = ["GUIAT", "LLIURE", "REMOT"] as const;
 export const ORDRE_ROLS = ["VISITANT", "EDITOR", "ADMINISTRADOR"] as const;
 
-/**
- * Localitzacio per a dates i hores: l'idioma de la interficie no es un codi
- * valid per a `toLocaleDateString`, de manera que cal aquesta taula.
- */
+/** L'idioma de la interfície no és un codi vàlid per a `toLocaleDateString`. */
 export const LOCALE_PER_IDIOMA: Record<string, string> = {
   CA: "ca-ES",
   ES: "es-ES",
@@ -56,9 +48,8 @@ export function etiquetaRol(t: Traductor, rol: string): string {
 }
 
 /**
- * Ordena les entrades d'un Record segons una llista fixa, deixant al final
- * qualsevol clau que no hi sigui. Sense aixo l'ordre depen de com el servidor
- * hagi serialitzat el diccionari i pot canviar entre peticions.
+ * Ordena les entrades d'un Record segons una llista fixa, amb les claus que no
+ * hi són al final. Sense això l'ordre pot canviar entre peticions.
  */
 export function ordenaPer<T>(
   dades: Record<string, T>,

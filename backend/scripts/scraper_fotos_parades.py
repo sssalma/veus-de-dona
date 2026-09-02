@@ -1,4 +1,4 @@
-"""Scrape parada images from the website, upload to MinIO, and update DB."""
+"""Fotos dels espais: s'extreuen del web del projecte i es pugen a MinIO."""
 import sys
 import os
 import re
@@ -9,7 +9,7 @@ from app.database import SessionLocal
 from app.models.parada import Parada
 from app.services import parades as parades_service
 
-# Each parada name → espai page slug on the website
+# nom de la parada -> pàgina de l'espai al web
 ESPAI_PAGES = {
     "Balcó del Mediterrani": "balc%C3%B3-del-mediterrani",
     "Amfiteatre": "amfiteatre",
@@ -27,7 +27,7 @@ BASE_URL = "https://sites.google.com/view/veusdedona/espais"
 
 
 def fetch_main_image(espai_slug: str) -> bytes | None:
-    """Fetch the individual espai page and extract the first large image URL."""
+    """Descarrega la pàgina d'un espai i n'agafa la primera imatge gran."""
     url = f"{BASE_URL}/{espai_slug}"
     print(f"  Fetching {url}...")
     try:
@@ -39,9 +39,7 @@ def fetch_main_image(espai_slug: str) -> bytes | None:
 
     html = resp.text
 
-    # Find all img tags with lh3.googleusercontent.com URLs
-    # The main image is typically the first large content image (after the h1)
-    # Pattern: <img[^>]*src="(https://lh3\.googleusercontent\.com[^"]+w1280)"[^>]*>
+    # la imatge principal és la primera de contingut, després de l'h1
     images = re.findall(
         r'<img[^>]*src="(https://lh3\.googleusercontent\.com/sitesv/[^"]+w1280)"[^>]*>',
         html,
@@ -51,8 +49,6 @@ def fetch_main_image(espai_slug: str) -> bytes | None:
         print(f"  WARNING: No images found")
         return None
 
-    # Filter out tiny icons/logos - content images are typically >200px
-    # We'll take the first substantial image
     image_url = images[0]
     print(f"  Found image: {image_url[:80]}...")
 
@@ -74,7 +70,7 @@ def seed():
 
     for parada in parades:
         espai_name = parada.nom_espai
-        # Match against our ESPAI_PAGES keys (checking if parada name starts with or contains key)
+        # es busca la clau d'ESPAI_PAGES que concorda amb el nom de la parada
         slug = None
         matched_key = None
         for key, val in ESPAI_PAGES.items():
@@ -95,7 +91,7 @@ def seed():
             continue
 
         # Passa per la capa de servei, que esborra la foto anterior. Pujar-la
-        # aqui deixava un objecte orfe a MinIO a cada passada del guio.
+        # aquí deixava un objecte orfe a MinIO a cada passada del guió.
         resultat = parades_service.update_parada_foto(
             db, str(parada.id), image_data, "foto.jpg", "image/jpeg"
         )
