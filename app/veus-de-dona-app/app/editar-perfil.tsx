@@ -2,16 +2,12 @@ import { useState } from "react";
 import { View, Text, ScrollView, TouchableOpacity, Alert, KeyboardAvoidingView, Platform } from "react-native";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { COLORS, FONTS, ROTUL_SECCIO, TITOL_PANTALLA } from "../constants";
+import { COLORS, FONTS, PASSWORD_MIN_LENGTH, ROTUL_SECCIO, TITOL_PANTALLA } from "../constants";
 import { useAuth } from "../contexts/AuthContext";
 import { useLanguage } from "../contexts/LanguageContext";
 import { updateMeuPerfil, canviarContrasenya } from "../services/usuaris";
 import { Capcalera } from "../components/Capcalera";
 import FormField from "../components/FormField";
-
-// Longitud mínima de contrasenya. El servidor imposa la mateixa regla
-// (app/schemas/usuari.py), de manera que no es pot evitar cridant l'API.
-const PASSWORD_MIN_LENGTH = 8;
 
 export default function EditarPerfilScreen() {
   const router = useRouter();
@@ -36,8 +32,7 @@ export default function EditarPerfilScreen() {
     setDesant(true);
     try {
       // Només s'envia el que aquesta pantalla deixa canviar: el servidor fa
-      // `exclude_unset`, de manera que la procedència i el grup escolar es
-      // queden tal com es van desar al registre.
+      // `exclude_unset` i la resta es queda com estava.
       const actualitzat = await updateMeuPerfil({
         nom: nom.trim(),
         cognom: cognom.trim(),
