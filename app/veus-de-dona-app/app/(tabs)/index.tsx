@@ -12,9 +12,9 @@ import { COLORS, FONTS } from "../../constants";
 import { TranslationKey } from "../../i18n/translations";
 import { Parada } from "../../types";
 
-// Mapa basat en Leaflet + OpenStreetMap (dins d'un WebView), en comptes de
-// react-native-maps + Google Maps, perque el projecte es mantingui 100% open
-// source. El satelit fa servir tiles d'ESRI World Imagery.
+// Mapa amb Leaflet + OpenStreetMap dins d'un WebView, en comptes de
+// react-native-maps + Google Maps, per mantenir el projecte obert. El satèl·lit
+// fa servir tiles d'Esri World Imagery.
 const MAP_HTML = `<!DOCTYPE html>
 <html>
 <head>
@@ -31,8 +31,16 @@ const MAP_HTML = `<!DOCTYPE html>
   <script>
     var map = L.map('map', { zoomControl: false, attributionControl: false }).setView([41.1163, 1.2567], 16);
 
-    var osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 });
-    var satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19 });
+    // L'atribució és obligatòria, però no es dibuixa aquí dins: s'ensenya al
+    // peu del mapa. Es declara igualment a cada capa perquè consti la font.
+    var osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; OpenStreetMap contributors',
+    });
+    var satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      maxZoom: 19,
+      attribution: 'Imatges &copy; Esri',
+    });
     osmLayer.addTo(map);
     var currentBase = osmLayer;
 
@@ -44,9 +52,8 @@ const MAP_HTML = `<!DOCTYPE html>
       window.ReactNativeWebView.postMessage(JSON.stringify(msg));
     }
 
-    // La visitada va plena i la pendent buida: una diferencia de farciment
-    // es veu igual en escala de grisos, i el criteri 1.4.1 no permet que el
-    // color sigui l'unic senyal.
+    // La visitada va plena i la pendent buida: el criteri 1.4.1 no permet que
+    // el color sigui l'únic senyal.
     function paradaIcon(estat, ordre) {
       var ple = estat === 'visitada';
       var to = estat === 'inactiva' ? '${COLORS.textSecondary}'
@@ -136,8 +143,7 @@ const MAP_HTML = `<!DOCTYPE html>
       map.setView([lat, lng], map.getZoom());
     };
 
-    // Centra en una parada concreta i hi dibuixa un anell durant uns segons,
-    // perque en arribar-hi des de la fitxa es vegi de quina parada parlem.
+    // Centra en una parada i hi dibuixa un anell durant uns segons.
     var focusRing = null;
     window.focusParada = function (lat, lng) {
       map.setView([lat, lng], 18, { animate: true });
@@ -171,7 +177,7 @@ export default function MapaScreen() {
   const [parades, setParades] = useState<Parada[]>([]);
   const [visitedIds, setVisitedIds] = useState<Set<string>>(new Set());
   const [satellit, setSatellit] = useState(false);
-  // estat real del GPS, per no ensenyar una insígnia decorativa que sempre diu el mateix
+  // estat real del GPS
   const [gpsEstat, setGpsEstat] = useState<"cercant" | "actiu" | "denegat">("cercant");
   const [webviewReady, setWebviewReady] = useState(false);
   const webviewRef = useRef<WebView>(null);
@@ -202,7 +208,7 @@ export default function MapaScreen() {
     webviewRef.current?.injectJavaScript(`window.updateData(${JSON.stringify(payload)}); true;`);
   }, [webviewReady, parades, visitedIds, satellit]);
 
-  // Enfoca la parada que arriba per parametre, un sol cop per valor: si no,
+  // Enfoca la parada que arriba per paràmetre, un sol cop per valor: si no,
   // tornar a la pestanya del mapa la tornaria a centrar cada vegada.
   useEffect(() => {
     if (!webviewReady || !focus || focusAplicat.current === focus) return;
@@ -292,8 +298,7 @@ export default function MapaScreen() {
     );
   };
 
-  // el progrés es mesura sobre les parades actives de la ruta, no sobre un 10
-  // fix: si l'editor en desactiva una, el màxim assolible ha de baixar amb ella
+  // el progrés es mesura sobre les parades actives, no sobre un 10 fix
   const actives = parades.filter((p) => p.activa);
   const visitedCount = actives.filter((p) => visitedIds.has(p.id)).length;
 
@@ -339,8 +344,7 @@ export default function MapaScreen() {
         <View style={{ flexDirection: "row", gap: 8, alignItems: "center" }}>
           <TouchableOpacity
             accessibilityRole="button"
-            // el text visible i el nom accessible han de coincidir (WCAG 2.5.3):
-            // el botó commuta entre mapa de carrer i satèl·lit, no entre 2D i 3D
+            // el text visible i el nom accessible han de coincidir (WCAG 2.5.3)
             accessibilityLabel={satellit ? t("mapa.satelliteOff") : t("mapa.satelliteOn")}
             accessibilityState={{ selected: satellit }}
             onPress={() => setSatellit((v) => !v)}
@@ -473,33 +477,51 @@ export default function MapaScreen() {
             }}
           />
         </View>
-        {/* Els punts es distingien nomes pel color, i el de les pendents
+        {/* Els punts es distingien només pel color, i el de les pendents
             -COLORS.border sobre el fons- donava 1,25:1, molt per sota del 3:1
             que demana el criteri 1.4.11. Ara la visitada va plena i la pendent
-            buida: la diferencia es de forma i es veu igual en escala de grisos
+            buida: la diferència és de forma i es veu igual en escala de grisos
             (criteri 1.4.1). La barra i el comptador ja diuen quantes n'hi ha;
-            aixo diu quines. */}
+            això diu quines. */}
+        {/* Els punts i l'atribució comparteixen línia. El rètol no va dins
+            del bloc amagat als lectors de pantalla: és contingut que ha de
+            ser perceptible, i a més és una condició de la llicència. */}
         <View
-          accessibilityElementsHidden
-          importantForAccessibility="no"
-          style={{ flexDirection: "row", gap: 4, marginTop: 6 }}
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginTop: 6,
+          }}
         >
-          {actives.map((parada) => {
-            const feta = visitedIds.has(parada.id);
-            return (
-              <View
-                key={parada.id}
-                style={{
-                  width: 7,
-                  height: 7,
-                  borderRadius: 4,
-                  backgroundColor: feta ? COLORS.accent : "transparent",
-                  borderWidth: feta ? 0 : 1,
-                  borderColor: COLORS.controlBorder,
-                }}
-              />
-            );
-          })}
+          <View
+            accessibilityElementsHidden
+            importantForAccessibility="no"
+            style={{ flexDirection: "row", gap: 4 }}
+          >
+            {actives.map((parada) => {
+              const feta = visitedIds.has(parada.id);
+              return (
+                <View
+                  key={parada.id}
+                  style={{
+                    width: 7,
+                    height: 7,
+                    borderRadius: 4,
+                    backgroundColor: feta ? COLORS.accent : "transparent",
+                    borderWidth: feta ? 0 : 1,
+                    borderColor: COLORS.controlBorder,
+                  }}
+                />
+              );
+            })}
+          </View>
+          <Text
+            maxFontSizeMultiplier={1.3}
+            style={{ fontFamily: FONTS.sans, fontSize: 9, color: COLORS.textSecondary }}
+          >
+            {satellit ? "Imatges © Esri" : "© OpenStreetMap contributors"}
+          </Text>
         </View>
       </View>
     </View>
@@ -508,15 +530,9 @@ export default function MapaScreen() {
 
 
 /**
- * Rètol d'estat del GPS.
- *
- * Els tres estats es distingeixen pel color del punt, i el nom accessible diu
- * en paraules el que el color diu en silenci: qui no distingeix el violeta del
- * vermell no s'ha de quedar sense saber si l'app el localitza (WCAG 1.4.1, el
- * color no pot ser l'únic mitjà per transmetre informació).
- *
- * Quan el permís està denegat deixa de ser un rètol i passa a ser un botó cap
- * a la configuració del sistema, que és l'únic lloc on es pot rectificar.
+ * Rètol d'estat del GPS. El color del punt distingeix els tres estats i el nom
+ * accessible els diu en paraules (WCAG 1.4.1). Amb el permís denegat passa a
+ * ser un botó cap a la configuració del sistema.
  */
 function GpsIndicador({
   estat,
@@ -575,8 +591,7 @@ function GpsIndicador({
       accessibilityRole="button"
       accessibilityLabel={etiqueta}
       onPress={() => {
-        // Un cop denegat el permís, tornar a demanar-lo des de l'app no
-        // torna a ensenyar el diàleg del sistema: cal anar a la configuració.
+        // Un cop denegat, l'app ja no pot tornar a ensenyar el diàleg.
         Linking.openSettings().catch(() => {});
       }}
       hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
@@ -589,16 +604,9 @@ function GpsIndicador({
 
 
 /**
- * El titol del mapa amb el nom del barri en cursiva.
- *
- * "Part Alta" es un toponim i es queda igual als tres idiomes -no es tradueix-,
- * de manera que es pot trobar dins de la frase sense haver de partir la clau de
- * traduccio en trossos. La cursiva es la mateixa distincio que ja fa servir la
- * pantalla d'accés per al nom del projecte: dins d'un titol en versaletes,
- * separa el nom propi de la descripcio.
- *
- * Si algun dia el toponim desapareix de la frase, es dibuixa el titol sencer
- * sense cursiva en comptes de quedar-se en blanc.
+ * El títol del mapa amb el nom del barri en cursiva. "Part Alta" no es tradueix,
+ * així que es busca dins de la frase en comptes de partir la clau de traducció.
+ * Si no hi és, es dibuixa el títol sencer sense cursiva.
  */
 const TOPONIM = "Part Alta";
 
