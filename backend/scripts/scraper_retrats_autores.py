@@ -1,28 +1,28 @@
 """
 Retrats de les autores, extrets del web del projecte.
 
-Sense arguments agafa la primera imatge propia de cada pagina i la puja. La
-primera es sempre el retrat: comprovat contra el web l'1-09-2026, i verificat
-imatge a imatge en tres autores, inclos el retrat pintat de la Massanes, que es
-del segle XIX. Es aquesta regla la que permet encadenar-ho amb la resta de la
-carrega, a `scripts/poblar.py`.
+Sense arguments agafa la primera imatge pròpia de cada pàgina i la puja. La
+primera és sempre el retrat: comprovat contra el web l'1-09-2026, i verificat
+imatge a imatge en tres autores, inclòs el retrat pintat de la Massanés, que és
+del segle XIX. És aquesta regla la que permet encadenar-ho amb la resta de la
+càrrega, a `scripts/poblar.py`.
 
-Es descarten soles les imatges que surten a mes d'una pagina: son el cromo del
-lloc, no el retrat de ningu.
+Es descarten soles les imatges que surten a més d'una pàgina: són el cromo del
+lloc, no el retrat de ningú.
 
-Si el web es reordena, la regla deixa de valer i el guio pujaria una portada de
-llibre sense dir res. Per aixo hi ha un cami de revisio, en dues fases, que
-baixa totes les candidates al disc perque algu les miri i puja despres la que
+Si el web es reordena, la regla deixa de valer i el guió pujaria una portada de
+llibre sense dir res. Per això hi ha un camí de revisió, en dues fases, que
+baixa totes les candidates al disc perquè algú les miri i puja després la que
 hagi quedat:
 
     python -m scripts.scraper_retrats_autores              # primera imatge, directe
     python -m scripts.scraper_retrats_autores --descarrega # totes, a backend/retrats/
     python -m scripts.scraper_retrats_autores --puja       # la que hagi quedat a cada carpeta
 
-Les dues fases de revisio treballen amb fitxers del disc local i per tant
-s'executen des de la maquina; el cami directe corre igual de be dins del
+Les dues fases de revisió treballen amb fitxers del disc local i per tant
+s'executen des de la màquina; el camí directe corre igual de bé dins del
 contenidor. La pujada sempre passa per `autores_service.update_autora_foto()`,
-el mateix cami que fa servir el panell d'edicio, que esborra l'objecte anterior
+el mateix camí que fa servir el panell d'edició, que esborra l'objecte anterior
 i per tant no deixa orfes a MinIO.
 """
 import argparse
@@ -75,7 +75,7 @@ EXTENSIONS = {
 
 
 def normalitza(text: str) -> str:
-    """Deixa nomes lletres i digits, sense accents ni majuscules.
+    """Deixa només lletres i dígits, sense accents ni majúscules.
 
     Serveix per aparellar el nom del directori amb el de la fila: el web escriu
     "noemi-bagés-i-fortacín" i la base de dades pot tenir-hi els accents en
@@ -87,7 +87,7 @@ def normalitza(text: str) -> str:
 
 
 def imatges_de(slug: str) -> list[str]:
-    """Les imatges d'una pagina, en ordre d'aparicio i sense repeticions."""
+    """Les imatges d'una pàgina, en ordre d'aparició i sense repeticions."""
     url = f"{BASE_URL}/{slug}"
     try:
         resposta = requests.get(url, headers=HEADERS, timeout=20)
@@ -119,10 +119,10 @@ def baixa_imatge(url: str, referent: str) -> tuple[bytes, str] | None:
 
 
 def candidates() -> dict[str, list[str]]:
-    """Les imatges propies de cada pagina, en ordre d'aparicio.
+    """Les imatges pròpies de cada pàgina, en ordre d'aparició.
 
-    El cromo del lloc no s'identifica per cap llista fixa: es el que surt a mes
-    d'una pagina. Per aixo cal llegir-les totes abans de decidir res."""
+    El cromo del lloc no s'identifica per cap llista fixa: és el que surt a més
+    d'una pàgina. Per això cal llegir-les totes abans de decidir res."""
     print(f"Llegint les {len(AUTORES_SLUGS)} pagines...")
     per_pagina = {}
     for slug in AUTORES_SLUGS:
@@ -141,7 +141,7 @@ def autores_per_slug(db) -> dict:
 
 
 def puja_directe() -> int:
-    """La primera imatge propia de cada pagina, pujada sense passar pel disc."""
+    """La primera imatge pròpia de cada pàgina, pujada sense passar pel disc."""
     propies_per_slug = candidates()
 
     db = SessionLocal()
@@ -204,7 +204,7 @@ def descarrega() -> int:
                 print(f"  ERROR: imatge {posicio} de {slug} no s'ha pogut baixar")
                 continue
             contingut, extensio = imatge
-            # numerades per les que arriben, no per la posicio a la pagina: una
+            # numerades per les que arriben, no per la posició a la pàgina: una
             # descarrega fallida deixaria forats i el 01 podria no existir
             with open(os.path.join(desti, f"{baixades + 1:02d}.{extensio}"), "wb") as fitxer:
                 fitxer.write(contingut)

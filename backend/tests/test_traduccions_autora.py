@@ -1,7 +1,7 @@
 """Biografies multiidioma.
 
-La biografia s'edita al panell perque es text propi. Els textos literaris tenen
-el seu propi cami -veure test_traduccions_text.py-: les versions en angles son
+La biografia s'edita al panell perquè és text propi. Els textos literaris tenen
+el seu propi camí -veure test_traduccions_text.py-: les versions en anglès són
 les que publica el web del projecte i no s'editen enlloc.
 """
 
@@ -36,8 +36,8 @@ def test_la_fitxa_torna_la_traduccio_quan_existeix(client, auth_headers, editor,
 
 
 def test_cau_al_catala_quan_falta_la_traduccio(client, auth_headers, editor, autora):
-    """El cas important: no s'ha d'ensenyar buit ni fer passar el catala per
-    traduit. Es dona el catala i es diu que ho es."""
+    """El cas important: no s'ha d'ensenyar buit ni fer passar el català per
+    traduït. Es dona el català i es diu que ho és."""
     client.put(
         f"/autores/{autora.id}/traduccions/EN",
         json={"bio": "An English biography."},

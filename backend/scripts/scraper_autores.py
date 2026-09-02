@@ -38,8 +38,8 @@ HEADERS = {
     "User-Agent": "Mozilla/5.0 (compatible; VeusDona-TFG/1.0)"
 }
 
-# Un parentesi amb un any tant pot ser la data de naixement com el premi o
-# l'editorial d'un llibre. El biografic es el que nomes va precedit del nom de
+# Un parèntesi amb un any tant pot ser la data de naixement com el premi o
+# l'editorial d'un llibre. El biogràfic és el que només va precedit del nom de
 # l'autora; les cites d'obres arriben enmig de la prosa.
 ANY_ENTRE_PARENTESIS = re.compile(r"\(([^)]*\d{4}[^)]*)\)")
 ANY_DE_NAIXEMENT = re.compile(
@@ -48,12 +48,12 @@ ANY_DE_NAIXEMENT = re.compile(
 
 
 def nomes_hi_ha_un_nom(text: str) -> bool:
-    """Cert si tot el que hi ha son paraules que comencen en majuscula."""
+    """Cert si tot el que hi ha són paraules que comencen en majúscula."""
     return all(paraula[:1].isupper() for paraula in text.split())
 
 
 def extreure_anys_vida(text: str) -> str:
-    """Els anys de vida, del parentesi que obre la biografia o de la primera
+    """Els anys de vida, del parèntesi que obre la biografia o de la primera
     frase si no n'hi ha."""
     for match in ANY_ENTRE_PARENTESIS.finditer(text):
         if nomes_hi_ha_un_nom(text[:match.start()]):
@@ -66,9 +66,9 @@ def extreure_anys_vida(text: str) -> str:
 def partir_nom(nom_complet: str) -> tuple[str, str]:
     """Separa el nom del cognom.
 
-    Els cognoms catalans van units amb "i": el cognom son les dues paraules que
-    l'envolten i la resta del davant es el nom. Cal per als noms compostos, com
-    "Maria Aurelia Capmany i Farnes"."""
+    Els cognoms catalans van units amb "i": el cognom són les dues paraules que
+    l'envolten i la resta del davant és el nom. Cal per als noms compostos, com
+    "Maria Aurèlia Capmany i Farnés"."""
     parts = nom_complet.split()
     if "i" in parts:
         tall = parts.index("i")
@@ -77,7 +77,7 @@ def partir_nom(nom_complet: str) -> tuple[str, str]:
     return parts[0], " ".join(parts[1:])
 
 def extreure_bio_des_de_seccio(seccio, nom_complet):
-    """Agafa el text d'una seccio i talla a 'Llegir mes' i el nom repetit"""
+    """Agafa el text d'una secció i talla a 'Llegir més' i el nom repetit"""
     text = seccio.get_text(strip=True)
     idx = text.lower().find("llegir més")
     if idx != -1:
@@ -87,7 +87,7 @@ def extreure_bio_des_de_seccio(seccio, nom_complet):
     return text, extreure_anys_vida(text)
 
 def extreure_autora(slug: str) -> dict | None:
-    """Descarrega la pagina d'una autora i n'extreu nom, cognom, anys i bio"""
+    """Descarrega la pàgina d'una autora i n'extreu nom, cognom, anys i bio"""
     url = f"{BASE_URL}/{slug}"
     try:
         response = requests.get(url, headers=HEADERS, timeout=10)
@@ -98,7 +98,7 @@ def extreure_autora(slug: str) -> dict | None:
 
     soup = BeautifulSoup(response.text, "html.parser")
 
-    # el title te el nom complet, el h1 de vegades el talla
+    # el title té el nom complet, el h1 de vegades el talla
     title_tag = soup.find("title")
     h1 = soup.find("h1")
     if title_tag and " - " in title_tag.get_text():
@@ -121,7 +121,7 @@ def extreure_autora(slug: str) -> dict | None:
             bio_text, anys_vida = extreure_bio_des_de_seccio(sec, nom_complet)
             break
 
-    # 2n intent: si la bio es buida o es la seccio de referencies
+    # 2n intent: si la bio és buida o és la secció de referències
     if not bio_text or "REFERÈNCIES" in bio_text:
         for sec in sections[1:]:
             text = sec.get_text(strip=True)
@@ -143,7 +143,7 @@ def extreure_autora(slug: str) -> dict | None:
 def seed():
     """Torna a llegir les biografies del web i actualitza les autores.
 
-    Actualitza les files que ja hi son en comptes d'esborrar-les: aixi es
+    Actualitza les files que ja hi són en comptes d'esborrar-les: així es
     conserven els identificadors, i els textos, les traduccions i el retrat
     segueixen lligats on toca.
     """

@@ -1,32 +1,32 @@
 # -*- coding: utf-8 -*-
-"""Versions en angles dels textos literaris, extretes del web del projecte.
+"""Versions en anglès dels textos literaris, extretes del web del projecte.
 
-El web de Veus de Dona publica, a l'apartat en angles, la traduccio de 15 de
-les 17 obres de la ruta. No les tradueix ningu d'aqui: es reprodueixen tal com
-el projecte ja les publica, igual que es fa amb els originals en catala.
-Traduir-les pel nostre compte seria obra derivada, i el permis amb que es
+El web de Veus de Dona publica, a l'apartat en anglès, la traducció de 15 de
+les 17 obres de la ruta. No les tradueix ningú d'aquí: es reprodueixen tal com
+el projecte ja les publica, igual que es fa amb els originals en català.
+Traduir-les pel nostre compte seria obra derivada, i el permís amb què es
 reprodueixen no hi arriba.
 
-Per aixo tampoc tenen panell d'edicio, a diferencia de les biografies de les
-autores: son text fix d'una font externa. Si al web canvien, es torna a passar
-aquest guio.
+Per això tampoc tenen panell d'edició, a diferència de les biografies de les
+autores: són text fix d'una font externa. Si al web canvien, es torna a passar
+aquest guió.
 
-Les dues que falten no hi son perque el web no les te traduides:
-    - Cinta Mulet, "Vull pujar en aquell terrat" (la pagina anglesa de
-      l'autora nomes en dona l'original catala, al final de KING'S SQUARE)
+Les dues que falten no hi són perquè el web no les té traduïdes:
+    - Cinta Mulet, "Vull pujar en aquell terrat" (la pàgina anglesa de
+      l'autora només en dona l'original català, al final de KING'S SQUARE)
     - Margarida Aritzeta, "Rapsodia per a un mort II" (el web tradueix el
-      fragment III, que no es el que porta la ruta)
-Aquestes dues es queden en catala a l'aplicacio, que ho adverteix.
+      fragment III, que no és el que porta la ruta)
+Aquestes dues es queden en català a l'aplicació, que ho adverteix.
 
-L'aparellament obra-traduccio va escrit a ma a TRADUCCIONS i no es dedueix del
-web: els titols anglesos no son la traduccio literal del catala ("Tatuic" surt
-com a "ytiC"), diversos fragments d'una mateixa obra comparteixen enllac, i
-n'hi ha que no en tenen cap. Amb disset obres, una taula explicita es mes
-fiable -i mes facil de revisar- que qualsevol heuristica.
+L'aparellament obra-traducció va escrit a mà a TRADUCCIONS i no es dedueix del
+web: els títols anglesos no són la traducció literal del català ("Tatuic" surt
+com a "ytiC"), diversos fragments d'una mateixa obra comparteixen enllaç, i
+n'hi ha que no en tenen cap. Amb disset obres, una taula explícita és més
+fiable -i més fàcil de revisar- que qualsevol heurística.
 
-Us:
+Ús:
     python -m scripts.scraper_traduccions_textos            # desa
-    python -m scripts.scraper_traduccions_textos --prova    # nomes ho mostra
+    python -m scripts.scraper_traduccions_textos --prova    # només ho mostra
 """
 import os
 import re
@@ -52,10 +52,10 @@ HEADERS = {
     "User-Agent": "Mozilla/5.0 (compatible; VeusDona-TFG/1.0)"
 }
 
-# `encapcalament` es el titol tal com surt al web, que es com es localitza la
-# seccio; `titol_en` es el que es desa. Difereixen en majuscules i, a "Ran de
-# mar", tambe perque l'encapcalament del web te una errada ("LEEL" per "LEVEL")
-# que no te sentit arrossegar fins a l'aplicacio.
+# `encapcalament` és el títol tal com surt al web, que és com es localitza la
+# secció; `titol_en` és el que es desa. Difereixen en majúscules i, a "Ran de
+# mar", també perquè l'encapcalament del web té una errada ("LEEL" per "LEVEL")
+# que no té sentit arrossegar fins a l'aplicació.
 TRADUCCIONS = [
     {
         "autora": "Montserrat Abelló i Soler",
@@ -110,8 +110,8 @@ TRADUCCIONS = [
         "autora": "Isabel Ortega i Rion",
         "titol_ca": "Tatuic",
         "pagina": "isabel-ortega-i-rion-en",
-        # el titol catala es "Ciutat" escrit del reves, i el web fa el mateix
-        # joc en angles: es un titol, no una errada
+        # el títol català és "Ciutat" escrit del revés, i el web fa el mateix
+        # joc en anglès: és un títol, no una errada
         "encapcalament": "ytiC",
         "titol_en": "ytiC",
     },
@@ -168,41 +168,41 @@ TRADUCCIONS = [
 
 
 def clau(text: str) -> str:
-    """El titol reduit al que es pot comparar.
+    """El títol reduït al que es pot comparar.
 
-    El web parteix els titols per maquetar-los -"RET U RN", "SILENC E"-, de
-    manera que nomes les lletres i els numeros son fiables.
+    El web parteix els títols per maquetar-los -"RET U RN", "SILENC E"-, de
+    manera que només les lletres i els números són fiables.
     """
     return re.sub(r"[^a-z0-9]", "", text.lower())
 
 
-# Les obres acaben amb la referencia de l'edicio ("Enfilall, 2002"), i a
-# l'aplicacio aixo ja va a part, al camp obra_origen del text.
+# Les obres acaben amb la referència de l'edició ("Enfilall, 2002"), i a
+# l'aplicació això ja va a part, al camp obra_origen del text.
 ANY_DE_LEDICIO = re.compile(r"(?:\d[  ]*){4}")
 
 
-# Cap vers d'aquestes obres no arriba als 70 caracters, i cap paragraf de
+# Cap vers d'aquestes obres no arriba als 70 caracters, i cap paràgraf de
 # prosa no hi baixa.
 LLARGADA_DUN_VERS = 70
 
 
 def es_referencia(paragraf: str) -> bool:
-    """Cert si el paragraf es la referencia de l'edicio i no part de l'obra."""
+    """Cert si el paràgraf és la referència de l'edició i no part de l'obra."""
     return len(paragraf) <= 160 and bool(ANY_DE_LEDICIO.search(paragraf))
 
 
 def neteja(text: str) -> str:
-    """Nomes espais: espais durs, espais d'amplada zero i espais repetits.
+    """Només espais: espais durs, espais d'amplada zero i espais repetits.
 
-    La puntuacio i les majuscules es queden com al web. El text es d'altri i
-    aquest guio el copia, no l'edita.
+    La puntuació i les majúscules es queden com al web. El text és d'altri i
+    aquest guió el copia, no l'edita.
     """
     t = text.replace(" ", " ").replace("​", "")
     return re.sub(r"[ \t]{2,}", " ", t).strip()
 
 
 def descarrega(pagina: str) -> BeautifulSoup:
-    """La pagina anglesa d'una autora."""
+    """La pàgina anglesa d'una autora."""
     resposta = requests.get(f"{BASE_URL}/{pagina}", headers=HEADERS, timeout=20)
     resposta.raise_for_status()
     resposta.encoding = "utf-8"
@@ -210,11 +210,11 @@ def descarrega(pagina: str) -> BeautifulSoup:
 
 
 def extreu_obra(soup: BeautifulSoup, encapcalament: str) -> list[str] | None:
-    """Els paragrafs d'una obra dins la pagina d'una autora.
+    """Els paràgrafs d'una obra dins la pàgina d'una autora.
 
-    Cada obra viu en una seccio encapcalada pel seu titol. El titol tambe surt
-    a l'index de la pagina, alli sense text a sota: per aixo no n'hi ha prou de
-    trobar l'encapcalament i cal que la seccio porti paragrafs.
+    Cada obra viu en una secció encapcalada pel seu títol. El títol també surt
+    a l'índex de la pàgina, allí sense text a sota: per això no n'hi ha prou de
+    trobar l'encapcalament i cal que la secció porti paràgrafs.
     """
     for seccio in soup.find_all("div", class_="mYVXT"):
         titol = seccio.find(["h1", "h2", "h3", "h4"])
@@ -224,7 +224,7 @@ def extreu_obra(soup: BeautifulSoup, encapcalament: str) -> list[str] | None:
         paragrafs = []
         for p in seccio.find_all("p", class_="zfr3Q"):
             # els fragments llargs van plegats darrere un "Read more" que es un
-            # paragraf mes, i el desplegable no forma part de l'obra
+            # paràgraf més, i el desplegable no forma part de l'obra
             if clau(p.get_text("")) in ("readmore", "llegirms", "llegirmes"):
                 continue
             net = neteja(p.get_text(""))
@@ -241,11 +241,11 @@ def extreu_obra(soup: BeautifulSoup, encapcalament: str) -> list[str] | None:
 
 
 def uneix(paragrafs: list[str]) -> str:
-    """Els paragrafs, separats segons si l'obra es vers o prosa.
+    """Els paràgrafs, separats segons si l'obra és vers o prosa.
 
-    Al web tant els versos com els paragrafs son un <p>, i el marcatge no els
-    distingeix. El que els distingeix es la llargada: un vers cap en una linia
-    i un paragraf de prosa, no. Es mira la mediana i no la mitjana perque una
+    Al web tant els versos com els paràgrafs són un <p>, i el marcatge no els
+    distingeix. El que els distingeix és la llargada: un vers cap en una línia
+    i un paràgraf de prosa, no. Es mira la mediana i no la mitjana perquè una
     obra en vers amb una nota al peu llarga segueix sent vers.
     """
     mediana = statistics.median(len(p) for p in paragrafs)
@@ -296,8 +296,8 @@ def seed(prova: bool = False) -> None:
                 print(contingut[:300] + ("..." if len(contingut) > 300 else ""))
                 continue
 
-            # es reescriu a sobre en comptes d'esborrar i tornar a crear: aixi
-            # el guio es pot repetir sense deixar forats pel mig
+            # es reescriu a sobre en comptes d'esborrar i tornar a crear: així
+            # el guió es pot repetir sense deixar forats pel mig
             traduccio = db.query(TextTraduccio).filter(
                 TextTraduccio.text_id == text.id,
                 TextTraduccio.idioma == Idioma.EN,

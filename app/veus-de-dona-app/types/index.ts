@@ -14,9 +14,9 @@ export interface Autora {
   nom: string;
   cognom: string;
   bio: string | null;
-  // En quin idioma ve la `bio`. Quan no hi ha traduccio el servidor torna el
-  // catala i ho diu aqui, perque la fitxa ho pugui advertir en comptes de
-  // fer-lo passar per traduit.
+  // En quin idioma ve la `bio`. Quan no hi ha traducció el servidor torna el
+  // català i ho diu aquí, perquè la fitxa ho pugui advertir en comptes de
+  // fer-lo passar per traduït.
   bio_idioma: "CA" | "ES" | "EN";
   anys_vida: string | null;
   foto_minio_key: string | null;
@@ -95,7 +95,7 @@ export interface Comentari {
   contingut: string;
   data_creacio: string;
   parada_id: string;
-  // Nomes arriben per a editors i administradors: al llistat public els
+  // Només arriben per a editors i administradors: al llistat públic els
   // comentaris van signats amb el nom de pila i sense identificador.
   usuari_id?: string | null;
   usuari_nom?: string | null;

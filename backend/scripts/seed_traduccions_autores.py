@@ -1,19 +1,19 @@
-"""Biografies de les tretze autores en castella i angles.
+"""Biografies de les tretze autores en castellà i anglès.
 
-No son una traduccio de les biografies catalanes del web del projecte: son
-textos nous escrits a partir dels mateixos fets. La distincio importa. Els
-fets biografics -on va neixer algu, que va publicar, quin premi va guanyar-
-no tenen drets d'autor; nomes en te l'expressio concreta amb que s'expliquen.
-Reescriure'ls es legitim, calcar la prosa d'un altre no.
+No són una traducció de les biografies catalanes del web del projecte: són
+textos nous escrits a partir dels mateixos fets. La distinció importa. Els
+fets biogràfics -on va néixer algú, què va publicar, quin premi va guanyar-
+no tenen drets d'autor; només en té l'expressió concreta amb què s'expliquen.
+Reescriure'ls és legítim, calcar la prosa d'un altre no.
 
-Amb els textos literaris no es pot fer aixo, i per aixo no es fa: alli el
-valor es justament l'expressio, i traduir-la seria crear obra derivada sense
+Amb els textos literaris no es pot fer això, i per això no es fa: allí el
+valor és justament l'expressió, i traduir-la seria crear obra derivada sense
 tenir-ne el dret.
 
 Les autores es busquen per nom i cognom, de manera que el seed es pot tornar
-a executar despres d'un scraping.
+a executar després d'un scraping.
 
-Us:
+Ús:
     venv/Scripts/python.exe scripts/seed_traduccions_autores.py
 """
 import os

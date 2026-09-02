@@ -1,7 +1,7 @@
 """
 Script per insertar les 10 parades de la ruta a la base de dades.
-Les coordenades son les de la Part Alta de Tarragona.
-Execucio: python -m scripts.seed_parades
+Les coordenades són les de la Part Alta de Tarragona.
+Execució: python -m scripts.seed_parades
 """
 import sys
 import os

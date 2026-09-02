@@ -9,7 +9,7 @@ def test_afegir_comentari(client, auth_headers, visitant, parada):
     assert data["contingut"] == "Molt bonic aquest espai"
     assert data["usuari_nom"] == visitant.nom
     # el visitant veu el seu propi comentari signat igual que el veuran els
-    # altres: nomes amb el nom de pila
+    # altres: només amb el nom de pila
     assert data["usuari_cognom"] is None
 
 
@@ -117,7 +117,7 @@ def test_eliminar_comentari_inexistent_dona_404(client, auth_headers, editor):
     assert resp.status_code == 404
 
 
-# ---- el llistat public no ha d'exposar el cognom de qui comenta ----
+# ---- el llistat públic no ha d'exposar el cognom de qui comenta ----
 
 def _comenta(client, auth_headers, usuari, parada, text="Un comentari"):
     return client.post(
@@ -137,7 +137,7 @@ def test_llistat_public_amaga_cognom_i_id_de_lautor(client, auth_headers, visita
     assert c["usuari_nom"] == visitant.nom
     assert c["usuari_cognom"] is None
     assert c["usuari_id"] is None
-    # el contingut i la resta segueixen sent publics
+    # el contingut i la resta segueixen sent públics
     assert c["contingut"] == "Un comentari"
 
 
@@ -176,8 +176,8 @@ def test_llistat_de_moderacio_conserva_les_dades_completes(
 
 
 def test_token_invalid_al_llistat_public_no_falla(client, auth_headers, visitant, parada):
-    """L'autenticacio es opcional: un token dolent no ha de fer caure la peticio,
-    nomes ha de deixar el lector com a anonim."""
+    """L'autenticació és opcional: un token dolent no ha de fer caure la petició,
+    només ha de deixar el lector com a anònim."""
     _comenta(client, auth_headers, visitant, parada)
 
     resp = client.get(

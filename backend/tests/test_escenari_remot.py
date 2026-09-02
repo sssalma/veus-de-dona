@@ -1,4 +1,4 @@
-"""Escenari concret: tres parades fetes en remot i despres hi vaig fisicament."""
+"""Escenari concret: tres parades fetes en remot i després hi vaig físicament."""
 import uuid
 
 from app.models.parada import Parada, CoordenadesParada, COORDENADES_GPS
@@ -20,7 +20,7 @@ def _marca(client, headers, parada, lat=None, lng=None):
 
 
 def test_que_passa_si_torno_a_una_parada_feta_en_remot(client, auth_headers, visitant, db_session):
-    """Les 3 primeres des de casa i despres soc al costat de la primera."""
+    """Les 3 primeres des de casa i després soc al costat de la primera."""
     p1 = _crea_parada(db_session, 1, CoordenadesParada.BALCO_MEDITERRANI, "Balco")
     p2 = _crea_parada(db_session, 2, CoordenadesParada.AMFITEATRE, "Amfiteatre")
     p3 = _crea_parada(db_session, 3, CoordenadesParada.BAIXADA_PEIXATERIA, "Peixateria")
@@ -29,7 +29,7 @@ def test_que_passa_si_torno_a_una_parada_feta_en_remot(client, auth_headers, vis
     for p in (p1, p2, p3):
         assert _marca(client, h, p).json()["mode"] == "REMOT"
 
-    # ara soc fisicament al Balco i el torno a marcar
+    # ara soc físicament al Balcó i el torno a marcar
     lat, lng = COORDENADES_GPS[CoordenadesParada.BALCO_MEDITERRANI]
     resp = _marca(client, h, p1, lat, lng)
 
@@ -41,7 +41,7 @@ def test_que_passa_si_torno_a_una_parada_feta_en_remot(client, auth_headers, vis
 
 
 def test_quarta_parada_presencial_despres_de_tres_en_remot(client, auth_headers, visitant, db_session):
-    """La cadena de GUIAT nomes mira que la parada anterior estigui visitada,
+    """La cadena de GUIAT només mira que la parada anterior estigui visitada,
     no de quina manera es va visitar."""
     p1 = _crea_parada(db_session, 1, CoordenadesParada.BALCO_MEDITERRANI, "Balco")
     p2 = _crea_parada(db_session, 2, CoordenadesParada.AMFITEATRE, "Amfiteatre")
@@ -60,7 +60,7 @@ def test_quarta_parada_presencial_despres_de_tres_en_remot(client, auth_headers,
 
 
 def test_parada_presencial_saltant_se_lanterior_es_lliure(client, auth_headers, visitant, db_session):
-    """Si la parada anterior no s'ha tocat de cap manera, es LLIURE."""
+    """Si la parada anterior no s'ha tocat de cap manera, és LLIURE."""
     p1 = _crea_parada(db_session, 1, CoordenadesParada.BALCO_MEDITERRANI, "Balco")
     p2 = _crea_parada(db_session, 2, CoordenadesParada.AMFITEATRE, "Amfiteatre")
     h = auth_headers(visitant)

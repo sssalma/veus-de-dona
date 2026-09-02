@@ -22,7 +22,7 @@ def test_metriques_global_compta_els_de_grup_escolar(client, auth_headers, edito
     ]
     _crear_usuari(db_session, RolUsuari.VISITANT, es_alumne=True)
     _crear_usuari(db_session, RolUsuari.VISITANT, es_alumne=False)
-    _crear_usuari(db_session, RolUsuari.VISITANT)  # sense respondre: es None
+    _crear_usuari(db_session, RolUsuari.VISITANT)  # sense respondre: és None
 
     despres = client.get("/metriques/global", headers=auth_headers(editor)).json()[
         "usuaris_grup_escolar"

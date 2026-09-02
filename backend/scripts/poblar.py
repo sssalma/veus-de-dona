@@ -1,19 +1,19 @@
 """
 Carrega tot el contingut de la ruta en una sola passada.
 
-Els guions s'executen en l'ordre en que es necessiten: els textos es vinculen a
-autores i a parades, i les traduccions i els audios es vinculen a textos, de
+Els guions s'executen en l'ordre en què es necessiten: els textos es vinculen a
+autores i a parades, i les traduccions i els àudios es vinculen a textos, de
 manera que cada pas demana que els anteriors ja hagin passat. La neteja de
-biografies va immediatament despres de l'extraccio de les autores perque
-l'extraccio perd els espais on el web tenia etiquetes.
+biografies va immediatament després de l'extracció de les autores perquè
+l'extracció perd els espais on el web tenia etiquetes.
 
-Tots els passos son re-executables: comproven que hi ha abans d'escriure, de
-manera que si un falla es pot tornar a llancar l'ordre sencera sense duplicar
+Tots els passos són re-executables: comproven que hi ha abans d'escriure, de
+manera que si un falla es pot tornar a llançar l'ordre sencera sense duplicar
 res ni perdre el que ja hi havia.
 
-`neteja_minio.py` en queda fora a proposit: no carrega res, es manteniment.
+`neteja_minio.py` en queda fora a propòsit: no carrega res, és manteniment.
 
-Execucio:
+Execució:
     python -m scripts.poblar
     python -m scripts.poblar --admin admin@veusdedona.cat admin1234
 """
